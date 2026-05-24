@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { DonationPost } from "@/lib/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -21,8 +22,14 @@ export default function CommunityCard({ post }: { post: DonationPost }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white shadow-sm overflow-hidden flex flex-col">
       {img ? (
-        <div className="h-44 w-full bg-slate-100 shrink-0">
-          <img src={img} alt={post.title} className="w-full h-44 object-cover" />
+        <div className="relative h-44 w-full bg-slate-100 shrink-0">
+          <Image
+            src={img}
+            alt={post.title}
+            fill
+            unoptimized
+            className="object-cover"
+          />
         </div>
       ) : (
         <div className="h-44 w-full bg-slate-50 flex items-center justify-center shrink-0">

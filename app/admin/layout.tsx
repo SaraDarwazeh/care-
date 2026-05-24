@@ -16,6 +16,7 @@ import {
   X,
   HeartHandshake,
   Bell,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import { signOut } from "firebase/auth";
@@ -32,6 +33,7 @@ const NAV_ITEMS = [
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Medical Records", href: "/admin/records", icon: FileText },
   { name: "Notifications", href: "/admin/notifications", icon: Bell },
+  { name: "System Status", href: "/admin/system-status", icon: Activity },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

@@ -2,9 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { ChevronRight, ChevronLeft, UploadCloud, FileText } from "lucide-react";
-import PatientButton from "@/components/patient/PatientButton";
-import PatientCard from "@/components/patient/PatientCard";
-import { NurseAvailabilityHours, NurseDay, NurseProfile } from "@/lib/types";
+import { NurseDay, NurseProfile } from "@/lib/types";
 import { getNurseProfileByUserId, saveNurseProfile } from "@/services/nurseService";
 
 const days: NurseDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -47,7 +45,6 @@ export default function NurseProfileForm({
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -114,7 +111,6 @@ export default function NurseProfileForm({
     }
 
     setSaving(true);
-    setMessage("");
 
     // saveNurseProfile's signature Omits rating + reviewCount because those
     // are aggregate fields owned by reviewService.

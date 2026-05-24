@@ -54,7 +54,7 @@ export default function RecordDetail({ params }: { params: { id: string } }) {
     }
     void load();
     return () => { active = false; };
-  }, [id]);
+  }, [id, router]);
 
   if (authLoading || loading) return <LoadingScreen text="Loading record..." />;
   if (!record) return null;

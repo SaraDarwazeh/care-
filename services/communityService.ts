@@ -18,7 +18,8 @@ export async function getDonationPosts(limit = 50) {
   const postsRef = collection(db, "communityPosts");
   const q = query(postsRef, orderBy("createdAt", "desc"));
   const snaps = await getDocs(q);
-  return snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<DonationPost, "id">) })) as DonationPost[];
+  const posts = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<DonationPost, "id">) })) as DonationPost[];
+  return posts.slice(0, limit);
 }
 
 export async function getDonationPostById(id: string) {

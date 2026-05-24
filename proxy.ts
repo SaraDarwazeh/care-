@@ -9,19 +9,21 @@ function isPublicRoute(pathname: string): boolean {
   return false;
 }
 
-export function middleware(request: NextRequest) {
+// Renamed from `middleware` per Next 16 deprecation guidance:
+// https://nextjs.org/docs/messages/middleware-to-proxy
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
   }
 
-  // Allow guest browsing of nurse marketplace
-  const isGuestAllowed = pathname === "/patient/nurses" || pathname.startsWith("/patient/nurses/");
+  // Allow guest browsing of the nurse marketplace.
+  const isGuestAllowed =
+    pathname === "/patient/nurses" || pathname.startsWith("/patient/nurses/");
   if (isGuestAllowed) return NextResponse.next();
 
   const session = request.cookies.get("careplus_session");
-
   if (!session?.value) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
@@ -32,9 +34,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/patient/:path*",
-    "/nurse/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/patient/:path*", "/nurse/:path*", "/admin/:path*"],
 };

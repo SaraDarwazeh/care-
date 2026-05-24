@@ -12,10 +12,8 @@ import {
   HeartPulse,
   Shield,
   Accessibility,
-  BriefcaseMedical,
   LayoutGrid,
 } from "lucide-react";
-import PatientButton from "@/components/patient/PatientButton";
 import SectionContainer from "@/components/patient/SectionContainer";
 import { useCart } from "@/components/patient/CartContext";
 import { getProducts } from "@/services/storeService";
@@ -51,18 +49,6 @@ function getCategoryBadgeColor(category: string): string {
     "Masks & Protection": "bg-rose-100 text-rose-700",
   };
   return map[category] ?? "bg-slate-100 text-slate-600";
-}
-
-function getCategoryIcon(category: string) {
-  const map: Record<string, React.ElementType> = {
-    Monitoring: Activity,
-    Equipment: Stethoscope,
-    Recovery: HeartPulse,
-    "Elderly Support": Accessibility,
-    "Masks & Protection": Shield,
-  };
-  const Icon = map[category] ?? BriefcaseMedical;
-  return <Icon className="h-10 w-10 text-slate-400 opacity-60" />;
 }
 
 export default function StorePage() {

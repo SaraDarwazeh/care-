@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { getDonationPostById } from "@/services/communityService";
 import { DonationPost } from "@/lib/types";
 import LoadingScreen from "@/components/common/LoadingScreen";
@@ -27,7 +28,7 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
     }
     void load();
     return () => { active = false; };
-  }, [id]);
+  }, [id, router]);
 
   if (loading) return <LoadingScreen text="Loading donation..." />;
   if (!post) return null;
@@ -61,11 +62,15 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
           </div>
 
           {post.images && post.images.length > 0 && (
-            <img
-              src={post.images[0]}
-              alt={post.title}
-              className="w-full h-64 object-cover rounded-2xl border border-slate-100"
-            />
+            <div className="relative w-full h-64 rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
+              <Image
+                src={post.images[0]}
+                alt={post.title}
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
           )}
 
           <p className="text-slate-700 leading-relaxed">{post.description}</p>

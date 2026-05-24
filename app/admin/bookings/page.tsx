@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { CalendarClock, Filter, Search } from "lucide-react";
+import { CalendarClock, Search } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { BookingStatus, BookingWithParticipants } from "@/lib/types";
 import { updateBookingStatus } from "@/services/bookingService";

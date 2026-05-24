@@ -5,22 +5,27 @@ import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, LogOut, ShieldCheck } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
 import NotificationBell from "@/components/common/NotificationBell";
-import { AppUser } from "@/lib/types";
 import { logoutUser } from "@/services/authService";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/components/patient/CartContext";
 
+// Top-level patient nav. Grouping:
+//   Care:    Dashboard, Appointments, Find a Nurse, Health Records
+//   Shop:    Medical Store, Orders
+//   Connect: Community
+//   Account: Profile (in trailing icon row)
 const navItems = [
-  { label: "Home", href: "/patient" },
+  { label: "Dashboard", href: "/patient" },
   { label: "Appointments", href: "/patient/appointments" },
-  { label: "Nurses", href: "/patient/nurses" },
-  { label: "Records", href: "/patient/records" },
-  { label: "Store", href: "/patient/store" },
+  { label: "Find a Nurse", href: "/patient/nurses" },
+  { label: "Health Records", href: "/patient/records" },
+  { label: "Medical Store", href: "/patient/store" },
   { label: "Orders", href: "/patient/orders" },
   { label: "Community", href: "/community" },
-  { label: "Profile", href: "/patient/profile" },
 ];
 
-export default function PatientNavbar({ user }: { user: AppUser }) {
+export default function PatientNavbar() {
+  const { appUser } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
@@ -30,6 +35,10 @@ export default function PatientNavbar({ user }: { user: AppUser }) {
     router.push("/login");
   }
 
+  // Render nothing until the user is loaded — the patient layout already
+  // gates page access via useProtectedRoute on individual pages.
+  if (!appUser) return null;
+  const user = appUser;
   const initials = user.name
     .split(" ")
     .map((item) => item[0])

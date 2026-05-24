@@ -146,7 +146,7 @@ export default function Home() {
   /* ─── render ─────────────────────────────────────────── */
   return (
     <main className="min-h-screen bg-white">
-      <PlatformNavbar mode="home" />
+      <PlatformNavbar />
 
       {/* ══ HERO ══════════════════════════════════════════ */}
       <section id="home" className="relative overflow-hidden bg-white pt-8 pb-14 sm:pt-12 sm:pb-20 lg:pt-20 lg:pb-28">
@@ -399,6 +399,25 @@ export default function Home() {
               Pick the path that matches what you need — a single visit, a recurring
               shift schedule, or a structured multi-day package.
             </p>
+          </div>
+
+          {/* Plain-English IA explainer — the difference between every label
+              in the platform's navigation, in one place. */}
+          <div className="mb-8 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-sky-700">Services vs. Packages</p>
+              <p className="mt-1 text-sm text-slate-600">
+                <strong>Services</strong> are individual visits or shift coverage you book one at a time.
+                <strong className="ml-1">Care packages</strong> bundle a structured multi-day plan around an outcome (post-op recovery, elderly companion care, etc.).
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-violet-700">Store vs. Community</p>
+              <p className="mt-1 text-sm text-slate-600">
+                <strong>Medical Store</strong> is for paid supplies fulfilled by our team.
+                <strong className="ml-1">Community</strong> is a free space for families to share donations and exchange medical items.
+              </p>
+            </div>
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
             {serviceCategories.map((category) => (

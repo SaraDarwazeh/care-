@@ -7,46 +7,71 @@ import { useAuth } from "@/hooks/useAuth";
 import { logoutUser } from "@/services/authService";
 import { useState } from "react";
 
-type NavbarMode = "home" | "service";
+interface NavLink {
+  label: string;
+  href: string;
+}
 
-const GUEST_NAV: Array<{ label: string; href: string }> = [
+// Public navigation surfaces the four pillars of the platform plus the
+// "join as a nurse" CTA. Every link resolves to a real route — no anchor
+// links that only work on the homepage.
+const GUEST_NAV: NavLink[] = [
   { label: "Services", href: "/services" },
-  { label: "Packages", href: "#packages" },
-  { label: "Nurses", href: "#nurses" },
-  { label: "Store", href: "#store" },
+  { label: "Care Packages", href: "/services/packages" },
+  { label: "Find a Nurse", href: "/patient/nurses" },
   { label: "Community", href: "/community" },
   { label: "Join as Nurse", href: "/register?role=nurse" },
 ];
 
-const SERVICE_NAV: Array<{ label: string; href: string }> = [
+// Public-page navigation for signed-in PATIENTS. Browsing pages get the
+// same surfaces as guests plus a dashboard shortcut.
+const PATIENT_NAV: NavLink[] = [
   { label: "Dashboard", href: "/patient" },
   { label: "Appointments", href: "/patient/appointments" },
-  { label: "Nurses", href: "/patient/nurses" },
-  { label: "Services", href: "/services" },
-  { label: "Packages", href: "/services/packages" },
-  { label: "Store", href: "/patient/store" },
+  { label: "Find a Nurse", href: "/patient/nurses" },
+  { label: "Care Packages", href: "/services/packages" },
+  { label: "Medical Store", href: "/patient/store" },
   { label: "Community", href: "/community" },
 ];
 
-function getProfileHref(role?: string) {
-  if (role === "nurse") return "/nurse/setup";
-  if (role === "admin") return "/admin";
-  return "/patient/profile";
-}
+// Public-page navigation for signed-in NURSES and ADMINS. They have their
+// own sidebar layouts on the role pages; here we just surface "go to your
+// workspace" plus a couple of public surfaces.
+const STAFF_NAV: NavLink[] = [
+  { label: "Workspace", href: "/" }, // overridden per role below
+  { label: "Services", href: "/services" },
+  { label: "Care Packages", href: "/services/packages" },
+  { label: "Community", href: "/community" },
+];
 
-function getDashboardHref(role?: string) {
+function dashboardHref(role?: string): string {
   if (role === "nurse") return "/nurse";
   if (role === "admin") return "/admin";
   return "/patient";
 }
 
-export default function PlatformNavbar({ mode = "home" }: { mode?: NavbarMode }) {
+function profileHref(role?: string): string {
+  if (role === "nurse") return "/nurse/setup";
+  if (role === "admin") return "/admin";
+  return "/patient/profile";
+}
+
+function navFor(role?: string): NavLink[] {
+  if (role === "patient") return PATIENT_NAV;
+  if (role === "nurse" || role === "admin") {
+    const items = [...STAFF_NAV];
+    items[0] = { label: "Workspace", href: dashboardHref(role) };
+    return items;
+  }
+  return GUEST_NAV;
+}
+
+export default function PlatformNavbar() {
   const router = useRouter();
   const { appUser } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = appUser ? SERVICE_NAV : GUEST_NAV;
-
+  const navLinks = navFor(appUser?.role);
   const initials = appUser?.name
     ? appUser.name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase()
     : "CP";
@@ -63,7 +88,7 @@ export default function PlatformNavbar({ mode = "home" }: { mode?: NavbarMode })
 
         {/* Logo */}
         <Link
-          href={appUser ? getDashboardHref(appUser.role) : "/"}
+          href={appUser ? dashboardHref(appUser.role) : "/"}
           className="flex shrink-0 items-center gap-2 text-sky-700 transition-opacity hover:opacity-75"
         >
           <ShieldCheck className="h-6 w-6" />
@@ -101,13 +126,13 @@ export default function PlatformNavbar({ mode = "home" }: { mode?: NavbarMode })
               </button>
               <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 <Link
-                  href={getDashboardHref(appUser.role)}
+                  href={dashboardHref(appUser.role)}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
                 >
                   <UserCircle className="h-4 w-4 text-slate-400" /> Dashboard
                 </Link>
                 <Link
-                  href={getProfileHref(appUser.role)}
+                  href={profileHref(appUser.role)}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
                 >
                   <UserCircle className="h-4 w-4 text-slate-400" /> Profile
@@ -170,7 +195,7 @@ export default function PlatformNavbar({ mode = "home" }: { mode?: NavbarMode })
             {appUser ? (
               <div className="space-y-1">
                 <Link
-                  href={getDashboardHref(appUser.role)}
+                  href={dashboardHref(appUser.role)}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >

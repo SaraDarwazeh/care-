@@ -28,7 +28,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Bookings: patient creates only their own; nurse + patient + admin can read/update.
+    // Bookings: patient creates only their own; nurse + patient + admin can
+    // read. Non-admin updates cannot mutate the booking's identity (patientId,
+    // nurseId, createdAt, price) — only its status / rejection reason.
     match /bookings/{bookingId} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.patientId ||
@@ -39,9 +41,14 @@ service cloud.firestore {
         && request.resource.data.patientId == request.auth.uid
         && request.resource.data.status == 'pending';
       allow update: if request.auth != null && (
-        request.auth.uid == resource.data.nurseId ||
-        request.auth.uid == resource.data.patientId ||
-        isAdmin()
+        isAdmin() ||
+        (
+          (request.auth.uid == resource.data.nurseId || request.auth.uid == resource.data.patientId) &&
+          request.resource.data.patientId == resource.data.patientId &&
+          request.resource.data.nurseId == resource.data.nurseId &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.price == resource.data.price
+        )
       );
       allow delete: if isAdmin();
     }
@@ -118,14 +125,19 @@ service cloud.firestore {
     // Notifications: recipient + admin can read. Any authenticated user can
     // create one (notifications flow between users — patient creates one for
     // nurse on booking, nurse creates one for patient on accept, etc.).
-    // Only the recipient or an admin can mark read or otherwise update.
+    // Recipients can only flip the read state; everything else is locked so
+    // recipients can't rewrite the title/body or redirect the notification.
     match /notifications/{notificationId} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.userId || isAdmin()
       );
       allow create: if request.auth != null;
       allow update: if request.auth != null && (
-        request.auth.uid == resource.data.userId || isAdmin()
+        isAdmin() ||
+        (
+          request.auth.uid == resource.data.userId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt'])
+        )
       );
       allow delete: if isAdmin();
     }

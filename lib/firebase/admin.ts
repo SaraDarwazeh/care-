@@ -3,6 +3,7 @@ import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 let cachedApp: App | null = null;
+let unconfiguredWarningEmitted = false;
 
 function loadServiceAccount(): ServiceAccount | null {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
@@ -10,6 +11,13 @@ function loadServiceAccount(): ServiceAccount | null {
   const rawKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
   if (!projectId || !clientEmail || !rawKey) {
+    if (!unconfiguredWarningEmitted && typeof process !== "undefined" && process.env.NODE_ENV !== "test") {
+      console.warn(
+        "[firebase-admin] Admin SDK is not configured. Admin-restricted API routes will return 503. " +
+          "Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY.",
+      );
+      unconfiguredWarningEmitted = true;
+    }
     return null;
   }
 

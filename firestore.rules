@@ -115,6 +115,21 @@ service cloud.firestore {
       }
     }
 
+    // Notifications: recipient + admin can read. Any authenticated user can
+    // create one (notifications flow between users — patient creates one for
+    // nurse on booking, nurse creates one for patient on accept, etc.).
+    // Only the recipient or an admin can mark read or otherwise update.
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId || isAdmin()
+      );
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.userId || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
     // Patient profiles
     match /patientProfiles/{profileId} {
       allow read: if request.auth != null && (request.auth.uid == profileId || isAdmin());

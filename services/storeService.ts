@@ -1,7 +1,8 @@
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, setDoc, where } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, setDoc, where } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { StoreItem, StoreOrder } from "@/lib/types";
 import { STORE_ITEMS } from "@/lib/data/store";
+import { notifyOrderCreated, notifyOrderStatusChange } from "@/services/notificationService";
 
 export async function getProducts(): Promise<StoreItem[]> {
   const { db } = ensureClientFirebase();
@@ -52,7 +53,9 @@ export async function createOrder(
 ): Promise<StoreOrder> {
   const { db } = ensureClientFirebase();
   const ref = await addDoc(collection(db, "orders"), input);
-  return { id: ref.id, ...input };
+  const order: StoreOrder = { id: ref.id, ...input };
+  await notifyOrderCreated(order);
+  return order;
 }
 
 export async function getOrdersForPatient(patientId: string): Promise<StoreOrder[]> {
@@ -72,5 +75,14 @@ export async function updateOrderStatus(
   status: StoreOrder["status"]
 ): Promise<void> {
   const { db } = ensureClientFirebase();
-  await updateDoc(doc(db, "orders", orderId), { status });
+  const ref = doc(db, "orders", orderId);
+  const snap = await getDoc(ref);
+  const existing = snap.exists() ? (snap.data() as Omit<StoreOrder, "id">) : null;
+  await updateDoc(ref, { status });
+  if (existing) {
+    await notifyOrderStatusChange({
+      order: { id: orderId, patientId: existing.patientId },
+      newStatus: status,
+    });
+  }
 }

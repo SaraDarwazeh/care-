@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import { ShoppingBag, Package, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { StoreOrder, StoreItem } from "@/lib/types";
-import { getOrders, getProducts } from "@/services/storeService";
-import { doc, updateDoc } from "firebase/firestore";
-import { ensureClientFirebase } from "@/lib/firebase/config";
+import { getOrders, getProducts, updateOrderStatus } from "@/services/storeService";
 import LoadingScreen from "@/components/common/LoadingScreen";
 
 const ORDER_STATUS_COLORS: Record<StoreOrder["status"], string> = {
@@ -42,8 +40,8 @@ function OrderCard({
   async function handleStatusChange(newStatus: StoreOrder["status"]) {
     setUpdating(true);
     try {
-      const { db } = ensureClientFirebase();
-      await updateDoc(doc(db, "orders", order.id), { status: newStatus });
+      // Routing through the service ensures the patient gets a notification.
+      await updateOrderStatus(order.id, newStatus);
       onStatusChange(order.id, newStatus);
     } catch (err) {
       console.error("Failed to update order status", err);

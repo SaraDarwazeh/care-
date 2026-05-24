@@ -49,6 +49,28 @@ export async function PATCH(request: NextRequest) {
       status: body.status,
     });
 
+    // Notify the nurse server-side using the admin SDK. We write directly
+    // here instead of calling notificationService (which is client-only).
+    try {
+      const approved = body.status === "approved";
+      await db.collection("notifications").add({
+        userId: body.id,
+        type: approved ? "nurse_approved" : "nurse_rejected",
+        title: approved ? "Profile approved" : "Profile not approved",
+        body: approved
+          ? "Your profile has been approved. You can now receive bookings."
+          : "Your profile was not approved at this time. Please contact support for next steps.",
+        link: approved ? "/nurse" : "/pending-approval",
+        payload: { newStatus: body.status },
+        read: false,
+        createdAt: new Date().toISOString(),
+        deliveredVia: ["in_app"],
+      });
+    } catch (notifyError) {
+      // Notification is best-effort — never fail the parent operation.
+      console.warn("[api/nurses/status] notification write failed", notifyError);
+    }
+
     return NextResponse.json({ message: "Nurse updated successfully." }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

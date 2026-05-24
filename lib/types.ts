@@ -52,6 +52,12 @@ export interface NurseMarketplaceProfile extends NurseProfile {
   status: UserStatus;
 }
 
+export interface EmergencyContact {
+  name: string;
+  relationship: string;
+  phone: string;
+}
+
 export interface PatientProfile {
   userId: string;
   defaultLocation: string;
@@ -60,6 +66,12 @@ export interface PatientProfile {
   diseases?: string[];
   paymentMethods?: string[];
   profileCompleted?: boolean;
+  // Phase 4.2 additions — all optional so legacy records keep working.
+  emergencyContact?: EmergencyContact;
+  allergies?: string[];
+  currentMedications?: string[];
+  dateOfBirth?: string;
+  bloodType?: string;
 }
 
 export interface Booking {
@@ -209,6 +221,38 @@ export interface Observation {
   vitals?: Vitals;
   medicationNote?: string;
   alerts?: string[];
+}
+
+// Notifications — designed to be extensible to email/SMS without schema change.
+export type NotificationType =
+  | "booking_created"
+  | "booking_accepted"
+  | "booking_rejected"
+  | "booking_completed"
+  | "booking_cancelled"
+  | "nurse_signup"
+  | "nurse_approved"
+  | "nurse_rejected"
+  | "order_created"
+  | "order_status_changed"
+  | "system_alert";
+
+export type NotificationChannel = "in_app" | "email" | "sms";
+
+export interface Notification {
+  id: string;
+  userId: string;                  // recipient user id
+  type: NotificationType;
+  title: string;
+  body: string;
+  link?: string;                   // optional deep link
+  read: boolean;
+  readAt?: string;
+  createdAt: string;
+  // Future-extensible channel tracking — only in_app is wired today.
+  deliveredVia?: NotificationChannel[];
+  // Event-specific payload; opaque to UI but useful for analytics / future routing.
+  payload?: Record<string, unknown>;
 }
 
 export interface MedicalRecord {

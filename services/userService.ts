@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { AppUser, UserRole, UserStatus } from "@/lib/types";
+import { notifyNurseSignup } from "@/services/notificationService";
 
 function mapDocToUser(
   userDoc: Record<string, unknown> & {
@@ -52,6 +53,10 @@ export async function createUserProfile(input: {
     createdAt: new Date().toISOString(),
     createdAtServer: serverTimestamp(),
   });
+
+  if (input.role === "nurse") {
+    await notifyNurseSignup({ nurseUserId: input.id, nurseName: input.name });
+  }
 }
 
 export async function getUserProfile(id: string): Promise<AppUser | null> {

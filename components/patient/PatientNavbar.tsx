@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, LogOut, ShieldCheck } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
+import NotificationBell from "@/components/common/NotificationBell";
 import { AppUser } from "@/lib/types";
 import { logoutUser } from "@/services/authService";
 import { useCart } from "@/components/patient/CartContext";
@@ -63,6 +64,7 @@ export default function PatientNavbar({ user }: { user: AppUser }) {
           </div>
 
           <div className="flex items-center gap-4">
+            <NotificationBell href="/patient/notifications" />
             <Link href="/patient/cart" className="relative p-2 text-slate-500 hover:text-sky-700 transition group">
               <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
               {totalItems > 0 && (

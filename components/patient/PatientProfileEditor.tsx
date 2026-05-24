@@ -2,37 +2,201 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { UserCircle, MapPin, Phone, Activity, CreditCard, ShieldCheck, CalendarClock, Settings, HelpCircle, Star, ChevronRight, Edit2 } from "lucide-react";
+import {
+  UserCircle,
+  Activity,
+  CreditCard,
+  CalendarClock,
+  Settings,
+  HelpCircle,
+  Star,
+  ChevronRight,
+  Edit2,
+  CheckCircle2,
+  AlertCircle,
+  Phone,
+  ShieldAlert,
+  Pill,
+  Plus,
+  X,
+} from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
-import { PatientProfile } from "@/lib/types";
-import { getPatientProfile, savePatientProfile } from "@/services/patientService";
+import { EmergencyContact, PatientProfile } from "@/lib/types";
+import {
+  computeProfileCompleted,
+  getMissingFieldLabels,
+  getPatientProfile,
+  savePatientProfile,
+} from "@/services/patientService";
 import { useAuth } from "@/hooks/useAuth";
+
+interface FormState {
+  phone: string;
+  defaultLocation: string;
+  dateOfBirth: string;
+  bloodType: string;
+  diseases: string[];
+  allergies: string[];
+  currentMedications: string[];
+  medicalHistory: string;
+  paymentMethods: string[];
+  emergencyContact: EmergencyContact;
+}
+
+const EMPTY_FORM: FormState = {
+  phone: "",
+  defaultLocation: "",
+  dateOfBirth: "",
+  bloodType: "",
+  diseases: [],
+  allergies: [],
+  currentMedications: [],
+  medicalHistory: "",
+  paymentMethods: [],
+  emergencyContact: { name: "", relationship: "", phone: "" },
+};
+
+const BLOOD_TYPES = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+function profileToForm(profile: PatientProfile): FormState {
+  return {
+    phone: profile.phone ?? "",
+    defaultLocation: profile.defaultLocation ?? "",
+    dateOfBirth: profile.dateOfBirth ?? "",
+    bloodType: profile.bloodType ?? "",
+    diseases: profile.diseases ?? [],
+    allergies: profile.allergies ?? [],
+    currentMedications: profile.currentMedications ?? [],
+    medicalHistory: profile.medicalHistory ?? "",
+    paymentMethods: profile.paymentMethods ?? [],
+    emergencyContact: profile.emergencyContact ?? { name: "", relationship: "", phone: "" },
+  };
+}
+
+function formToProfile(form: FormState, userId: string): PatientProfile {
+  return {
+    userId,
+    phone: form.phone.trim(),
+    defaultLocation: form.defaultLocation.trim(),
+    dateOfBirth: form.dateOfBirth || undefined,
+    bloodType: form.bloodType || undefined,
+    diseases: form.diseases,
+    allergies: form.allergies,
+    currentMedications: form.currentMedications,
+    medicalHistory: form.medicalHistory.trim(),
+    paymentMethods: form.paymentMethods,
+    emergencyContact:
+      form.emergencyContact.name.trim() ||
+      form.emergencyContact.phone.trim() ||
+      form.emergencyContact.relationship.trim()
+        ? {
+            name: form.emergencyContact.name.trim(),
+            relationship: form.emergencyContact.relationship.trim(),
+            phone: form.emergencyContact.phone.trim(),
+          }
+        : undefined,
+  };
+}
+
+function TagInput({
+  label,
+  placeholder,
+  values,
+  onChange,
+  accent = "sky",
+}: {
+  label: string;
+  placeholder: string;
+  values: string[];
+  onChange: (next: string[]) => void;
+  accent?: "sky" | "rose" | "violet";
+}) {
+  const [draft, setDraft] = useState("");
+
+  const accentClasses = {
+    sky: "bg-sky-50 text-sky-700 border-sky-100",
+    rose: "bg-rose-50 text-rose-700 border-rose-100",
+    violet: "bg-violet-50 text-violet-700 border-violet-100",
+  }[accent];
+
+  function add() {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    if (values.includes(trimmed)) {
+      setDraft("");
+      return;
+    }
+    onChange([...values, trimmed]);
+    setDraft("");
+  }
+
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-bold text-slate-700">{label}</label>
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder={placeholder}
+          className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1 rounded-2xl bg-slate-100 px-3 text-sm font-bold text-slate-600 hover:bg-slate-200 transition"
+        >
+          <Plus className="h-4 w-4" /> Add
+        </button>
+      </div>
+      {values.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {values.map((value) => (
+            <li
+              key={value}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${accentClasses}`}
+            >
+              <span>{value}</span>
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((v) => v !== value))}
+                className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-white/60"
+                aria-label={`Remove ${value}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function PatientProfileEditor({ userId }: { userId: string }) {
   const { appUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [defaultLocation, setDefaultLocation] = useState("");
-  const [medicalHistory, setMedicalHistory] = useState("");
-  const [diseases, setDiseases] = useState("");
-  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
-  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedProfile, setSavedProfile] = useState<PatientProfile | null>(null);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
   useEffect(() => {
     let active = true;
     async function loadProfile() {
       try {
         const profile = await getPatientProfile(userId);
-        if (active && profile) {
-          setPhone(profile.phone ?? "");
-          setDefaultLocation(profile.defaultLocation ?? "");
-          setMedicalHistory(profile.medicalHistory ?? "");
-          setDiseases((profile.diseases ?? []).join(", "));
-          setPaymentMethods(profile.paymentMethods ?? []);
-        } else if (active) {
-          setIsEditing(true); // Force edit if no profile exists
+        if (!active) return;
+        if (profile) {
+          setSavedProfile(profile);
+          setForm(profileToForm(profile));
+        } else {
+          setIsEditing(true);
         }
       } finally {
         if (active) setLoading(false);
@@ -42,29 +206,30 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     return () => { active = false; };
   }, [userId]);
 
+  const missingLabels = getMissingFieldLabels(savedProfile);
+  const completion = computeProfileCompleted(savedProfile);
+
   function togglePayment(method: string) {
-    setPaymentMethods(prev => 
-      prev.includes(method) ? prev.filter(m => m !== method) : [...prev, method]
-    );
+    setForm((prev) => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.includes(method)
+        ? prev.paymentMethods.filter((m) => m !== method)
+        : [...prev.paymentMethods, method],
+    }));
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
-
-    const profile: PatientProfile = {
-      userId,
-      phone,
-      defaultLocation,
-      medicalHistory,
-      diseases: diseases.split(",").map(d => d.trim()).filter(Boolean),
-      paymentMethods,
-      profileCompleted: true,
-    };
-
-    await savePatientProfile(profile);
-    setSaving(false);
-    setIsEditing(false);
+    try {
+      const profile = formToProfile(form, userId);
+      const saved = await savePatientProfile(profile);
+      setSavedProfile(saved);
+      setForm(profileToForm(saved));
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) {
@@ -87,12 +252,64 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             <h2 className="text-2xl font-extrabold tracking-tight text-slate-800">{appUser?.name}</h2>
             <p className="text-slate-500 font-medium">{appUser?.email}</p>
           </div>
-          <button 
+          <button
             onClick={() => setIsEditing(true)}
             className="hidden sm:flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700 hover:bg-sky-100 transition"
           >
             <Edit2 className="h-4 w-4" /> Edit Profile
           </button>
+        </div>
+
+        {/* Completion status */}
+        <div
+          className={`rounded-3xl p-5 shadow-sm border ${
+            completion
+              ? "border-emerald-100 bg-emerald-50"
+              : "border-amber-100 bg-amber-50"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            {completion ? (
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            )}
+            <div className="flex-1">
+              <p className={`font-bold ${completion ? "text-emerald-800" : "text-amber-800"}`}>
+                {completion ? "Profile complete" : "Profile incomplete — booking is locked"}
+              </p>
+              {completion ? (
+                <p className="mt-1 text-sm text-emerald-700">
+                  All required fields are filled. You can book nurses freely.
+                </p>
+              ) : (
+                <>
+                  <p className="mt-1 text-sm text-amber-700">
+                    Add the following to start booking:
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm text-amber-700">
+                    {missingLabels.map((label) => (
+                      <li key={label} className="flex items-center gap-1.5">
+                        <span className="h-1 w-1 rounded-full bg-amber-500" />
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <button
+                onClick={() => setIsEditing(true)}
+                className={`mt-3 inline-flex items-center gap-1.5 text-xs font-bold ${
+                  completion
+                    ? "text-emerald-700 hover:text-emerald-800"
+                    : "text-amber-700 hover:text-amber-800"
+                }`}
+              >
+                {completion ? "Review profile" : "Complete now"}
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Profile Navigation List */}
@@ -133,80 +350,277 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     );
   }
 
+  // Live completion preview for the edit form: compute on the form draft so the
+  // patient sees progress as they fill fields, not just after saving.
+  const previewProfile: PatientProfile = formToProfile(form, userId);
+  const previewMissing = getMissingFieldLabels(previewProfile);
+  const previewComplete = previewMissing.length === 0;
+
   return (
-    <div className="rounded-3xl bg-white p-8 shadow-sm">
-      <div className="mb-8">
-        <h2 className="text-2xl font-extrabold text-slate-800">Edit Profile</h2>
-        <p className="text-slate-500">Update your information to ensure accurate care delivery.</p>
+    <div className="space-y-6">
+      <div className="rounded-3xl bg-white p-8 shadow-sm">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-800">Edit Profile</h2>
+            <p className="text-slate-500">Required fields are marked with an asterisk.</p>
+          </div>
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm font-semibold sm:max-w-xs ${
+              previewComplete
+                ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+                : "border-amber-100 bg-amber-50 text-amber-800"
+            }`}
+          >
+            {previewComplete ? (
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Profile complete — ready to save
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                {previewMissing.length} required field{previewMissing.length === 1 ? "" : "s"} remaining
+              </span>
+            )}
+          </div>
+        </div>
+
+        <form className="space-y-8" onSubmit={onSubmit}>
+          {/* Contact section */}
+          <section>
+            <header className="mb-4 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
+                <Phone className="h-5 w-5 text-sky-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Contact</h3>
+                <p className="text-xs text-slate-500">How nurses reach you and where they visit.</p>
+              </div>
+            </header>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">
+                  Phone Number <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                  placeholder="+1 234 567 890"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">
+                  Default Address <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  required
+                  value={form.defaultLocation}
+                  onChange={(e) => setForm({ ...form, defaultLocation: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                  placeholder="Street, building, apartment"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Date of Birth</label>
+                <input
+                  type="date"
+                  value={form.dateOfBirth}
+                  onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Blood Type</label>
+                <select
+                  value={form.bloodType}
+                  onChange={(e) => setForm({ ...form, bloodType: e.target.value })}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                >
+                  {BLOOD_TYPES.map((bt) => (
+                    <option key={bt || "unset"} value={bt}>
+                      {bt || "Prefer not to say"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </section>
+
+          {/* Emergency contact section */}
+          <section>
+            <header className="mb-4 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100">
+                <ShieldAlert className="h-5 w-5 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Emergency Contact</h3>
+                <p className="text-xs text-slate-500">
+                  Who we contact if something goes wrong during a visit.
+                </p>
+              </div>
+            </header>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">
+                  Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  required
+                  value={form.emergencyContact.name}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emergencyContact: { ...form.emergencyContact, name: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                  placeholder="Full name"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Relationship</label>
+                <input
+                  value={form.emergencyContact.relationship}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emergencyContact: { ...form.emergencyContact, relationship: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                  placeholder="Spouse, parent, sibling…"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">
+                  Phone <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  required
+                  type="tel"
+                  value={form.emergencyContact.phone}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      emergencyContact: { ...form.emergencyContact, phone: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                  placeholder="+1 234 567 890"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Medical section */}
+          <section>
+            <header className="mb-4 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
+                <Pill className="h-5 w-5 text-violet-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Medical Information</h3>
+                <p className="text-xs text-slate-500">
+                  Helps nurses provide safe, appropriate care. Optional but recommended.
+                </p>
+              </div>
+            </header>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TagInput
+                label="Chronic Conditions"
+                placeholder="e.g. Diabetes, Hypertension"
+                values={form.diseases}
+                onChange={(diseases) => setForm({ ...form, diseases })}
+                accent="violet"
+              />
+              <TagInput
+                label="Allergies"
+                placeholder="e.g. Penicillin, Latex"
+                values={form.allergies}
+                onChange={(allergies) => setForm({ ...form, allergies })}
+                accent="rose"
+              />
+              <TagInput
+                label="Current Medications"
+                placeholder="e.g. Metformin 500mg"
+                values={form.currentMedications}
+                onChange={(currentMedications) => setForm({ ...form, currentMedications })}
+                accent="sky"
+              />
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Additional Notes</label>
+                <textarea
+                  value={form.medicalHistory}
+                  onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+                  className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                  placeholder="Anything else nurses should know — surgeries, family history, mobility limits…"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Payment section */}
+          <section>
+            <header className="mb-4 flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
+                <CreditCard className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Payment</h3>
+                <p className="text-xs text-slate-500">How you prefer to pay for visits.</p>
+              </div>
+            </header>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { id: "cash", label: "Cash" },
+                { id: "bank", label: "Bank Transfer" },
+              ].map((option) => (
+                <label
+                  key={option.id}
+                  className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${
+                    form.paymentMethods.includes(option.id)
+                      ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
+                      : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={form.paymentMethods.includes(option.id)}
+                    onChange={() => togglePayment(option.id)}
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6 mt-8">
+            {savedProfile && (
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(profileToForm(savedProfile));
+                  setIsEditing(false);
+                }}
+                className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
+            <PatientButton
+              type="submit"
+              loading={saving}
+              className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
+            >
+              {saving ? "Saving..." : "Save Profile"}
+            </PatientButton>
+          </div>
+        </form>
       </div>
-
-      <form className="space-y-6" onSubmit={onSubmit}>
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">Phone Number</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-              placeholder="+1 234 567 890"
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">Default Location</label>
-            <input
-              value={defaultLocation}
-              onChange={(e) => setDefaultLocation(e.target.value)}
-              required
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-              placeholder="e.g. 123 Main St, Apt 4"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-bold text-slate-700">Existing Conditions / Diseases (comma separated)</label>
-          <input
-            value={diseases}
-            onChange={(e) => setDiseases(e.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-            placeholder="e.g. Diabetes, Hypertension"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-bold text-slate-700">Medical History / Notes</label>
-          <textarea
-            value={medicalHistory}
-            onChange={(e) => setMedicalHistory(e.target.value)}
-            className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-            placeholder="Provide any additional medical context for your nurses..."
-          />
-        </div>
-
-        <div>
-          <p className="mb-3 text-sm font-bold text-slate-700">Preferred Payment Methods</p>
-          <div className="flex gap-4">
-            <label className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${paymentMethods.includes("cash") ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm" : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"}`}>
-              <input type="checkbox" className="sr-only" checked={paymentMethods.includes("cash")} onChange={() => togglePayment("cash")} />
-              Cash
-            </label>
-            <label className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${paymentMethods.includes("bank") ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm" : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"}`}>
-              <input type="checkbox" className="sr-only" checked={paymentMethods.includes("bank")} onChange={() => togglePayment("bank")} />
-              Bank Transfer
-            </label>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6 mt-8">
-          <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">
-            Cancel
-          </button>
-          <PatientButton type="submit" loading={saving} className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]">
-            {saving ? "Saving..." : "Save Profile"}
-          </PatientButton>
-        </div>
-      </form>
     </div>
   );
 }

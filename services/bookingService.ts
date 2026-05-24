@@ -11,6 +11,7 @@ import {
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { Booking, BookingStatus, BookingWithParticipants, NurseDay } from "@/lib/types";
 import { SHIFT_RANGES } from "@/lib/pricingConstants";
+import { notifyBookingCreated, notifyBookingStatusChange } from "@/services/notificationService";
 
 const WEEKDAYS: NurseDay[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -211,7 +212,6 @@ function sortBookingsByDateDesc(bookings: Booking[]) {
 
 export async function createBooking(input: Omit<Booking, "id" | "status" | "createdAt">) {
   const { db } = ensureClientFirebase();
-  // Validate booking before writing
   await validateBooking(input);
 
   const payload = {
@@ -221,10 +221,13 @@ export async function createBooking(input: Omit<Booking, "id" | "status" | "crea
   };
 
   const ref = await addDoc(collection(db, "bookings"), payload);
-  return {
-    id: ref.id,
-    ...payload,
-  } satisfies Booking;
+  const booking: Booking = { id: ref.id, ...payload };
+
+  // Best-effort notification. Helper itself swallows errors so booking success
+  // is never blocked by a notification glitch.
+  await notifyBookingCreated({ booking });
+
+  return booking;
 }
 
 export async function getBookingsForPatient(patientId: string) {
@@ -310,12 +313,32 @@ export async function updateBookingStatus(
   status: BookingStatus,
   rejectionReason?: string,
 ) {
-  const { db } = ensureClientFirebase();
+  const { db, auth } = ensureClientFirebase();
+  const bookingRef = doc(db, "bookings", bookingId);
+
+  // Read the booking before writing so the post-write notification has the
+  // patient/nurse/service/date context without an extra round-trip later.
+  const bookingSnap = await getDoc(bookingRef);
+  const bookingData = bookingSnap.exists() ? (bookingSnap.data() as Booking) : null;
+
   const updates: Record<string, string> = { status };
+  if (rejectionReason) updates.rejectionReason = rejectionReason;
+  await updateDoc(bookingRef, updates);
 
-  if (rejectionReason) {
-    updates.rejectionReason = rejectionReason;
+  if (bookingData && auth.currentUser) {
+    const callerUid = auth.currentUser.uid;
+    const actor: "patient" | "nurse" | "admin" =
+      callerUid === bookingData.nurseId
+        ? "nurse"
+        : callerUid === bookingData.patientId
+          ? "patient"
+          : "admin";
+
+    await notifyBookingStatusChange({
+      booking: bookingData,
+      newStatus: status,
+      actor,
+      rejectionReason,
+    });
   }
-
-  await updateDoc(doc(db, "bookings", bookingId), updates);
 }

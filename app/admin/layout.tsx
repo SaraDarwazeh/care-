@@ -14,11 +14,13 @@ import {
   LogOut,
   Menu,
   X,
-  HeartHandshake
+  HeartHandshake,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
+import NotificationBell from "@/components/common/NotificationBell";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -29,6 +31,7 @@ const NAV_ITEMS = [
   { name: "Products", href: "/admin/products", icon: Store },
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Medical Records", href: "/admin/records", icon: FileText },
+  { name: "Notifications", href: "/admin/notifications", icon: Bell },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -116,9 +119,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <span className="font-bold text-slate-800">Admin Panel</span>
           </div>
-          <button onClick={() => setSidebarOpen(true)} className="p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg">
-            <Menu className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell href="/admin/notifications" />
+            <button onClick={() => setSidebarOpen(true)} className="p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
         </header>
 
         {/* Page Content */}

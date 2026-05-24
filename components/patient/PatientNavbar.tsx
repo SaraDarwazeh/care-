@@ -48,9 +48,9 @@ export default function PatientNavbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-sky-100 bg-white/85 backdrop-blur shadow-sm">
-      <div className="mx-auto w-full max-w-6xl px-4 py-4">
+      <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2 text-sky-700 transition hover:opacity-80">
+          <Link href="/patient" className="flex items-center gap-2 text-sky-700 transition hover:opacity-80">
             <ShieldCheck className="h-7 w-7" />
             <span className="text-xl font-extrabold tracking-tight">Care Plus</span>
           </Link>

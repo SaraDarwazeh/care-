@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { getDonationPostById } from "@/services/communityService";
 import { DonationPost } from "@/lib/types";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import PlatformShell from "@/components/layout/PlatformShell";
 
 export default function CommunityDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
@@ -34,7 +37,15 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
   if (!post) return null;
 
   return (
+    <PlatformShell>
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link
+        href="/community"
+        className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-500 transition hover:text-sky-700"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Back to community
+      </Link>
       <div className="space-y-4">
         {/* Disclaimer */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
@@ -127,5 +138,6 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
         </div>
       </div>
     </div>
+    </PlatformShell>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import CommunityCard from "@/components/community/CommunityCard";
 import PostForm from "@/components/community/PostForm";
+import PlatformShell from "@/components/layout/PlatformShell";
 import { getDonationPosts } from "@/services/communityService";
 import { DonationPost } from "@/lib/types";
 
@@ -40,6 +41,7 @@ export default function CommunityPage() {
     : posts.filter((p) => p.category.toLowerCase() === activeCategory.toLowerCase());
 
   return (
+    <PlatformShell>
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Page Header */}
       <div className="mb-6">
@@ -105,5 +107,6 @@ export default function CommunityPage() {
         </div>
       </div>
     </div>
+    </PlatformShell>
   );
 }

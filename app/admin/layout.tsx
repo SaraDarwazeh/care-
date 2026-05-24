@@ -2,18 +2,19 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Stethoscope, 
-  CalendarClock, 
-  Store, 
-  ShoppingBag, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  Stethoscope,
+  CalendarClock,
+  Store,
+  ShoppingBag,
+  FileText,
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  HeartHandshake
 } from "lucide-react";
 import { useState } from "react";
 import { signOut } from "firebase/auth";
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { name: "Nurses", href: "/admin/nurses", icon: Stethoscope },
   { name: "Patients", href: "/admin/patients", icon: Users },
   { name: "Bookings", href: "/admin/bookings", icon: CalendarClock },
+  { name: "Packages", href: "/admin/packages", icon: HeartHandshake },
   { name: "Products", href: "/admin/products", icon: Store },
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Medical Records", href: "/admin/records", icon: FileText },

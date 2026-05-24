@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
-import { Star, MapPin, Clock, Calendar, CheckCircle2, Award, Pill } from "lucide-react";
+import { Star, MapPin, Clock, Calendar, CheckCircle2, Award, Pill, ShieldCheck, CheckCircle } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import BookingForm from "@/components/patient/BookingForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,9 +18,14 @@ function formatDays(days: string[]) {
 
 export default function NurseProfilePage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const { appUser } = useAuth();
   const [nurse, setNurse] = useState<NurseMarketplaceProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialService = searchParams.get("service") ?? undefined;
+  const initialShift = searchParams.get("shift") ?? undefined;
+  const initialPackage = searchParams.get("package") ?? undefined;
+  const initialDurationDays = Number(searchParams.get("durationDays") ?? "0") || undefined;
 
   useEffect(() => {
     let active = true;
@@ -33,7 +40,7 @@ export default function NurseProfilePage() {
     return () => { active = false; };
   }, [params.id]);
 
-  if (!appUser || loading) {
+  if (loading) {
     return <LoadingScreen text="Loading nurse profile..." />;
   }
 
@@ -154,12 +161,51 @@ export default function NurseProfilePage() {
               </div>
             </div>
           </div>
-          
+
+          {/* Trust & Verification section */}
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 mt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              <h3 className="font-bold text-emerald-800 text-sm">Verified Healthcare Professional</h3>
+            </div>
+            <ul className="space-y-1.5">
+              <li className="flex items-center gap-2 text-xs text-emerald-700">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                Identity verified by Care Plus team
+              </li>
+              <li className="flex items-center gap-2 text-xs text-emerald-700">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                Nursing license reviewed and approved
+              </li>
+              <li className="flex items-center gap-2 text-xs text-emerald-700">
+                <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                Background check completed
+              </li>
+            </ul>
+          </div>
+
         </div>
 
         {/* Booking Sidebar (Right Column) */}
         <div className="lg:sticky lg:top-8" id="booking-form">
-          <BookingForm patientId={appUser.id} nurse={nurse} />
+          {appUser ? (
+            <BookingForm patientId={appUser.id} nurse={nurse} initialService={initialService} initialShift={initialShift} initialPackage={initialPackage} initialDurationDays={initialDurationDays} />
+          ) : (
+            <div className="rounded-3xl border border-sky-100 bg-white p-8 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-800">Start booking</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Log in to book this nurse, save your details, and continue through the secure booking flow.
+              </p>
+              <div className="mt-6 flex flex-col gap-3">
+                <Link href="/login" className="rounded-2xl bg-sky-600 px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-700">
+                  Login to book
+                </Link>
+                <Link href="/register" className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700">
+                  Create account
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
         
       </div>

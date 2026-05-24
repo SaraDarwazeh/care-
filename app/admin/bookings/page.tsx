@@ -45,6 +45,7 @@ const STATUS_COLORS: Record<BookingStatus, string> = {
   accepted: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
   completed: "bg-sky-100 text-sky-700",
+  cancelled: "bg-slate-100 text-slate-600",
 };
 
 export default function AdminBookingsPage() {

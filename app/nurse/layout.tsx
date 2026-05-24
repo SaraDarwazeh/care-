@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, CalendarClock, Clock, User, DollarSign, Store, LogOut, Menu, X, Stethoscope } from "lucide-react";
+import { LayoutDashboard, CalendarClock, Clock, User, DollarSign, Store, LogOut, Menu, X, Stethoscope, CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/nurse", icon: LayoutDashboard },
   { name: "Bookings", href: "/nurse/bookings", icon: CalendarClock },
   { name: "Schedule", href: "/nurse/schedule", icon: Clock },
+  { name: "Availability", href: "/nurse/availability", icon: CalendarDays },
   { name: "Earnings", href: "/nurse/earnings", icon: DollarSign },
   { name: "Store", href: "/nurse/store", icon: Store },
   { name: "Profile", href: "/nurse/setup", icon: User },

@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
+      className={`${headingFont.variable} ${bodyFont.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full bg-background text-foreground font-sans">
         <AppProviders>{children}</AppProviders>

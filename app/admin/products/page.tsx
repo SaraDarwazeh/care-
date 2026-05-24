@@ -142,7 +142,7 @@ export default function AdminProductsPage() {
         <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 py-16">
           <Store className="h-12 w-12 text-slate-300 mb-4" />
           <p className="text-lg font-bold text-slate-700">No products yet</p>
-          <p className="text-slate-500 text-sm mb-4">Click "Add Product" to get started.</p>
+          <p className="text-slate-500 text-sm mb-4">Click Add Product to get started.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

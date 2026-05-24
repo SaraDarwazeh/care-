@@ -3,280 +3,655 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import PlatformNavbar from "@/components/layout/PlatformNavbar";
+import PlatformFooter from "@/components/layout/PlatformFooter";
+import { useAuth } from "@/hooks/useAuth";
+import { getBookingsForPatientWithParticipants } from "@/services/bookingService";
+import { getPatientProfile } from "@/services/patientService";
 import {
-  ChevronRight, ShieldCheck, Star, Pill, Stethoscope, Droplet,
-  HeartHandshake, BadgeCheck, Users, Activity, ArrowRight,
-  Search, CalendarCheck, Home as HomeIcon, UserPlus, ClipboardList, Banknote, Plus
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
+  Star,
+  Stethoscope,
+  HeartHandshake,
+  BadgeCheck,
+  Users,
+  Activity,
+  ArrowRight,
+  Search,
+  CalendarCheck,
+  Home as HomeIcon,
+  UserPlus,
+  Banknote,
+  Lock,
+  Clock,
+  CheckCircle,
+  Heart,
+  Droplets,
+  Pill,
+  CalendarDays,
 } from "lucide-react";
-import { NurseMarketplaceProfile, StoreItem } from "@/lib/types";
+import {
+  BookingWithParticipants,
+  NurseMarketplaceProfile,
+  StoreItem,
+  PatientProfile,
+} from "@/lib/types";
 import { getApprovedNurseMarketplaceProfiles } from "@/services/nurseService";
 import { getProducts } from "@/services/storeService";
+import { getPublicStats, type PublicStats } from "@/services/publicStats";
 
+/* ─── hero slides ──────────────────────────────────────── */
+const heroSlides = [
+  {
+    title: "Gentle care for elderly parents, post-op recovery, and everyday support.",
+    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80",
+  },
+  {
+    title: "Professional support that feels human, calm, and reassuring.",
+    image: "https://images.unsplash.com/photo-1516841273335-e39b37888115?auto=format&fit=crop&q=80",
+  },
+  {
+    title: "Find the right nurse. Keep your family cared for.",
+    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80",
+  },
+];
+
+/* ─── care plans ────────────────────────────────────────── */
+const carePlans = [
+  {
+    title: "One-Time Visit",
+    description: "Injections, wound care, and other single-service needs — booked in minutes.",
+    price: "From $25",
+    features: ["IV / IM support", "Wound dressing", "No ongoing commitment"],
+    href: "/services/one-time",
+    accent: false,
+  },
+  {
+    title: "Shift Support",
+    description: "Reliable daily coverage with Shift A, B, or C — for families who need a steady hand.",
+    price: "From $60",
+    features: ["Shift A / B / C", "Nurse matching", "Flexible schedule"],
+    href: "/services/shifts",
+    accent: true,
+  },
+  {
+    title: "Long-Term Care",
+    description: "Ongoing home care for recovery, chronic conditions, or elderly companion support.",
+    price: "Custom plan",
+    features: ["Weekly continuity", "Family coordination", "Care plan review"],
+    href: "/services/packages",
+    accent: false,
+  },
+];
+
+/* ─── status badge helper ───────────────────────────────── */
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  pending:   { label: "Pending nurse confirmation", color: "text-amber-600 bg-amber-50 border-amber-200" },
+  accepted:  { label: "Confirmed",                  color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
+  completed: { label: "Completed",                  color: "text-slate-500 bg-slate-50 border-slate-200" },
+  rejected:  { label: "Not accepted",               color: "text-rose-600 bg-rose-50 border-rose-200" },
+  cancelled: { label: "Cancelled",                  color: "text-slate-400 bg-slate-50 border-slate-200" },
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE
+   ═══════════════════════════════════════════════════════════ */
 export default function Home() {
-  const [nurses, setNurses] = useState<NurseMarketplaceProfile[]>([]);
-  const [products, setProducts] = useState<StoreItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { appUser } = useAuth();
 
+  const [nurses,   setNurses]   = useState<NurseMarketplaceProfile[]>([]);
+  const [products, setProducts] = useState<StoreItem[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [slide,    setSlide]    = useState(0);
+
+  const [stats,        setStats]        = useState<PublicStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const [bookings,        setBookings]        = useState<BookingWithParticipants[]>([]);
+  const [patientProfile,  setPatientProfile]  = useState<PatientProfile | null>(null);
+  const [patientReady,    setPatientReady]    = useState(false);
+
+  /* public data */
   useEffect(() => {
-    let active = true;
-    async function load() {
-      try {
-        const [n, p] = await Promise.all([getApprovedNurseMarketplaceProfiles(), getProducts()]);
-        if (active) { setNurses(n.slice(0, 6)); setProducts(p.slice(0, 4)); }
-      } catch (e) { console.error(e); }
-      finally { if (active) setLoading(false); }
-    }
-    load();
-    return () => { active = false; };
+    let alive = true;
+    Promise.all([getApprovedNurseMarketplaceProfiles(), getProducts()])
+      .then(([n, p]) => { if (alive) { setNurses(n.slice(0, 5)); setProducts(p.slice(0, 4)); } })
+      .catch(console.error)
+      .finally(() => { if (alive) setLoading(false); });
+
+    getPublicStats()
+      .then((s) => { if (alive) setStats(s); })
+      .catch(console.error)
+      .finally(() => { if (alive) setStatsLoading(false); });
+
+    return () => { alive = false; };
   }, []);
 
+  /* patient personalisation */
+  useEffect(() => {
+    if (!appUser || appUser.role !== "patient") return;
+    let alive = true;
+    Promise.all([
+      getBookingsForPatientWithParticipants(appUser.id),
+      getPatientProfile(appUser.id),
+    ])
+      .then(([b, p]) => { if (alive) { setBookings(b); setPatientProfile(p); } })
+      .catch(console.error)
+      .finally(() => { if (alive) setPatientReady(true); });
+    return () => { alive = false; };
+  }, [appUser]);
+
+  /* auto-advance carousel */
+  useEffect(() => {
+    const id = window.setInterval(() => setSlide((c) => (c + 1) % heroSlides.length), 6000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const isPatient = appUser?.role === "patient";
+  const nextBooking = bookings.find((b) => b.status === "accepted" || b.status === "pending");
+  const profileIncomplete = patientReady && !patientProfile?.profileCompleted;
+
+  /* ─── render ─────────────────────────────────────────── */
   return (
-    <main className="min-h-screen bg-slate-50 pb-20">
-      {/* Navbar */}
-      <nav className="fixed top-0 z-50 flex w-full items-center justify-between bg-white/90 px-4 py-4 backdrop-blur-md shadow-sm sm:px-8">
-        <div className="flex items-center gap-2 text-sky-700">
-          <ShieldCheck className="h-7 w-7" />
-          <span className="text-xl font-extrabold tracking-tight">Care Plus</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-sky-700 transition">Login</Link>
-          <Link href="/register?role=nurse" className="hidden rounded-2xl border-2 border-emerald-500 px-4 py-2 text-sm font-bold text-emerald-600 hover:bg-emerald-50 transition sm:block">
-            Join as Nurse
-          </Link>
-          <Link href="/register" className="rounded-2xl bg-sky-600 px-5 py-2 text-sm font-bold text-white shadow-md hover:bg-sky-700 transition">
-            Get Started
-          </Link>
-        </div>
-      </nav>
+    <main className="min-h-screen bg-white">
+      <PlatformNavbar mode="home" />
 
-      {/* Hero */}
-      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden bg-slate-50">
+      {/* ══ HERO ══════════════════════════════════════════ */}
+      <section id="home" className="relative overflow-hidden bg-white pt-8 pb-14 sm:pt-12 sm:pb-20 lg:pt-20 lg:pb-28">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-8">
-          <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
-            {/* Left: Text */}
-            <div className="w-full lg:w-1/2 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 z-10">
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-bold text-emerald-700 border border-emerald-200">
-                <BadgeCheck className="h-4 w-4" /> All nurses 100% verified & background checked
-              </div>
-              <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl leading-tight">
-                Trusted Home Care,<br />at Your <span className="text-sky-600">Doorstep.</span>
-              </h1>
-              <p className="text-lg text-slate-600 sm:text-xl font-medium max-w-lg">
-                Book highly qualified, compassionate nurses for your loved ones. Professional healthcare delivered right to your home.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-sky-600/30 transition-all hover:bg-sky-500 hover:scale-105 active:scale-95">
-                  Find a Nurse <ChevronRight className="h-5 w-5" />
-                </Link>
-                <Link href="/register?role=nurse" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-lg font-bold text-slate-700 border border-slate-200 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-95">
-                  Join as a Nurse
-                </Link>
-              </div>
+          <div className="flex flex-col-reverse items-center gap-10 lg:flex-row lg:gap-16">
+
+            {/* Left: copy */}
+            <div className="w-full space-y-6 lg:w-[52%]">
+
+              {/* Guest headline */}
+              {!isPatient && (
+                <>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-700">
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                    Every nurse reviewed &amp; approved by our team
+                  </div>
+
+                  <h1 className="text-[2rem] font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-[3.4rem]">
+                    Trusted Home Care,<br />
+                    <span className="text-sky-600">at Your Doorstep.</span>
+                  </h1>
+
+                  <p className="max-w-lg text-lg leading-relaxed text-slate-500">
+                    Professional nurses for your loved ones — compassionate, verified, and
+                    available to come to you.
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-4 pt-1">
+                    <Link
+                      href="/patient/nurses"
+                      className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700"
+                    >
+                      Find a Nurse <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="text-sm font-semibold text-slate-500 underline-offset-4 transition hover:text-sky-600 hover:underline"
+                    >
+                      Create a free account
+                    </Link>
+                  </div>
+
+                  {(() => {
+                    const items = stats
+                      ? [
+                          { value: stats.verifiedNurses, label: "Verified nurses" },
+                          { value: stats.familiesServed, label: "Families served" },
+                          { value: stats.completedBookings, label: "Completed visits" },
+                        ].filter((item) => item.value > 0)
+                      : [];
+
+                    if (statsLoading) {
+                      return (
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-100 pt-5">
+                          {[0, 1, 2].map((i) => (
+                            <div key={i} className="space-y-1">
+                              <div className="h-6 w-12 animate-pulse rounded bg-slate-100" />
+                              <div className="h-3 w-20 animate-pulse rounded bg-slate-100" />
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    if (items.length === 0) return null;
+
+                    return (
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-100 pt-5">
+                        {items.map((s) => (
+                          <div key={s.label}>
+                            <p className="text-xl font-extrabold text-slate-800">{s.value}</p>
+                            <p className="text-xs text-slate-400">{s.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+
+              {/* Patient personalised hero */}
+              {isPatient && (
+                <div className="space-y-5">
+                  <div>
+                    <p className="text-sm font-semibold text-sky-600 mb-1">Welcome back</p>
+                    <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                      {appUser!.name.split(" ")[0]}, your care is here.
+                    </h1>
+                  </div>
+
+                  {/* Next booking card */}
+                  {patientReady && nextBooking ? (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-1">
+                        {STATUS_LABELS[nextBooking.status]?.label ?? nextBooking.status}
+                      </p>
+                      <p className="font-bold text-slate-800">{nextBooking.service}</p>
+                      <p className="text-sm text-slate-500 mt-0.5">
+                        with {nextBooking.nurseName} · {nextBooking.date}
+                        {nextBooking.time ? ` · ${nextBooking.time}` : ""}
+                      </p>
+                      <Link
+                        href="/patient/appointments"
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition"
+                      >
+                        View all appointments <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  ) : patientReady ? (
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <p className="text-sm text-slate-500">No upcoming appointments yet.</p>
+                      <Link
+                        href="/patient/nurses"
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 transition"
+                      >
+                        Book your first nurse <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+                  )}
+
+                  {/* Profile reminder */}
+                  {profileIncomplete && (
+                    <div className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                      <p className="text-sm text-amber-700 font-medium">Complete your profile to enable booking</p>
+                      <Link href="/patient/profile?onboarding=true" className="text-xs font-bold text-amber-700 underline hover:text-amber-800">
+                        Complete →
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Quick actions */}
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {[
+                      { label: "Book a Nurse",    href: "/patient/nurses",       color: "bg-sky-50 text-sky-700 hover:bg-sky-100 border-sky-100" },
+                      { label: "Appointments",    href: "/patient/appointments",  color: "bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200" },
+                      { label: "Medical Records", href: "/patient/records",       color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-100" },
+                      { label: "Health Store",    href: "/patient/store",         color: "bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-100" },
+                    ].map((a) => (
+                      <Link key={a.href} href={a.href}
+                        className={`flex items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-bold transition ${a.color}`}>
+                        {a.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Right: Image */}
-            <div className="w-full lg:w-1/2 relative z-10 animate-in fade-in zoom-in duration-1000 delay-200">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)]">
-                <Image 
-                  src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80"
-                  alt="Nurse helping elderly patient at home" 
-                  fill 
-                  className="object-cover" 
-                  priority 
-                  unoptimized 
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
+            {/* Right: image carousel */}
+            <div className="w-full lg:w-[48%]">
+              <div className="relative overflow-hidden rounded-3xl bg-slate-100 shadow-xl shadow-slate-200/70">
+                <div className="relative aspect-[4/3] w-full">
+                  {heroSlides.map((s, i) => (
+                    <div key={s.image} className={`absolute inset-0 transition-opacity duration-700 ${i === slide ? "opacity-100" : "opacity-0"}`}>
+                      <Image src={s.image} alt={s.title} fill className="object-cover" priority={i === 0} unoptimized />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                    </div>
+                  ))}
+
+                  {/* Slide caption */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <p className="text-sm font-medium leading-snug text-white/90">
+                      {heroSlides[slide].title}
+                    </p>
+                  </div>
+
+                  {/* Carousel controls */}
+                  <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/25 px-2 py-1.5 backdrop-blur-sm">
+                    <button type="button" aria-label="Previous"
+                      onClick={() => setSlide((c) => (c - 1 + heroSlides.length) % heroSlides.length)}
+                      className="rounded-full p-1 text-white/70 transition hover:text-white">
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </button>
+                    {heroSlides.map((_, i) => (
+                      <button key={i} type="button" aria-label={`Slide ${i + 1}`} aria-pressed={i === slide}
+                        onClick={() => setSlide(i)}
+                        className={`rounded-full transition-all ${i === slide ? "h-1.5 w-5 bg-white" : "h-1.5 w-1.5 bg-white/40 hover:bg-white/60"}`}
+                      />
+                    ))}
+                    <button type="button" aria-label="Next"
+                      onClick={() => setSlide((c) => (c + 1) % heroSlides.length)}
+                      className="rounded-full p-1 text-white/70 transition hover:text-white">
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="relative z-20 -mt-10 mx-auto max-w-5xl px-4 sm:px-8">
-        <div className="grid grid-cols-2 gap-4 rounded-3xl bg-white p-6 shadow-xl sm:grid-cols-4 animate-in fade-in zoom-in duration-700 delay-300">
-          {[
-            { label: "Patients Served", value: "500+", icon: Users, color: "text-sky-500", bg: "bg-sky-50" },
-            { label: "Verified Nurses", value: "120+", icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50" },
-            { label: "Successful Bookings", value: "2,500+", icon: Activity, color: "text-violet-500", bg: "bg-violet-50" },
-            { label: "Average Rating", value: "4.9/5", icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
-          ].map((stat, i) => (
-            <div key={i} className="flex flex-col items-center justify-center text-center">
-              <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} ${stat.color}`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <p className="text-2xl font-extrabold text-slate-800">{stat.value}</p>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ══ TRUST STATS — real numbers only, hidden when empty ══ */}
+      {(() => {
+        const trustItems = stats
+          ? [
+              { label: "Verified Nurses",     value: stats.verifiedNurses,   icon: ShieldCheck, color: "text-emerald-500" },
+              { label: "Families Served",     value: stats.familiesServed,   icon: Users,       color: "text-sky-500"     },
+              { label: "Completed Visits",    value: stats.completedBookings, icon: Activity,   color: "text-violet-500"  },
+            ].filter((item) => item.value > 0)
+          : [];
 
-      <div className="mx-auto max-w-6xl space-y-24 px-4 py-20 sm:px-8">
-
-        {/* How It Works */}
-        <section>
-          <div className="text-center mb-14">
-            <p className="text-sm font-bold text-sky-600 uppercase tracking-widest mb-3">Simple Process</p>
-            <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">How Care Plus Works</h2>
-            <p className="mt-4 text-lg text-slate-500 max-w-xl mx-auto">Whether you need care or want to provide it — we make it simple.</p>
-          </div>
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* For Patients */}
-            <div className="rounded-3xl bg-gradient-to-br from-sky-50 to-white border border-sky-100 p-8 shadow-sm">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500 text-white shadow-md">
-                  <HomeIcon className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-extrabold text-slate-800">For Patients</h3>
-                  <p className="text-sm text-slate-500">Get care at home in 3 easy steps</p>
-                </div>
-              </div>
-              <div className="space-y-6">
-                {[
-                  { step: "1", icon: Search, title: "Browse Nurses", desc: "Filter by specialization, location, shift, and availability." },
-                  { step: "2", icon: CalendarCheck, title: "Book a Session", desc: "Choose your date, shift, and service. Confirm with one click." },
-                  { step: "3", icon: HeartHandshake, title: "Get Care at Home", desc: "A verified nurse arrives at your door, ready to help." },
-                ].map(item => (
-                  <div key={item.step} className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500 text-white font-extrabold text-lg shadow-md shadow-sky-500/20">
-                      {item.step}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-800">{item.title}</p>
-                      <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
-                    </div>
+        if (statsLoading) {
+          return (
+            <section className="border-y border-slate-100 bg-slate-50 py-8">
+              <div className="mx-auto grid max-w-5xl grid-cols-3 gap-6 px-4 sm:px-8">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="h-5 w-5 animate-pulse rounded-full bg-slate-200" />
+                    <div className="h-6 w-16 animate-pulse rounded bg-slate-200" />
+                    <div className="h-3 w-24 animate-pulse rounded bg-slate-200" />
                   </div>
                 ))}
               </div>
-              <Link href="/register" className="mt-8 flex items-center gap-2 font-bold text-sky-600 hover:text-sky-700 transition">
-                Find a Nurse <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            </section>
+          );
+        }
 
-            {/* For Nurses */}
-            <div className="rounded-3xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 p-8 shadow-sm">
-              <div className="flex items-center gap-3 mb-8">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-md">
-                  <Stethoscope className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-extrabold text-slate-800">For Nurses</h3>
-                  <p className="text-sm text-slate-500">Earn on your own schedule</p>
-                </div>
-              </div>
-              <div className="space-y-6">
-                {[
-                  { step: "1", icon: UserPlus, title: "Create Your Profile", desc: "Add your specialization, certifications, services, and shifts." },
-                  { step: "2", icon: ShieldCheck, title: "Get Approved", desc: "Our team reviews your profile and certificates within 24h." },
-                  { step: "3", icon: Banknote, title: "Receive Bookings & Earn", desc: "Accept or decline requests. Get paid per completed session." },
-                ].map(item => (
-                  <div key={item.step} className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white font-extrabold text-lg shadow-md shadow-emerald-500/20">
-                      {item.step}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-800">{item.title}</p>
-                      <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Link href="/register?role=nurse" className="mt-8 flex items-center gap-2 font-bold text-emerald-600 hover:text-emerald-700 transition">
-                Join as a Nurse <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
+        if (trustItems.length === 0) return null;
 
-        {/* Services */}
-        <section className="rounded-3xl bg-slate-800 p-8 sm:p-16 text-center text-white relative overflow-hidden">
-          <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-sky-500/20 blur-3xl" />
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
-          <div className="relative z-10">
-            <p className="text-sm font-bold text-sky-400 uppercase tracking-widest mb-3">What We Offer</p>
-            <h2 className="mb-12 text-4xl font-extrabold tracking-tight">Comprehensive Care Services</h2>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-              {[
-                { name: "Wound Care", icon: Droplet, color: "text-rose-400", bg: "bg-rose-400/10", desc: "Professional dressing & wound management" },
-                { name: "IV Injection", icon: Pill, color: "text-purple-400", bg: "bg-purple-400/10", desc: "IV therapy & medication administration" },
-                { name: "Elderly Care", icon: HeartHandshake, color: "text-amber-400", bg: "bg-amber-400/10", desc: "Compassionate support for seniors" },
-                { name: "Post-op Care", icon: Stethoscope, color: "text-sky-400", bg: "bg-sky-400/10", desc: "Recovery assistance after surgery" },
-              ].map(service => (
-                <div key={service.name} className="flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-md transition-all hover:bg-white/10 hover:scale-105 hover:-translate-y-1">
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${service.bg} ${service.color}`}>
-                    <service.icon className="h-8 w-8" />
-                  </div>
-                  <span className="font-bold text-slate-200">{service.name}</span>
-                  <p className="text-xs text-slate-400 leading-relaxed">{service.desc}</p>
+        return (
+          <section className="border-y border-slate-100 bg-slate-50 py-8">
+            <div className={`mx-auto grid max-w-5xl gap-6 px-4 sm:px-8 ${trustItems.length === 1 ? "grid-cols-1" : trustItems.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+              {trustItems.map((s) => (
+                <div key={s.label} className="flex flex-col items-center gap-2 text-center">
+                  <s.icon className={`h-5 w-5 ${s.color}`} />
+                  <p className="text-2xl font-extrabold text-slate-800">{s.value.toLocaleString()}</p>
+                  <p className="text-xs font-medium text-slate-400">{s.label}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-12">
-              <Link href="/register" className="inline-block rounded-2xl bg-white px-8 py-3 font-bold text-slate-800 hover:bg-slate-100 transition shadow-lg">
-                Explore All Services
+          </section>
+        );
+      })()}
+
+      <div className="mx-auto max-w-6xl space-y-16 px-4 py-12 sm:px-8 sm:space-y-24 sm:py-20">
+
+        {/* ══ WHY HOME CARE ══════════════════════════════════
+            Emotional anchor: human situations families recognize.
+            This section creates empathy before any product pitch. */}
+        <section id="why" className="scroll-mt-20">
+          <div className="mb-8 sm:mb-12 max-w-2xl">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">Who We&rsquo;re Here For</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Care when your family needs it most
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-slate-500">
+              Families come to us at different moments. We&rsquo;re built for all of them.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {[
+              {
+                icon: HomeIcon,
+                situation: "When a parent needs daily support",
+                description: "Elderly care shouldn't mean a care home. Our nurses bring routine support — medication reminders, mobility help, and quiet companionship — directly home.",
+                color: "bg-sky-50 border-sky-100",
+                iconColor: "text-sky-600 bg-sky-100",
+              },
+              {
+                icon: HeartHandshake,
+                situation: "When recovery feels harder than expected",
+                description: "Post-surgery care is critical and exhausting. A trained nurse handles wound care, vital monitoring, and rehabilitation support so recovery happens properly.",
+                color: "bg-emerald-50 border-emerald-100",
+                iconColor: "text-emerald-600 bg-emerald-100",
+              },
+              {
+                icon: Heart,
+                situation: "When you can't always be there",
+                description: "Life doesn't stop when someone needs care. Families trust Care Plus to be present when they can't — with verified, compassionate professionals.",
+                color: "bg-violet-50 border-violet-100",
+                iconColor: "text-violet-600 bg-violet-100",
+              },
+            ].map((item) => (
+              <div key={item.situation} className={`rounded-2xl border p-6 ${item.color}`}>
+                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${item.iconColor}`}>
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <p className="font-bold text-slate-800 leading-snug">{item.situation}</p>
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ HOW IT WORKS ══════════════════════════════════ */}
+        <section id="how-it-works" className="scroll-mt-20">
+          <div className="mb-8 sm:mb-12 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">The Process</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+              Simple from start to care
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-base text-slate-500">
+              We keep the process clear so you can focus on what matters.
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+
+            {/* Patients */}
+            <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-8">
+              <div className="mb-7 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
+                  <HomeIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800">For Patients &amp; Families</p>
+                  <p className="text-xs text-slate-500">Get care at home in 3 steps</p>
+                </div>
+              </div>
+              <div className="space-y-5">
+                {[
+                  { n: "1", icon: Search,       title: "Browse Verified Nurses",    desc: "Filter by specialization, shift, gender, and location." },
+                  { n: "2", icon: CalendarCheck, title: "Book in Minutes",           desc: "Choose your date, care type, and confirm. No paperwork." },
+                  { n: "3", icon: HeartHandshake,title: "Receive Care at Home",      desc: "A verified nurse arrives at your door, ready to help." },
+                ].map((s) => (
+                  <div key={s.n} className="flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-sm font-extrabold text-white shadow-sm">
+                      {s.n}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">{s.title}</p>
+                      <p className="mt-0.5 text-sm text-slate-500">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Link href="/patient/nurses" className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 hover:text-sky-700 transition">
+                Browse nurses <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {/* Nurses */}
+            <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-8">
+              <div className="mb-7 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm">
+                  <Stethoscope className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800">For Healthcare Professionals</p>
+                  <p className="text-xs text-slate-500">Earn on your own schedule</p>
+                </div>
+              </div>
+              <div className="space-y-5">
+                {[
+                  { n: "1", icon: UserPlus,      title: "Build Your Profile",        desc: "Add specialization, certifications, services, and availability." },
+                  { n: "2", icon: ShieldCheck,   title: "Get Approved in 24h",       desc: "Our team reviews your credentials and activates your profile." },
+                  { n: "3", icon: Banknote,      title: "Accept Bookings &amp; Earn",desc: "Manage your schedule and get paid per completed session." },
+                ].map((s) => (
+                  <div key={s.n} className="flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-sm font-extrabold text-white shadow-sm">
+                      {s.n}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800" dangerouslySetInnerHTML={{ __html: s.title }} />
+                      <p className="mt-0.5 text-sm text-slate-500" dangerouslySetInnerHTML={{ __html: s.desc }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Link href="/register?role=nurse" className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition">
+                Join as a nurse <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
         </section>
 
-        {/* Featured Nurses */}
-        <section>
+        {/* ══ OUR PROMISE ════════════════════════════════════
+            Trust & safety — must appear before nurse listings.
+            Patients share medical data and home address here.
+            They need reassurance before seeing any profiles. */}
+        <section id="promise" className="scroll-mt-20">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-8 sm:p-12">
+            <div className="mb-10 text-center">
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">Our Commitment</p>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+                Your care. Your family. Our promise.
+              </h2>
+              <p className="mx-auto mt-3 max-w-lg text-base text-slate-500">
+                Every nurse, every booking, and every piece of your data is handled with the care it deserves.
+              </p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  icon: ShieldCheck,
+                  color: "text-sky-600 bg-sky-100",
+                  title: "Every Nurse Verified",
+                  body: "Credentials reviewed, licenses confirmed, and background checks completed before any nurse is activated.",
+                },
+                {
+                  icon: Lock,
+                  color: "text-emerald-600 bg-emerald-100",
+                  title: "Your Data is Protected",
+                  body: "Medical history and personal information is encrypted and only visible to your nurse and our admin team.",
+                },
+                {
+                  icon: Clock,
+                  color: "text-violet-600 bg-violet-100",
+                  title: "Fast Response",
+                  body: "Most nurses confirm within a few hours. If a nurse can't make it, we help you find an alternative quickly.",
+                },
+                {
+                  icon: CheckCircle,
+                  color: "text-amber-600 bg-amber-100",
+                  title: "Care on Your Terms",
+                  body: "You set the schedule, location, and preferences. Cancel or reschedule without penalty before confirmation.",
+                },
+              ].map((p) => (
+                <div key={p.title} className="rounded-xl bg-white border border-slate-100 p-5 shadow-sm">
+                  <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${p.color}`}>
+                    <p.icon className="h-5 w-5" />
+                  </div>
+                  <p className="font-bold text-slate-800">{p.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{p.body}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Questions about how we handle your information?{" "}
+              <Link href="/privacy" className="text-sky-600 hover:underline font-medium">Read our Privacy Policy</Link>
+              {" "}or{" "}
+              <Link href="/terms" className="text-sky-600 hover:underline font-medium">Terms of Service</Link>.
+            </p>
+          </div>
+        </section>
+
+        {/* ══ FEATURED NURSES ════════════════════════════════ */}
+        <section id="nurses" className="scroll-mt-20">
           <div className="mb-10 flex items-end justify-between">
             <div>
-              <p className="text-sm font-bold text-sky-600 uppercase tracking-widest mb-2">Top Rated</p>
-              <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">Available Nurses</h2>
-              <p className="mt-3 text-lg text-slate-500">Trusted professionals ready for dispatch in your area.</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">
+                {isPatient ? "Nurses for You" : "Top Rated"}
+              </p>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+                {isPatient ? "Nurses available in your area" : "Meet our nurses"}
+              </h2>
+              <p className="mt-2 text-base text-slate-500">
+                {isPatient
+                  ? "Verified professionals ready to provide care."
+                  : "Compassionate, qualified, and background checked."}
+              </p>
             </div>
-            <Link href="/register" className="text-sm font-bold text-sky-600 hover:text-sky-700 hidden sm:flex items-center gap-1">
-              View all <ChevronRight className="h-4 w-4" />
+            <Link href="/patient/nurses" className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-sky-600 hover:text-sky-700 sm:flex transition">
+              Browse all <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
+
           {loading ? (
-            <div className="flex gap-6 overflow-x-auto pb-8">
-              {[1,2,3,4].map(i => <div key={i} className="h-[320px] w-72 shrink-0 animate-pulse rounded-3xl bg-slate-200" />)}
+            <div className="flex gap-5 overflow-x-auto pb-4">
+              {[1, 2, 3, 4].map((i) => <div key={i} className="h-72 w-64 shrink-0 animate-pulse rounded-2xl bg-slate-100" />)}
             </div>
           ) : nurses.length === 0 ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center">
-              <p className="text-lg text-slate-500 font-medium">No nurses available at the moment.</p>
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-10 text-center">
+              <p className="text-sm text-slate-500">No nurses listed yet. Check back soon.</p>
             </div>
           ) : (
-            <div className="flex gap-6 overflow-x-auto pb-8 pt-4 snap-x">
-              {nurses.map(nurse => (
-                <Link key={nurse.userId} href="/register"
-                  className="group snap-center relative flex w-72 shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)]">
-                  <div className="absolute right-4 top-4 z-10">
-                    <div className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-md">Available</div>
-                  </div>
-                  <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+            <div className="flex gap-5 overflow-x-auto pb-4 pt-2 snap-x">
+              {nurses.map((nurse) => (
+                <Link key={nurse.userId} href={`/patient/nurses/${nurse.userId}`}
+                  className="group snap-center relative flex w-64 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="relative h-48 w-full overflow-hidden bg-slate-100">
                     {nurse.profileImage ? (
-                      <Image src={nurse.profileImage} alt={nurse.fullName} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <Image src={nurse.profileImage} alt={nurse.fullName} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-slate-300">
+                      <div className="flex h-full items-center justify-center text-3xl font-bold text-slate-300">
                         {nurse.fullName.substring(0, 2).toUpperCase()}
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
                       <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <h3 className="text-lg font-bold line-clamp-1">{nurse.fullName}</h3>
-                          <BadgeCheck className="h-4 w-4 text-sky-400 shrink-0" />
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <p className="text-sm font-bold leading-none">{nurse.fullName}</p>
+                          <BadgeCheck className="h-3.5 w-3.5 text-sky-400 shrink-0" />
                         </div>
-                        <p className="text-sm text-emerald-300 font-semibold">{nurse.specialization}</p>
+                        <p className="text-xs text-emerald-300">{nurse.specialization}</p>
                       </div>
-                      <div className="flex items-center gap-1 rounded-lg bg-black/40 backdrop-blur-md px-2 py-1 text-xs font-bold">
+                      <div className="flex items-center gap-1 rounded-lg bg-black/30 px-2 py-0.5 text-xs font-bold backdrop-blur-sm">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span>{nurse.rating.toFixed(1)}</span>
+                        {nurse.rating.toFixed(1)}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col p-5">
-                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">{nurse.bio || "Dedicated healthcare professional providing exceptional home care."}</p>
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                      <p className="text-sm text-slate-400">Starting at</p>
-                      <p className="font-extrabold text-slate-800">${nurse.pricePerHour ?? 0}<span className="text-sm font-medium text-slate-400">/hr</span></p>
+                  <div className="flex flex-col p-4">
+                    <p className="text-xs leading-relaxed text-slate-500 line-clamp-2">
+                      {nurse.bio || "Dedicated healthcare professional providing exceptional home care."}
+                    </p>
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                      <p className="text-xs text-slate-400">Starting at</p>
+                      <p className="text-sm font-extrabold text-slate-800">
+                        ${nurse.pricePerHour ?? 0}<span className="text-xs font-normal text-slate-400">/hr</span>
+                      </p>
                     </div>
                   </div>
                 </Link>
@@ -285,118 +660,194 @@ export default function Home() {
           )}
         </section>
 
-        {/* Medical Store Preview */}
-        <section className="rounded-3xl bg-violet-50 border border-violet-100 p-8 sm:p-12 relative overflow-hidden">
-          <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-violet-200/50 blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-10">
-              <div>
-                <p className="text-sm font-bold text-violet-600 uppercase tracking-widest mb-2">Care Plus Store</p>
-                <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">Medical Supplies</h2>
-                <p className="mt-3 text-slate-500">High-quality home care supplies delivered to you.</p>
-              </div>
-              <Link href="/register" className="hidden sm:flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-sm font-bold text-violet-700 shadow-sm hover:shadow-md transition">
-                Browse Store <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {(loading ? Array(4).fill(null) : products).map((item, i) =>
-                item ? (
-                  <div key={item.id} className="bg-white rounded-3xl p-5 shadow-sm border border-white hover:border-violet-200 hover:shadow-md transition group flex flex-col">
-                    <div className="h-28 flex items-center justify-center text-5xl bg-slate-50 rounded-2xl mb-4 group-hover:scale-110 transition-transform">{item.image}</div>
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-bold text-slate-800 text-sm leading-tight">{item.name}</h3>
-                      <span className="font-extrabold text-violet-700 shrink-0">${item.price}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 font-semibold uppercase mb-3">{item.category}</p>
-                    <Link href="/register" className="mt-auto flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-600 hover:border-violet-600 hover:text-white transition">
-                      <Plus className="h-4 w-4" /> Add to Cart
-                    </Link>
-                  </div>
-                ) : (
-                  <div key={i} className="h-48 bg-white/60 rounded-3xl animate-pulse" />
-                )
-              )}
-            </div>
+        {/* ══ HEALTH TIPS ════════════════════════════════════
+            Genuine care guidance — not promotional.
+            Signals that Care Plus is a healthcare partner,
+            not just a booking service. */}
+        <section id="tips" className="scroll-mt-20">
+          <div className="mb-10 max-w-xl">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-600">Health Guidance</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+              Small habits that support recovery
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-slate-500">
+              A few things worth knowing — whether care is just beginning or ongoing.
+            </p>
           </div>
-        </section>
-
-        {/* Testimonials */}
-        <section>
-          <div className="mb-10 text-center">
-            <p className="text-sm font-bold text-sky-600 uppercase tracking-widest mb-3">Reviews</p>
-            <h2 className="text-4xl font-extrabold text-slate-800 tracking-tight">Trusted by Families</h2>
-            <p className="mt-4 text-lg text-slate-500">Hear from patients who've experienced our premium care.</p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-3">
             {[
-              { text: "The nurse arrived on time, was extremely professional, and made my father feel so comfortable. Highly recommended!", author: "Sarah M.", location: "Nablus", avatar: "SM" },
-              { text: "Care Plus made it so easy to find a wound care specialist. The booking process is seamless and the service is top-notch.", author: "Ahmed K.", location: "Ramallah", avatar: "AK" },
-              { text: "I've never felt more secure leaving my mother with a home nurse. The verification process gave me total peace of mind.", author: "Laila H.", location: "Jenin", avatar: "LH" },
-            ].map((t, i) => (
-              <div key={i} className="flex flex-col justify-between rounded-3xl bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative border border-slate-100 hover:border-sky-200 hover:-translate-y-1 transition-all">
-                <div>
-                  <div className="flex gap-1 mb-5">
-                    {[1,2,3,4,5].map(s => <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400" />)}
-                  </div>
-                  <p className="text-slate-600 font-medium leading-relaxed mb-6 italic">"{t.text}"</p>
+              {
+                icon: Droplets,
+                color: "text-sky-600 bg-sky-50 border-sky-100",
+                iconBg: "bg-sky-100 text-sky-600",
+                title: "Hydration during recovery",
+                body: "Adequate fluid intake helps the body process medications, reduce inflammation, and rebuild tissue. Encourage 6–8 glasses of water daily — more if your nurse recommends it.",
+                note: "Tip for post-op and elderly patients",
+              },
+              {
+                icon: Pill,
+                color: "text-violet-600 bg-violet-50 border-violet-100",
+                iconBg: "bg-violet-100 text-violet-600",
+                title: "Medication schedules matter",
+                body: "Consistent timing is as important as the dose. A home nurse can help set alarms, explain interactions, and flag anything that seems off — especially with multiple prescriptions.",
+                note: "Relevant for chronic and post-surgical care",
+              },
+              {
+                icon: CalendarDays,
+                color: "text-emerald-600 bg-emerald-50 border-emerald-100",
+                iconBg: "bg-emerald-100 text-emerald-600",
+                title: "What to prepare for your first visit",
+                body: "Have a list of current medications, any known allergies, and recent test results ready. Your nurse will review these before beginning care. It saves time and improves safety.",
+                note: "First-time patients",
+              },
+            ].map((tip) => (
+              <div key={tip.title} className={`rounded-2xl border p-6 ${tip.color}`}>
+                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${tip.iconBg}`}>
+                  <tip.icon className="h-5 w-5" />
                 </div>
-                <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-700 font-bold text-sm">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800">{t.author}</p>
-                    <p className="text-xs text-slate-400">{t.location}</p>
-                  </div>
-                </div>
+                <p className="font-bold text-slate-800">{tip.title}</p>
+                <p className="mt-2.5 text-sm leading-relaxed text-slate-600">{tip.body}</p>
+                <p className="mt-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{tip.note}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="rounded-3xl overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-600 via-sky-700 to-indigo-800" />
-          <div className="absolute inset-0">
-            <Image src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80"
-              alt="Healthcare" fill className="object-cover opacity-10" unoptimized />
-          </div>
-          <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl" />
-          <div className="relative z-10 p-12 sm:p-20 text-center text-white">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold text-white mb-6 border border-white/30">
-              <BadgeCheck className="h-4 w-4" /> Join 500+ satisfied patients & 120+ active nurses
-            </div>
-            <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-6">Get Started Today</h2>
-            <p className="text-lg text-sky-100 max-w-xl mx-auto mb-10">
-              Join Care Plus and experience healthcare the way it should be — trusted, convenient, and professional.
+        {/* ══ HOW WE VERIFY NURSES ═══════════════════════════
+            Replaces the previous testimonials block with the actual
+            verification process. Honest, falsifiable, and gives families
+            something concrete to evaluate before booking. */}
+        <section id="verification" className="scroll-mt-20">
+          <div className="mb-10 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">How We Verify Nurses</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+              No nurse appears here until we&rsquo;ve reviewed them
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">
+              Every nurse on Care Plus goes through the same steps before patients can book them. We&rsquo;ll keep adding to this list as our verification process matures.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-10 py-4 text-lg font-bold text-sky-700 shadow-xl hover:bg-slate-50 transition hover:scale-105 active:scale-95">
-                Register as Patient <ChevronRight className="h-5 w-5" />
-              </Link>
-              <Link href="/register?role=nurse" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-10 py-4 text-lg font-bold text-white shadow-xl hover:bg-emerald-400 transition hover:scale-105 active:scale-95">
-                Register as Nurse <ClipboardList className="h-5 w-5" />
-              </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {[
+              {
+                step: "1",
+                icon: UserPlus,
+                title: "Profile submission",
+                body: "Nurses provide their full name, contact, specialization, services offered, certifications, and years of experience.",
+              },
+              {
+                step: "2",
+                icon: ShieldCheck,
+                title: "Admin review",
+                body: "Our team reviews each submission. Certifications and stated qualifications are checked against the documents the nurse uploads.",
+              },
+              {
+                step: "3",
+                icon: BadgeCheck,
+                title: "Activation",
+                body: "Only approved nurses appear in the marketplace. Patients see the same verified status on every profile and listing.",
+              },
+            ].map((s) => (
+              <div key={s.step} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-100 text-sm font-extrabold text-sky-700">
+                    {s.step}
+                  </span>
+                  <s.icon className="h-5 w-5 text-sky-600" />
+                </div>
+                <p className="font-bold text-slate-800">{s.title}</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-500">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-xs text-slate-400">
+            We do not yet perform third-party background checks. We&rsquo;re upfront about this so you know what &ldquo;verified&rdquo; means on Care Plus today.
+          </p>
+        </section>
+
+        {/* ══ CARE PLANS ══════════════════════════════════════
+            Moved to bottom — the user has been through emotional
+            journey, social proof, and trust. NOW they're ready
+            to choose a plan. */}
+        <section id="packages" className="scroll-mt-20">
+          <div className="mb-10 text-center">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">Ready to Start</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+              Choose the right care plan
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-base text-slate-500">
+              One-time, ongoing shifts, or a full long-term plan — all bookable in minutes.
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {carePlans.map((plan, i) => (
+              <div key={plan.title}
+                className={`flex flex-col rounded-2xl border p-6 transition hover:shadow-md ${plan.accent ? "border-sky-200 bg-sky-50" : "border-slate-100 bg-white"}`}
+              >
+                <div className="mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Starting at</p>
+                  <p className="text-2xl font-extrabold text-slate-900">{plan.price}</p>
+                </div>
+                <p className="mt-3 font-bold text-slate-800">{plan.title}</p>
+                <p className="mt-1 text-sm leading-relaxed text-slate-500">{plan.description}</p>
+                <ul className="mt-5 flex-1 space-y-2.5">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={plan.href}
+                  className={`mt-6 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${plan.accent ? "bg-sky-600 text-white hover:bg-sky-700" : "border border-slate-200 text-slate-700 hover:border-sky-200 hover:text-sky-700"}`}
+                >
+                  Learn more <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ MEDICAL STORE PREVIEW ══════════════════════════ */}
+        <section id="store" className="scroll-mt-20">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-violet-600">Care Plus Store</p>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-800">Medical Supplies</h2>
+              <p className="mt-1.5 text-sm text-slate-500">Quality home care essentials, delivered.</p>
             </div>
+            <Link href="/patient/store" className="hidden shrink-0 text-sm font-semibold text-violet-600 hover:text-violet-700 sm:block transition">
+              Browse store →
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {(loading ? Array(4).fill(null) : products).map((item, i) =>
+              item ? (
+                <div key={item.id} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:border-violet-100 hover:shadow-md transition">
+                  <div className="mb-4 flex h-20 items-center justify-center rounded-xl bg-slate-50 text-4xl">{item.image}</div>
+                  <p className="text-sm font-bold text-slate-800 leading-tight">{item.name}</p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-400">{item.category}</span>
+                    <span className="text-sm font-extrabold text-violet-700">${item.price}</span>
+                  </div>
+                </div>
+              ) : (
+                <div key={i} className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+              )
+            )}
+          </div>
+          <div className="mt-6 text-center">
+            <Link href="/patient/store"
+              className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-5 py-2.5 text-sm font-bold text-violet-700 hover:bg-violet-100 transition"
+            >
+              Browse all supplies <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
 
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white px-4 py-10 text-center sm:px-8">
-        <div className="flex items-center justify-center gap-2 text-sky-700 mb-4">
-          <ShieldCheck className="h-6 w-6" />
-          <span className="text-lg font-extrabold">Care Plus</span>
-        </div>
-        <p className="text-sm text-slate-500">© 2025 Care Plus. Premium home healthcare. All nurses verified and approved.</p>
-        <div className="flex items-center justify-center gap-6 mt-4">
-          <Link href="/login" className="text-sm font-semibold text-slate-500 hover:text-sky-600 transition">Login</Link>
-          <Link href="/register" className="text-sm font-semibold text-slate-500 hover:text-sky-600 transition">Register</Link>
-          <Link href="/register?role=nurse" className="text-sm font-semibold text-slate-500 hover:text-emerald-600 transition">Join as Nurse</Link>
-        </div>
-      </footer>
+      <PlatformFooter />
     </main>
   );
 }

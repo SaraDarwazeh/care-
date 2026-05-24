@@ -80,7 +80,7 @@ function NurseRow({
               
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                 <p className="font-semibold text-slate-400 uppercase tracking-wider text-xs mb-2">Professional Bio</p>
-                <p className="text-slate-600 leading-relaxed">"{profile.bio}"</p>
+                <p className="text-slate-600 leading-relaxed">{profile.bio}</p>
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
@@ -100,7 +100,7 @@ function NurseRow({
             </div>
           ) : (
             <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl text-amber-800 font-medium text-sm">
-              This nurse hasn't completed their setup yet.
+              This nurse has not completed their setup yet.
             </div>
           )}
 
@@ -185,7 +185,7 @@ export default function AdminNursesPage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Nurse Management</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Nurse Management</h1>
           <p className="text-slate-500 mt-1">Review registrations and manage platform access.</p>
         </div>
       </div>

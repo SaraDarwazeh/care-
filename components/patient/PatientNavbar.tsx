@@ -10,8 +10,12 @@ import { useCart } from "@/components/patient/CartContext";
 
 const navItems = [
   { label: "Home", href: "/patient" },
-  { label: "Explore", href: "/patient/nurses" },
+  { label: "Appointments", href: "/patient/appointments" },
+  { label: "Nurses", href: "/patient/nurses" },
+  { label: "Records", href: "/patient/records" },
   { label: "Store", href: "/patient/store" },
+  { label: "Orders", href: "/patient/orders" },
+  { label: "Community", href: "/community" },
   { label: "Profile", href: "/patient/profile" },
 ];
 

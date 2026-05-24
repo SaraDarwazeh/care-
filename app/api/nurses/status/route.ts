@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { getServerDb } from "@/lib/firebase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { authErrorResponse, requireRole } from "@/lib/auth/verifyRequest";
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
-    const serverDb = getServerDb();
+    await requireRole(request, ["admin"]);
+  } catch (error) {
+    return authErrorResponse(error);
+  }
+
+  try {
     const body = (await request.json()) as { id?: string; status?: string };
 
     if (!body.id || !body.status) {
@@ -21,14 +26,23 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const userRef = doc(serverDb, "users", body.id);
-    const userSnapshot = await getDoc(userRef);
+    const db = getAdminDb();
+    const userRef = db.collection("users").doc(body.id);
+    const userSnapshot = await userRef.get();
 
-    if (!userSnapshot.exists()) {
+    if (!userSnapshot.exists) {
       return NextResponse.json({ message: "User not found." }, { status: 404 });
     }
 
-    await updateDoc(userRef, { status: body.status });
+    const userData = userSnapshot.data() as Record<string, unknown> | undefined;
+    if (userData?.role !== "nurse") {
+      return NextResponse.json(
+        { message: "Target user is not a nurse." },
+        { status: 400 },
+      );
+    }
+
+    await userRef.update({ status: body.status });
 
     console.log("[api/nurses/status] nurse status updated", {
       id: body.id,
@@ -37,22 +51,11 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ message: "Nurse updated successfully." }, { status: 200 });
   } catch (error) {
-    const errorPayload =
-      error instanceof Error
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : { message: "Unknown error" };
-
-    console.error("[api/nurses/status] Failed to update nurse status", errorPayload);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[api/nurses/status] Failed to update nurse status", error);
 
     return NextResponse.json(
-      {
-        message: "Failed to update nurse status.",
-        details: errorPayload.message,
-      },
+      { message: "Failed to update nurse status.", details: message },
       { status: 500 },
     );
   }

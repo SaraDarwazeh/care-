@@ -66,11 +66,11 @@ export default function NurseDashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-sky-700 p-8 text-white shadow-xl sm:p-10">
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-sky-700 p-6 text-white shadow-xl sm:p-10">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <p className="text-sm font-bold text-emerald-200 uppercase tracking-widest mb-2">Nurse Dashboard</p>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Welcome, {appUser.name.split(" ")[0]}!</h1>
+            <p className="text-xs font-bold text-emerald-200 uppercase tracking-widest mb-1.5 sm:text-sm sm:mb-2">Nurse Dashboard</p>
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">Welcome, {appUser.name.split(" ")[0]}!</h1>
             {profile && <p className="mt-2 text-emerald-100 font-medium">{profile.specialization}</p>}
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/nurse/bookings" className="inline-flex items-center gap-2 rounded-2xl bg-white/20 backdrop-blur-sm px-5 py-2.5 text-sm font-bold text-white border border-white/30 hover:bg-white/30 transition">
@@ -95,15 +95,15 @@ export default function NurseDashboardPage() {
       </section>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((s, i) => (
-          <div key={i} className={`flex items-center gap-4 rounded-3xl border ${s.border} ${s.bg} p-5`}>
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white ${s.color} shadow-sm`}>
-              <s.icon className="h-6 w-6" />
+          <div key={i} className={`flex flex-col gap-3 rounded-3xl border ${s.border} ${s.bg} p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white ${s.color} shadow-sm sm:h-12 sm:w-12`}>
+              <s.icon className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <p className={`text-xs font-bold uppercase tracking-wider ${s.color} opacity-70`}>{s.label}</p>
-              <p className="text-2xl font-extrabold text-slate-800">{s.value}</p>
+              <p className={`text-[10px] font-bold uppercase tracking-wider ${s.color} opacity-70 sm:text-xs`}>{s.label}</p>
+              <p className="text-xl font-extrabold text-slate-800 sm:text-2xl">{s.value}</p>
             </div>
           </div>
         ))}
@@ -112,7 +112,7 @@ export default function NurseDashboardPage() {
       {/* Today's Bookings */}
       {todayBookings.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold text-slate-800 mb-4">Today's Shifts</h2>
+          <h2 className="text-xl font-bold text-slate-800 mb-4">Shifts Today</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {todayBookings.map(b => (
               <div key={b.id} className="rounded-3xl border border-emerald-100 bg-emerald-50 p-5">

@@ -25,8 +25,13 @@ export default function LoginPage() {
       const user = await loginWithEmail(email, password);
       const profile = await getUserProfile(user.uid);
 
+      document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect");
+
       if (!profile) {
-        router.replace("/");
+        router.replace(redirect || "/");
       } else if (profile.role === "admin") {
         router.replace("/admin");
       } else if (profile.role === "nurse") {
@@ -36,7 +41,7 @@ export default function LoginPage() {
           router.replace("/pending-approval");
         }
       } else {
-        router.replace("/patient");
+        router.replace(redirect || "/");
       }
     } catch (submitError) {
       console.error("[login] login failed", submitError);
@@ -159,7 +164,7 @@ export default function LoginPage() {
             </button>
 
             <p className="text-center text-sm font-medium text-slate-500 pt-6">
-              Don't have an account yet?{" "}
+              Don&apos;t have an account yet?{" "}
               <Link href="/register" className="font-bold text-emerald-600 hover:text-emerald-700 hover:underline">
                 Create account
               </Link>

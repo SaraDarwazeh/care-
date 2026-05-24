@@ -33,13 +33,18 @@ export default function RegisterPage() {
         return;
       }
 
+      document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect");
+
       if (profile.role === "nurse" && profile.status !== "approved") {
         router.replace("/nurse/setup"); // Redirect nurse directly to setup
         return;
       }
 
       if (profile.role === "patient") {
-        router.replace("/patient");
+        router.replace(redirect || "/patient/profile?onboarding=true");
         return;
       }
 
@@ -102,31 +107,31 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setRole("patient")}
-                  className={`w-full flex items-center gap-5 rounded-3xl border-2 p-6 transition-all text-left ${
+                  className={`w-full flex items-center gap-4 rounded-3xl border-2 p-4 sm:gap-5 sm:p-6 transition-all text-left ${
                     role === "patient" ? "border-sky-500 bg-sky-50 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.3)]" : "border-slate-100 bg-white hover:border-sky-200"
                   }`}
                 >
-                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${role === "patient" ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
-                    <UserCircle className="h-7 w-7" />
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${role === "patient" ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                    <UserCircle className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
                   <div>
-                    <h3 className={`text-lg font-bold ${role === "patient" ? "text-sky-900" : "text-slate-700"}`}>I am a Patient</h3>
+                    <h3 className={`text-base font-bold sm:text-lg ${role === "patient" ? "text-sky-900" : "text-slate-700"}`}>I am a Patient</h3>
                     <p className={`text-sm ${role === "patient" ? "text-sky-700" : "text-slate-500"}`}>I want to book trusted home nurses.</p>
                   </div>
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={() => setRole("nurse")}
-                  className={`w-full flex items-center gap-5 rounded-3xl border-2 p-6 transition-all text-left ${
+                  className={`w-full flex items-center gap-4 rounded-3xl border-2 p-4 sm:gap-5 sm:p-6 transition-all text-left ${
                     role === "nurse" ? "border-emerald-500 bg-emerald-50 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.3)]" : "border-slate-100 bg-white hover:border-emerald-200"
                   }`}
                 >
-                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${role === "nurse" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
-                    <Stethoscope className="h-7 w-7" />
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${role === "nurse" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                    <Stethoscope className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
                   <div>
-                    <h3 className={`text-lg font-bold ${role === "nurse" ? "text-emerald-900" : "text-slate-700"}`}>I am a Nurse</h3>
+                    <h3 className={`text-base font-bold sm:text-lg ${role === "nurse" ? "text-emerald-900" : "text-slate-700"}`}>I am a Nurse</h3>
                     <p className={`text-sm ${role === "nurse" ? "text-emerald-700" : "text-slate-500"}`}>I want to offer my healthcare services.</p>
                   </div>
                 </button>

@@ -1,47 +1,38 @@
-import { NextResponse } from "next/server";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { getServerDb } from "@/lib/firebase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { authErrorResponse, requireRole } from "@/lib/auth/verifyRequest";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const serverDb = getServerDb();
-    const usersRef = collection(serverDb, "users");
-    const q = query(usersRef, where("role", "==", "nurse"));
-    const snapshot = await getDocs(q);
-
-    const nurses = snapshot.docs
-      .map((docItem) => ({
-        id: docItem.id,
-        ...docItem.data(),
-      })) as Array<{ id: string; createdAt?: string }>;
-
-    const sortedNurses = nurses
-      .sort((a, b) => {
-        const first = String(a.createdAt ?? "");
-        const second = String(b.createdAt ?? "");
-        return second.localeCompare(first);
-      });
-
-    console.log("[api/nurses] fetched nurses", { count: sortedNurses.length });
-
-    return NextResponse.json({ nurses: sortedNurses }, { status: 200 });
+    await requireRole(request, ["admin"]);
   } catch (error) {
-    const errorPayload =
-      error instanceof Error
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : { message: "Unknown error" };
+    return authErrorResponse(error);
+  }
 
-    console.error("[api/nurses] Failed to fetch nurses", errorPayload);
+  try {
+    const db = getAdminDb();
+    const snapshot = await db.collection("users").where("role", "==", "nurse").get();
+
+    const nurses = snapshot.docs.map((docItem) => ({
+      id: docItem.id,
+      ...docItem.data(),
+    })) as Array<{ id: string; createdAt?: string }>;
+
+    nurses.sort((a, b) => {
+      const first = String(a.createdAt ?? "");
+      const second = String(b.createdAt ?? "");
+      return second.localeCompare(first);
+    });
+
+    console.log("[api/nurses] fetched nurses", { count: nurses.length });
+
+    return NextResponse.json({ nurses }, { status: 200 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[api/nurses] Failed to fetch nurses", error);
 
     return NextResponse.json(
-      {
-        message: "Failed to fetch nurses.",
-        details: errorPayload.message,
-      },
+      { message: "Failed to fetch nurses.", details: message },
       { status: 500 },
     );
   }

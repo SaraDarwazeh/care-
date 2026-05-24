@@ -6,12 +6,14 @@ import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { BookingWithParticipants, BookingStatus } from "@/lib/types";
 import { getBookingsForNurseWithParticipants, updateBookingStatus } from "@/services/bookingService";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BookingDetails from "@/components/nurse/BookingDetails";
 
 const STATUS_COLORS: Record<BookingStatus, string> = {
   pending: "bg-amber-100 text-amber-700",
   accepted: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
   completed: "bg-sky-100 text-sky-700",
+  cancelled: "bg-slate-100 text-slate-600",
 };
 
 export default function NurseBookingsPage() {
@@ -21,20 +23,34 @@ export default function NurseBookingsPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
-  async function load() {
-    if (!appUser) return;
-    const data = await getBookingsForNurseWithParticipants(appUser.id);
-    setBookings(data);
-    setLoading(false);
-  }
-
-  useEffect(() => { void load(); }, [appUser]);
+  useEffect(() => {
+    let active = true;
+    async function run() {
+      if (!appUser) return;
+      const data = await getBookingsForNurseWithParticipants(appUser.id);
+      if (!active) return;
+      setBookings(data);
+      setLoading(false);
+    }
+    void run();
+    return () => { active = false; };
+  }, [appUser]);
 
   async function handleStatus(id: string, status: "accepted" | "rejected") {
+    if (status === "rejected") {
+      const confirmed = window.confirm("Are you sure you want to reject this booking request?");
+      if (!confirmed) return;
+    }
     setUpdatingId(id);
-    try { await updateBookingStatus(id, status); await load(); }
-    finally { setUpdatingId(null); }
+    try {
+      await updateBookingStatus(id, status);
+      if (appUser) {
+        const data = await getBookingsForNurseWithParticipants(appUser.id);
+        setBookings(data);
+      }
+    } finally { setUpdatingId(null); }
   }
 
   if (authLoading || !appUser || loading) return <LoadingScreen text="Loading bookings..." />;
@@ -93,6 +109,7 @@ export default function NurseBookingsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map(b => (
+                  <>
                   <tr key={b.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <p className="font-bold text-slate-800">{b.patientName}</p>
@@ -122,9 +139,18 @@ export default function NurseBookingsPage() {
                           </>
                         )}
                         {b.status !== "pending" && <span className="text-xs text-slate-400 italic">No action</span>}
+                        <button onClick={() => setOpenId(openId === b.id ? null : b.id)} className="ml-2 text-sm text-sky-600 font-bold">Details</button>
                       </div>
                     </td>
                   </tr>
+                  {openId === b.id && (
+                    <tr key={`${b.id}-details`}>
+                      <td colSpan={6} className="px-6 py-4">
+                        <BookingDetails booking={b} />
+                      </td>
+                    </tr>
+                  )}
+                  </>
                 ))}
               </tbody>
             </table>

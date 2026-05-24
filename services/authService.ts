@@ -50,6 +50,19 @@ export async function loginWithEmail(email: string, password: string) {
 export async function logoutUser() {
   const { auth } = ensureClientFirebase();
   await signOut(auth);
+  document.cookie = "careplus_session=; path=/; max-age=0; SameSite=Lax";
+}
+
+export async function getCurrentIdToken(forceRefresh = false): Promise<string | null> {
+  const { auth } = ensureClientFirebase();
+  const user = auth.currentUser;
+  if (!user) return null;
+  try {
+    return await user.getIdToken(forceRefresh);
+  } catch (error) {
+    console.error("[authService] failed to fetch ID token", error);
+    return null;
+  }
 }
 
 export async function resetPassword(email: string) {

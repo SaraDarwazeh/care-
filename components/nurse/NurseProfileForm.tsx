@@ -184,7 +184,7 @@ export default function NurseProfileForm({
                   <label className="mb-1 block text-sm font-semibold text-slate-700">Gender</label>
                   <select 
                     value={gender} 
-                    onChange={(e) => setGender(e.target.value as any)} 
+                    onChange={(e) => setGender(e.target.value as "male" | "female" | "other" | "")} 
                     required 
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                   >

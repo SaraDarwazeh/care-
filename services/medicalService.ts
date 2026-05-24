@@ -1,4 +1,14 @@
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, updateDoc, DocumentData } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  DocumentData,
+} from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { MedicalRecord, Observation } from "@/lib/types";
 
@@ -21,7 +31,6 @@ export async function addObservation(recordId: string, obs: Omit<Observation, "i
     timestamp: new Date().toISOString(),
   } as DocumentData);
 
-  // update parent updatedAt
   await updateDoc(doc(db, "medicalRecords", recordId), { updatedAt: new Date().toISOString() });
 
   const snap = await getDoc(obsRef);
@@ -30,11 +39,18 @@ export async function addObservation(recordId: string, obs: Omit<Observation, "i
 
 export async function getRecordsForPatient(patientId: string): Promise<MedicalRecord[]> {
   const { db } = ensureClientFirebase();
-  const ref = collection(db, "medicalRecords");
-  const q = query(ref, orderBy("createdAt", "desc"));
+  const q = query(collection(db, "medicalRecords"), where("patientId", "==", patientId));
   const snaps = await getDocs(q);
-  const all = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-  return all.filter((r: Record<string, unknown>) => String(r["patientId"] ?? "") === String(patientId)) as MedicalRecord[];
+  const records = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as MedicalRecord[];
+  return records.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
+export async function getRecordsForNurse(nurseId: string): Promise<MedicalRecord[]> {
+  const { db } = ensureClientFirebase();
+  const q = query(collection(db, "medicalRecords"), where("nurseId", "==", nurseId));
+  const snaps = await getDocs(q);
+  const records = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as MedicalRecord[];
+  return records.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
 }
 
 export async function getRecordById(id: string): Promise<MedicalRecord | null> {
@@ -43,7 +59,6 @@ export async function getRecordById(id: string): Promise<MedicalRecord | null> {
   if (!snap.exists()) return null;
   const record = { id: snap.id, ...(snap.data() as Record<string, unknown>) } as MedicalRecord;
 
-  // fetch recent observations (denormalized subcollection)
   const obsSnap = await getDocs(collection(db, `medicalRecords/${id}/observations`));
   const observations = obsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as Observation[];
   record.observations = observations.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
@@ -53,12 +68,47 @@ export async function getRecordById(id: string): Promise<MedicalRecord | null> {
 
 export async function getRecordsForBooking(bookingId: string): Promise<MedicalRecord[]> {
   const { db } = ensureClientFirebase();
-  const ref = collection(db, "medicalRecords");
-  const q = query(ref, orderBy("createdAt", "desc"));
+  const q = query(collection(db, "medicalRecords"), where("bookingId", "==", bookingId));
   const snaps = await getDocs(q);
-  const all = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-  return all.filter((r: Record<string, unknown>) => String(r["bookingId"] ?? "") === String(bookingId)) as MedicalRecord[];
+  return snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as MedicalRecord[];
 }
 
-const medicalService = { createMedicalRecord, addObservation, getRecordsForPatient, getRecordById, getRecordsForBooking };
+// Idempotent: returns the existing record for a booking if one exists, otherwise creates one.
+// This is the canonical entry point for the visit-completion workflow.
+export async function ensureRecordForBooking(input: {
+  bookingId: string;
+  patientId: string;
+  nurseId: string;
+  summary?: string;
+}): Promise<MedicalRecord> {
+  const existing = await getRecordsForBooking(input.bookingId);
+  if (existing.length > 0) {
+    if (input.summary && !existing[0].summary) {
+      const { db } = ensureClientFirebase();
+      await updateDoc(doc(db, "medicalRecords", existing[0].id), {
+        summary: input.summary,
+        updatedAt: new Date().toISOString(),
+      });
+      existing[0].summary = input.summary;
+    }
+    return existing[0];
+  }
+
+  return createMedicalRecord({
+    patientId: input.patientId,
+    nurseId: input.nurseId,
+    bookingId: input.bookingId,
+    summary: input.summary,
+  });
+}
+
+const medicalService = {
+  createMedicalRecord,
+  addObservation,
+  getRecordsForPatient,
+  getRecordsForNurse,
+  getRecordById,
+  getRecordsForBooking,
+  ensureRecordForBooking,
+};
 export default medicalService;

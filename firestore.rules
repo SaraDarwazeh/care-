@@ -94,14 +94,18 @@ service cloud.firestore {
     }
 
     // Medical records: patient reads own, nurse reads assigned, admin reads all.
+    // Either the patient (self-recording) OR a nurse identifying themselves
+    // can create a record. Required so nurses can close visits with a note.
     match /medicalRecords/{recordId} {
       allow read: if request.auth != null && (
         request.auth.uid == resource.data.patientId ||
         request.auth.uid == resource.data.nurseId ||
         isAdmin()
       );
-      allow create: if request.auth != null
-        && request.resource.data.patientId == request.auth.uid;
+      allow create: if request.auth != null && (
+        request.resource.data.patientId == request.auth.uid ||
+        request.resource.data.nurseId == request.auth.uid
+      );
       allow update: if request.auth != null && (
         request.auth.uid == resource.data.nurseId || isAdmin()
       );

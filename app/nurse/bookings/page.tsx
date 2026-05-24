@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarClock, Search, CheckCircle, XCircle, Clock } from "lucide-react";
+import { CalendarClock, Search, CheckCircle, XCircle, ClipboardCheck } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { BookingWithParticipants, BookingStatus } from "@/lib/types";
 import { getBookingsForNurseWithParticipants, updateBookingStatus } from "@/services/bookingService";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import BookingDetails from "@/components/nurse/BookingDetails";
+import VisitCompletionModal from "@/components/nurse/VisitCompletionModal";
 
 const STATUS_COLORS: Record<BookingStatus, string> = {
   pending: "bg-amber-100 text-amber-700",
@@ -24,6 +25,7 @@ export default function NurseBookingsPage() {
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [completingBooking, setCompletingBooking] = useState<BookingWithParticipants | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -51,6 +53,12 @@ export default function NurseBookingsPage() {
         setBookings(data);
       }
     } finally { setUpdatingId(null); }
+  }
+
+  async function reloadBookings() {
+    if (!appUser) return;
+    const data = await getBookingsForNurseWithParticipants(appUser.id);
+    setBookings(data);
   }
 
   if (authLoading || !appUser || loading) return <LoadingScreen text="Loading bookings..." />;
@@ -138,7 +146,18 @@ export default function NurseBookingsPage() {
                             </button>
                           </>
                         )}
-                        {b.status !== "pending" && <span className="text-xs text-slate-400 italic">No action</span>}
+                        {b.status === "accepted" && (
+                          <button
+                            onClick={() => setCompletingBooking(b)}
+                            disabled={updatingId === b.id}
+                            className="flex items-center gap-1 rounded-lg bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition disabled:opacity-50"
+                          >
+                            <ClipboardCheck className="h-3.5 w-3.5" /> Complete Visit
+                          </button>
+                        )}
+                        {(b.status === "completed" || b.status === "rejected" || b.status === "cancelled") && (
+                          <span className="text-xs text-slate-400 italic">No action</span>
+                        )}
                         <button onClick={() => setOpenId(openId === b.id ? null : b.id)} className="ml-2 text-sm text-sky-600 font-bold">Details</button>
                       </div>
                     </td>
@@ -157,6 +176,18 @@ export default function NurseBookingsPage() {
           </div>
         )}
       </div>
+
+      {completingBooking && appUser && (
+        <VisitCompletionModal
+          booking={completingBooking}
+          nurseId={appUser.id}
+          nurseName={appUser.name}
+          onClose={() => setCompletingBooking(null)}
+          onCompleted={() => {
+            void reloadBookings();
+          }}
+        />
+      )}
     </div>
   );
 }

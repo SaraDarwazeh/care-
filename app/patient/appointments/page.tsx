@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, MapPin, Clock, ChevronRight, X } from "lucide-react";
+import { CalendarClock, MapPin, Clock, ChevronRight, X, FileText } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import SectionContainer from "@/components/patient/SectionContainer";
 import { useAuth } from "@/hooks/useAuth";
 import { BookingWithParticipants } from "@/lib/types";
 import { getBookingsForPatientWithParticipants, updateBookingStatus } from "@/services/bookingService";
+import { getRecordsForPatient } from "@/services/medicalService";
 
 const STATUS_STYLES: Record<BookingWithParticipants["status"], string> = {
   pending: "bg-amber-100 text-amber-700",
@@ -29,10 +30,12 @@ function BookingCard({
   booking,
   onCancel,
   cancelling,
+  recordId,
 }: {
   booking: BookingWithParticipants;
   onCancel: (id: string) => void;
   cancelling: boolean;
+  recordId?: string;
 }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col gap-4">
@@ -116,6 +119,18 @@ function BookingCard({
           {cancelling ? "Cancelling..." : "Cancel Appointment"}
         </button>
       )}
+
+      {/* Visit notes link for completed visits */}
+      {booking.status === "completed" && recordId && (
+        <Link
+          href={`/patient/records/${recordId}`}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-700 transition hover:bg-sky-100"
+        >
+          <FileText className="h-4 w-4" />
+          View Visit Notes
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
     </div>
   );
 }
@@ -126,6 +141,7 @@ export default function PatientAppointmentsPage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [recordsByBooking, setRecordsByBooking] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!appUser) return;
@@ -135,8 +151,17 @@ export default function PatientAppointmentsPage() {
 
     async function loadBookings() {
       try {
-        const items = await getBookingsForPatientWithParticipants(patientId);
-        if (active) setBookings(items);
+        const [items, records] = await Promise.all([
+          getBookingsForPatientWithParticipants(patientId),
+          getRecordsForPatient(patientId),
+        ]);
+        if (!active) return;
+        setBookings(items);
+        const map: Record<string, string> = {};
+        records.forEach((r) => {
+          if (r.bookingId) map[r.bookingId] = r.id;
+        });
+        setRecordsByBooking(map);
       } catch (loadError) {
         console.error("[patient/appointments] failed to load bookings", loadError);
         if (active) setError("Unable to load appointments right now.");
@@ -234,6 +259,7 @@ export default function PatientAppointmentsPage() {
                 booking={booking}
                 onCancel={handleCancel}
                 cancelling={cancellingId === booking.id}
+                recordId={recordsByBooking[booking.id]}
               />
             ))}
           </div>

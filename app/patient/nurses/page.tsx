@@ -3,11 +3,37 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
-import { Filter, SlidersHorizontal, Search, MapPin } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Filter, SlidersHorizontal, Search } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseMarketplaceCard from "@/components/patient/NurseMarketplaceCard";
-import { NurseMarketplaceProfile } from "@/lib/types";
+import MarketplaceFilters, {
+  EMPTY_FILTERS,
+  countActiveFilters,
+  type MarketplaceFilterValues,
+  type SortKey,
+} from "@/components/patient/MarketplaceFilters";
+import type { NurseDay, NurseMarketplaceProfile } from "@/lib/types";
 import { getApprovedNurseMarketplaceProfiles } from "@/services/nurseService";
+
+const WEEKDAYS: NurseDay[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function todayLocalDay(): NurseDay {
+  const now = new Date();
+  return WEEKDAYS[now.getDay()];
+}
+
+function isOnLeaveToday(nurse: NurseMarketplaceProfile): boolean {
+  if (!nurse.onLeave) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startStr = nurse.leaveStartDate;
+  const endStr = nurse.leaveEndDate;
+  const start = startStr ? new Date(startStr).setHours(0, 0, 0, 0) : -Infinity;
+  const end = endStr ? new Date(endStr).setHours(23, 59, 59, 999) : Infinity;
+  const t = today.getTime();
+  return t >= start && t <= end;
+}
 
 function normalizeValue(value: string) {
   return value.trim().toLowerCase();
@@ -20,36 +46,64 @@ function shiftLabel(value: string) {
   return value;
 }
 
+function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceFilterValues; sortBy: SortKey } {
+  const sortRaw = params.get("sort");
+  const sortBy: SortKey =
+    sortRaw === "price_low" || sortRaw === "experience" ? sortRaw : "rating";
+
+  return {
+    filters: {
+      service: params.get("service") ?? "",
+      shift: (params.get("shift") ?? "").toLowerCase(),
+      gender: params.get("gender") ?? "",
+      overnight: params.get("overnight") ?? "any",
+      location: params.get("location") ?? "",
+      minExperience: Number(params.get("minExp") ?? "0") || 0,
+      availableToday: params.get("availableToday") === "1",
+      transportAvailable: params.get("transport") === "1",
+      skills: (params.get("skills") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+      certifications: (params.get("certs") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+      languages: (params.get("languages") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+    },
+    sortBy,
+  };
+}
+
+function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey): URLSearchParams {
+  const p = new URLSearchParams();
+  if (values.service) p.set("service", values.service);
+  if (values.shift) p.set("shift", values.shift);
+  if (values.gender) p.set("gender", values.gender);
+  if (values.overnight !== "any") p.set("overnight", values.overnight);
+  if (values.location) p.set("location", values.location);
+  if (values.minExperience > 0) p.set("minExp", String(values.minExperience));
+  if (values.availableToday) p.set("availableToday", "1");
+  if (values.transportAvailable) p.set("transport", "1");
+  if (values.skills.length) p.set("skills", values.skills.join(","));
+  if (values.certifications.length) p.set("certs", values.certifications.join(","));
+  if (values.languages.length) p.set("languages", values.languages.join(","));
+  if (sortBy !== "rating") p.set("sort", sortBy);
+  return p;
+}
+
 export default function PatientNursesPage() {
-  const [serviceParam, setServiceParam] = useState("");
-  const [shiftParam, setShiftParam] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const initial = useMemo(() => readFiltersFromParams(new URLSearchParams(searchParams.toString())), [searchParams]);
+
+  const [filters, setFilters] = useState<MarketplaceFilterValues>(initial.filters);
+  const [sortBy, setSortBy] = useState<SortKey>(initial.sortBy);
   const [nurses, setNurses] = useState<NurseMarketplaceProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
-  const [showFilters, setShowFilters] = useState(Boolean(serviceParam || shiftParam));
-  const [filterGender, setFilterGender] = useState("");
-  const [filterService, setFilterService] = useState(serviceParam);
-  const [filterShift, setFilterShift] = useState(shiftParam.toLowerCase());
-  const [filterOvernight, setFilterOvernight] = useState("any");
-  const [filterLocation, setFilterLocation] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
-
+  // Load nurses once on mount.
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const svc = sp.get("service") ?? "";
-      const sh = sp.get("shift") ?? "";
-      // Defer state updates to avoid synchronous setState inside effect
-      setTimeout(() => {
-        setServiceParam(svc);
-        setShiftParam(sh);
-        setShowFilters(Boolean(svc || sh));
-      }, 0);
-    }
     let active = true;
-
-    async function loadNurses() {
+    (async () => {
       try {
         const items = await getApprovedNurseMarketplaceProfiles();
         if (active) setNurses(items);
@@ -59,96 +113,140 @@ export default function PatientNursesPage() {
       } finally {
         if (active) setLoading(false);
       }
-    }
-
-    void loadNurses();
+    })();
     return () => {
       active = false;
     };
   }, []);
 
+  // Persist filter state to URL whenever it changes.
+  useEffect(() => {
+    const params = writeFiltersToParams(filters, sortBy);
+    const query = params.toString();
+    const target = query ? `${pathname}?${query}` : pathname;
+    // Avoid pushing a new history entry on every keystroke — replace instead.
+    router.replace(target, { scroll: false });
+  }, [filters, sortBy, pathname, router]);
+
+  // Derive filter option lists from loaded nurse data.
   const availableServices = useMemo(() => {
-    const services = new Set<string>();
+    const set = new Set<string>();
+    nurses.forEach((n) => n.services.forEach((s) => set.add(s.name)));
+    return Array.from(set).sort();
+  }, [nurses]);
 
-    nurses.forEach((nurse) => {
-      nurse.services.forEach((service) => services.add(service.name));
-    });
+  const availableSkills = useMemo(() => {
+    const set = new Set<string>();
+    nurses.forEach((n) => (n.skills ?? []).forEach((s) => set.add(s)));
+    return Array.from(set).sort();
+  }, [nurses]);
 
-    return Array.from(services).sort();
+  const availableCertifications = useMemo(() => {
+    const set = new Set<string>();
+    nurses.forEach((n) => (n.certificates ?? []).forEach((c) => set.add(c)));
+    return Array.from(set).sort();
+  }, [nurses]);
+
+  const availableLanguages = useMemo(() => {
+    const set = new Set<string>();
+    nurses.forEach((n) => (n.languages ?? []).forEach((l) => set.add(l)));
+    return Array.from(set).sort();
   }, [nurses]);
 
   const filteredNurses = useMemo(() => {
+    const today = todayLocalDay();
+
     return nurses.filter((nurse) => {
       if (
-        filterService &&
-        !nurse.services.some((service) => normalizeValue(service.name) === normalizeValue(filterService))
+        filters.service &&
+        !nurse.services.some(
+          (service) => normalizeValue(service.name) === normalizeValue(filters.service),
+        )
       ) {
         return false;
       }
 
-      if (filterOvernight !== "any") {
-        const wantsOvernight = filterOvernight === "yes";
-        if (nurse.acceptsOvernight !== wantsOvernight) return false;
+      if (filters.overnight !== "any") {
+        const wantsOvernight = filters.overnight === "yes";
+        if (Boolean(nurse.acceptsOvernight) !== wantsOvernight) return false;
       }
 
-      if (filterLocation && nurse.location && !nurse.location.toLowerCase().includes(filterLocation.toLowerCase())) {
+      if (filters.location) {
+        const hay = (nurse.location ?? "").toLowerCase();
+        if (!hay.includes(filters.location.toLowerCase())) return false;
+      }
+
+      if (filters.gender && filters.gender !== "any") {
+        if (!nurse.gender || nurse.gender !== filters.gender) return false;
+      }
+
+      if (filters.shift && filters.shift !== "any") {
+        const nurseShifts = (nurse.availableShifts ?? []).map((s) => s.toLowerCase());
+        if (!nurseShifts.includes(filters.shift.toLowerCase())) return false;
+      }
+
+      if (filters.minExperience > 0 && (nurse.experienceYears ?? 0) < filters.minExperience) {
         return false;
       }
 
-      // Gender filter — use nurse.gender field (already in NurseProfile type)
-      if (filterGender && filterGender !== "any") {
-        if (!nurse.gender || nurse.gender !== filterGender) return false;
+      if (filters.transportAvailable && !nurse.transportAvailable) {
+        return false;
       }
 
-      // Shift filter — use nurse.availableShifts field (already in NurseProfile type)
-      if (filterShift && filterShift !== "any") {
-        const nurseShifts = (nurse.availableShifts || []).map(s => s.toLowerCase());
-        if (!nurseShifts.includes(filterShift.toLowerCase())) return false;
+      if (filters.availableToday) {
+        const days = nurse.availableDays ?? [];
+        if (!days.includes(today)) return false;
+        if (isOnLeaveToday(nurse)) return false;
+      }
+
+      if (filters.skills.length > 0) {
+        const nurseSkills = (nurse.skills ?? []).map((s) => s.toLowerCase());
+        const wanted = filters.skills.map((s) => s.toLowerCase());
+        if (!wanted.every((w) => nurseSkills.includes(w))) return false;
+      }
+
+      if (filters.certifications.length > 0) {
+        const certs = (nurse.certificates ?? []).map((c) => c.toLowerCase());
+        const wanted = filters.certifications.map((c) => c.toLowerCase());
+        if (!wanted.every((w) => certs.includes(w))) return false;
+      }
+
+      if (filters.languages.length > 0) {
+        const langs = (nurse.languages ?? []).map((l) => l.toLowerCase());
+        const wanted = filters.languages.map((l) => l.toLowerCase());
+        if (!wanted.every((w) => langs.includes(w))) return false;
       }
 
       return true;
     });
-  }, [nurses, filterService, filterOvernight, filterLocation, filterGender, filterShift]);
+  }, [nurses, filters]);
 
   const sortedNurses = useMemo(() => {
     return [...filteredNurses].sort((a, b) => {
-      if (sortBy === "rating") {
-        return (b.rating ?? 0) - (a.rating ?? 0);
-      }
+      if (sortBy === "rating") return (b.rating ?? 0) - (a.rating ?? 0);
       if (sortBy === "price_low") {
-        const aMin = a.services.length > 0 ? Math.min(...a.services.map(s => s.price)) : Infinity;
-        const bMin = b.services.length > 0 ? Math.min(...b.services.map(s => s.price)) : Infinity;
+        const aMin = a.services.length > 0 ? Math.min(...a.services.map((s) => s.price)) : Infinity;
+        const bMin = b.services.length > 0 ? Math.min(...b.services.map((s) => s.price)) : Infinity;
         return aMin - bMin;
       }
-      if (sortBy === "experience") {
-        return (b.experienceYears ?? 0) - (a.experienceYears ?? 0);
-      }
+      if (sortBy === "experience") return (b.experienceYears ?? 0) - (a.experienceYears ?? 0);
       return 0;
     });
   }, [filteredNurses, sortBy]);
 
-  const activeFilterCount = [
-    filterService,
-    filterGender && filterGender !== "any" ? filterGender : "",
-    filterShift && filterShift !== "any" ? filterShift : "",
-    filterOvernight !== "any" ? filterOvernight : "",
-    filterLocation,
-  ].filter(Boolean).length;
+  const activeFilterCount = countActiveFilters(filters);
 
-  const activeRouteLabel = serviceParam
-    ? `Service: ${serviceParam}`
-    : shiftParam
-      ? shiftLabel(shiftParam ?? "")
+  const activeRouteLabel = filters.service
+    ? `Service: ${filters.service}`
+    : filters.shift
+      ? shiftLabel(filters.shift)
       : "";
+
+  // detailQuery propagates pre-filter context to the nurse detail page so
+  // the booking form opens with the right initial values.
   const detailQuery = new URLSearchParams();
-
-  if (serviceParam) {
-    detailQuery.set("service", serviceParam);
-  }
-
-  if (shiftParam) {
-    detailQuery.set("shift", shiftParam);
-  }
+  if (filters.service) detailQuery.set("service", filters.service);
+  if (filters.shift) detailQuery.set("shift", filters.shift);
 
   if (loading) {
     return <LoadingScreen text="Loading available nurses..." />;
@@ -158,7 +256,9 @@ export default function PatientNursesPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-3xl">Find Your Nurse</h1>
-        <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">Browse approved healthcare professionals, filter by your needs, and book instantly.</p>
+        <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">
+          Browse approved healthcare professionals, filter by your needs, and book instantly.
+        </p>
       </div>
 
       {activeRouteLabel ? (
@@ -167,12 +267,16 @@ export default function PatientNursesPage() {
         </div>
       ) : null}
 
-      {error ? <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">Unable to load nurses right now.</div> : null}
+      {error ? (
+        <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="lg:w-72 lg:shrink-0">
+        <div className="lg:w-80 lg:shrink-0">
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setShowFilters((v) => !v)}
             className="flex w-full items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 font-bold text-slate-800 shadow-sm lg:hidden"
             type="button"
           >
@@ -188,122 +292,17 @@ export default function PatientNursesPage() {
           </button>
 
           <div className={`mt-4 lg:mt-0 ${showFilters ? "block" : "hidden lg:block"}`}>
-            <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-              <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-                <Filter className="h-5 w-5 text-sky-600" /> Filters
-                {activeFilterCount > 0 && (
-                  <span className="ml-auto rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-bold text-sky-700">
-                    {activeFilterCount} active
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Location</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="City or village..."
-                      value={filterLocation}
-                      onChange={(event) => setFilterLocation(event.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Service Needed</label>
-                  <select
-                    value={filterService}
-                    onChange={(event) => setFilterService(event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
-                  >
-                    <option value="">Any Service</option>
-                    {availableServices.map((service) => (
-                      <option key={service} value={service}>
-                        {service}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Overnight Care</label>
-                  <div className="flex rounded-xl bg-slate-50 p-1">
-                    {[
-                      { value: "any", label: "Any" },
-                      { value: "yes", label: "Yes" },
-                      { value: "no", label: "No" },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setFilterOvernight(option.value)}
-                        className={`flex-1 rounded-lg py-1.5 text-sm font-medium capitalize transition-colors ${filterOvernight === option.value ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Shift</label>
-                  <select
-                    value={filterShift}
-                    onChange={(event) => setFilterShift(event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
-                  >
-                    <option value="any">Any Shift</option>
-                    <option value="a">Shift A (07:00 - 14:00)</option>
-                    <option value="b">Shift B (14:00 - 20:00)</option>
-                    <option value="c">Shift C (20:00 - 07:00)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Gender</label>
-                  <select
-                    value={filterGender}
-                    onChange={(event) => setFilterGender(event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
-                  >
-                    <option value="any">No Preference</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFilterService("");
-                    setFilterOvernight("any");
-                    setFilterLocation("");
-                    setFilterGender("");
-                    setFilterShift("");
-                  }}
-                  className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  Clear Filters
-                </button>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-semibold text-slate-700">Sort By</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
-                  >
-                    <option value="rating">Highest Rated</option>
-                    <option value="price_low">Lowest Price</option>
-                    <option value="experience">Most Experienced</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <MarketplaceFilters
+              values={filters}
+              onChange={setFilters}
+              onClear={() => setFilters(EMPTY_FILTERS)}
+              availableServices={availableServices}
+              availableSkills={availableSkills}
+              availableCertifications={availableCertifications}
+              availableLanguages={availableLanguages}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
           </div>
         </div>
 
@@ -325,24 +324,27 @@ export default function PatientNursesPage() {
               <p className="mt-1 text-sm text-slate-500">Try adjusting your filters to see more results.</p>
               <button
                 type="button"
-                onClick={() => {
-                  setFilterService("");
-                  setFilterOvernight("any");
-                  setFilterLocation("");
-                  setFilterGender("");
-                  setFilterShift("");
-                }}
+                onClick={() => setFilters(EMPTY_FILTERS)}
                 className="mt-4 text-sm font-semibold text-sky-600 hover:underline"
               >
                 Clear all filters
               </button>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
-              {sortedNurses.map((nurse) => (
-                <NurseMarketplaceCard key={nurse.userId} nurse={nurse} detailQuery={detailQuery.toString()} />
-              ))}
-            </div>
+            <>
+              <p className="mb-4 text-sm font-medium text-slate-500">
+                {sortedNurses.length} nurse{sortedNurses.length === 1 ? "" : "s"} match your filters
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+                {sortedNurses.map((nurse) => (
+                  <NurseMarketplaceCard
+                    key={nurse.userId}
+                    nurse={nurse}
+                    detailQuery={detailQuery.toString()}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

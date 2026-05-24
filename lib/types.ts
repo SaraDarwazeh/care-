@@ -38,6 +38,7 @@ export interface NurseProfile {
   additionalServices?: string[];
   willingToServeLocations?: string[];
   transportAvailable?: boolean;
+  languages?: string[];
   // Vacation / leave mode. When onLeave is true, validateBooking rejects
   // future bookings overlapping the [leaveStartDate, leaveEndDate] range.
   // Either bound may be omitted: missing start = leave starts now,

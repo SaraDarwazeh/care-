@@ -40,6 +40,11 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
     gender: typeof nurseData.gender === "string" ? (nurseData.gender as "male" | "female" | "other") : undefined,
     availableShifts: Array.isArray(nurseData.availableShifts) ? (nurseData.availableShifts as string[]) : [],
     certificates: Array.isArray(nurseData.certificates) ? (nurseData.certificates as string[]) : [],
+    languages: Array.isArray(nurseData.languages) ? (nurseData.languages as string[]) : [],
+    transportAvailable: Boolean(nurseData.transportAvailable),
+    onLeave: Boolean(nurseData.onLeave),
+    leaveStartDate: typeof nurseData.leaveStartDate === "string" ? nurseData.leaveStartDate : undefined,
+    leaveEndDate: typeof nurseData.leaveEndDate === "string" ? nurseData.leaveEndDate : undefined,
     email: user.email,
     status: user.status,
   };

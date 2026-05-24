@@ -37,6 +37,7 @@ export default function NurseProfileForm({
   const [availableDays, setAvailableDays] = useState<NurseDay[]>(["Mon", "Tue", "Wed", "Thu", "Fri"]);
   const [availableShifts, setAvailableShifts] = useState<string[]>([]);
   const [acceptsOvernight, setAcceptsOvernight] = useState(false);
+  const [languages, setLanguages] = useState("");
 
   // Step 3: Certificates (Mock upload)
   const [certificates, setCertificates] = useState<string[]>([]);
@@ -68,6 +69,7 @@ export default function NurseProfileForm({
       setAvailableDays(profile.availableDays?.length ? profile.availableDays : ["Mon", "Tue", "Wed", "Thu", "Fri"]);
       setAvailableShifts(profile.availableShifts ?? []);
       setAcceptsOvernight(Boolean(profile.acceptsOvernight));
+      setLanguages((profile.languages ?? []).join(", "));
       
       setCertificates(profile.certificates ?? []);
       
@@ -122,6 +124,7 @@ export default function NurseProfileForm({
       pricePerHour: pricePerHour || undefined,
       experienceYears,
       skills: skills.split(",").map((item) => item.trim()).filter(Boolean),
+      languages: languages.split(",").map((item) => item.trim()).filter(Boolean),
       availableDays,
       availableShifts,
       availableHours: { from: "00:00", to: "23:59" }, // Deprecated field technically since we use shifts now, but kept for schema compat
@@ -254,11 +257,21 @@ export default function NurseProfileForm({
 
               <div>
                 <label className="mb-1 block text-sm font-semibold text-slate-700">Skills (comma separated)</label>
-                <input 
-                  value={skills} 
-                  onChange={(e) => setSkills(e.target.value)} 
-                  placeholder="e.g. IV placement, wound dressing, CPR" 
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500" 
+                <input
+                  value={skills}
+                  onChange={(e) => setSkills(e.target.value)}
+                  placeholder="e.g. IV placement, wound dressing, CPR"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">Languages (comma separated)</label>
+                <input
+                  value={languages}
+                  onChange={(e) => setLanguages(e.target.value)}
+                  placeholder="e.g. Arabic, English, French"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 

@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import {
   BookingWithParticipants,
+  CarePackage,
   NurseMarketplaceProfile,
   StoreItem,
   PatientProfile,
@@ -41,6 +42,10 @@ import {
 import { getApprovedNurseMarketplaceProfiles } from "@/services/nurseService";
 import { getProducts } from "@/services/storeService";
 import { getPublicStats, type PublicStats } from "@/services/publicStats";
+import { listFeaturedPackages } from "@/services/packageService";
+import PackageCard from "@/components/packages/PackageCard";
+import ServiceCategoryCard from "@/components/services/ServiceCategoryCard";
+import { serviceCategories } from "@/lib/serviceCatalog";
 
 /* ─── hero slides ──────────────────────────────────────── */
 const heroSlides = [
@@ -55,34 +60,6 @@ const heroSlides = [
   {
     title: "Find the right nurse. Keep your family cared for.",
     image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&q=80",
-  },
-];
-
-/* ─── care plans ────────────────────────────────────────── */
-const carePlans = [
-  {
-    title: "One-Time Visit",
-    description: "Injections, wound care, and other single-service needs — booked in minutes.",
-    price: "From $25",
-    features: ["IV / IM support", "Wound dressing", "No ongoing commitment"],
-    href: "/services/one-time",
-    accent: false,
-  },
-  {
-    title: "Shift Support",
-    description: "Reliable daily coverage with Shift A, B, or C — for families who need a steady hand.",
-    price: "From $60",
-    features: ["Shift A / B / C", "Nurse matching", "Flexible schedule"],
-    href: "/services/shifts",
-    accent: true,
-  },
-  {
-    title: "Long-Term Care",
-    description: "Ongoing home care for recovery, chronic conditions, or elderly companion support.",
-    price: "Custom plan",
-    features: ["Weekly continuity", "Family coordination", "Care plan review"],
-    href: "/services/packages",
-    accent: false,
   },
 ];
 
@@ -109,6 +86,8 @@ export default function Home() {
   const [stats,        setStats]        = useState<PublicStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [featuredPackages, setFeaturedPackages] = useState<CarePackage[]>([]);
+
   const [bookings,        setBookings]        = useState<BookingWithParticipants[]>([]);
   const [patientProfile,  setPatientProfile]  = useState<PatientProfile | null>(null);
   const [patientReady,    setPatientReady]    = useState(false);
@@ -116,8 +95,19 @@ export default function Home() {
   /* public data */
   useEffect(() => {
     let alive = true;
-    Promise.all([getApprovedNurseMarketplaceProfiles(), getProducts()])
-      .then(([n, p]) => { if (alive) { setNurses(n.slice(0, 5)); setProducts(p.slice(0, 4)); } })
+    Promise.all([
+      getApprovedNurseMarketplaceProfiles(),
+      getProducts(),
+      listFeaturedPackages(),
+    ])
+      .then(([n, p, pkgs]) => {
+        if (!alive) return;
+        // Sort nurses by rating so the homepage shows our best-rated approved
+        // nurses first — same sort the patient dashboard uses.
+        setNurses([...n].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 5));
+        setProducts(p.slice(0, 4));
+        setFeaturedPackages(pkgs.slice(0, 3));
+      })
       .catch(console.error)
       .finally(() => { if (alive) setLoading(false); });
 
@@ -396,6 +386,59 @@ export default function Home() {
 
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-12 sm:px-8 sm:space-y-24 sm:py-20">
 
+        {/* ══ EXPLORE THE PLATFORM ═════════════════════════════
+            Surfaces the four primary domains the platform offers so
+            patients know what they can do here before scrolling further. */}
+        <section id="explore" className="scroll-mt-20">
+          <div className="mb-10 max-w-2xl">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">Explore the Platform</p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Three ways to receive care, plus a healthcare store
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-slate-500">
+              Pick the path that matches what you need — a single visit, a recurring
+              shift schedule, or a structured multi-day package.
+            </p>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {serviceCategories.map((category) => (
+              <ServiceCategoryCard key={category.slug} category={category} />
+            ))}
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <Link
+              href="/patient/store"
+              className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-violet-200 hover:shadow-md"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                  <Stethoscope className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800">Healthcare Store</p>
+                  <p className="text-sm text-slate-500">Medical supplies delivered via the same admin team.</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-violet-500 transition" />
+            </Link>
+            <Link
+              href="/community"
+              className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <HeartHandshake className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800">Community</p>
+                  <p className="text-sm text-slate-500">Donations, exchanges, and family support around care.</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-emerald-500 transition" />
+            </Link>
+          </div>
+        </section>
+
         {/* ══ WHY HOME CARE ══════════════════════════════════
             Emotional anchor: human situations families recognize.
             This section creates empathy before any product pitch. */}
@@ -546,7 +589,7 @@ export default function Home() {
                   icon: ShieldCheck,
                   color: "text-sky-600 bg-sky-100",
                   title: "Every Nurse Verified",
-                  body: "Credentials reviewed, licenses confirmed, and background checks completed before any nurse is activated.",
+                  body: "Profiles, certifications, and stated qualifications are reviewed by our team before a nurse is activated.",
                 },
                 {
                   icon: Lock,
@@ -598,7 +641,7 @@ export default function Home() {
               <p className="mt-2 text-base text-slate-500">
                 {isPatient
                   ? "Verified professionals ready to provide care."
-                  : "Compassionate, qualified, and background checked."}
+                  : "Reviewed and approved by the Care Plus team."}
               </p>
             </div>
             <Link href="/patient/nurses" className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-sky-600 hover:text-sky-700 sm:flex transition">
@@ -767,48 +810,38 @@ export default function Home() {
           </p>
         </section>
 
-        {/* ══ CARE PLANS ══════════════════════════════════════
-            Moved to bottom — the user has been through emotional
-            journey, social proof, and trust. NOW they're ready
-            to choose a plan. */}
-        <section id="packages" className="scroll-mt-20">
-          <div className="mb-10 text-center">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">Ready to Start</p>
-            <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
-              Choose the right care plan
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-base text-slate-500">
-              One-time, ongoing shifts, or a full long-term plan — all bookable in minutes.
-            </p>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-3">
-            {carePlans.map((plan, i) => (
-              <div key={plan.title}
-                className={`flex flex-col rounded-2xl border p-6 transition hover:shadow-md ${plan.accent ? "border-sky-200 bg-sky-50" : "border-slate-100 bg-white"}`}
-              >
-                <div className="mb-1">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Starting at</p>
-                  <p className="text-2xl font-extrabold text-slate-900">{plan.price}</p>
-                </div>
-                <p className="mt-3 font-bold text-slate-800">{plan.title}</p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-500">{plan.description}</p>
-                <ul className="mt-5 flex-1 space-y-2.5">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={plan.href}
-                  className={`mt-6 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${plan.accent ? "bg-sky-600 text-white hover:bg-sky-700" : "border border-slate-200 text-slate-700 hover:border-sky-200 hover:text-sky-700"}`}
-                >
-                  Learn more <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
+        {/* ══ FEATURED PACKAGES ════════════════════════════════
+            Real care packages from Firestore. Section is hidden when
+            there are no active packages — we never fake plans. */}
+        {featuredPackages.length > 0 && (
+          <section id="packages" className="scroll-mt-20">
+            <div className="mb-10 flex items-end justify-between gap-4">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">
+                  Care Packages
+                </p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-4xl">
+                  Multi-day care plans built for real situations
+                </h2>
+                <p className="mt-3 max-w-2xl text-base text-slate-500">
+                  Each package covers a defined timeline, included services, and what to
+                  expect from your nurse — no guesswork.
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
+              <Link
+                href="/services/packages"
+                className="hidden shrink-0 items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700 sm:flex transition"
+              >
+                Browse all <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredPackages.map((pkg) => (
+                <PackageCard key={pkg.id} pkg={pkg} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ══ MEDICAL STORE PREVIEW ══════════════════════════ */}
         <section id="store" className="scroll-mt-20">

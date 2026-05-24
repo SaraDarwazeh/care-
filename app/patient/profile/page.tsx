@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
@@ -8,7 +8,7 @@ import PatientProfileEditor from "@/components/patient/PatientProfileEditor";
 import { useAuth } from "@/hooks/useAuth";
 import { getMissingFieldLabels, getPatientProfile } from "@/services/patientService";
 
-export default function PatientProfilePage() {
+function PatientProfilePageInner() {
   const { appUser, loading } = useAuth();
   const searchParams = useSearchParams();
   const isOnboarding = searchParams.get("onboarding") === "true";
@@ -61,5 +61,13 @@ export default function PatientProfilePage() {
 
       <PatientProfileEditor userId={appUser.id} />
     </div>
+  );
+}
+
+export default function PatientProfilePage() {
+  return (
+    <Suspense fallback={<LoadingScreen text="Loading profile..." />}>
+      <PatientProfilePageInner />
+    </Suspense>
   );
 }

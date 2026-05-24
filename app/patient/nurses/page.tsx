@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Filter, SlidersHorizontal, Search } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
@@ -86,7 +86,7 @@ function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey):
   return p;
 }
 
-export default function PatientNursesPage() {
+function PatientNursesPageInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -349,5 +349,13 @@ export default function PatientNursesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PatientNursesPage() {
+  return (
+    <Suspense fallback={<LoadingScreen text="Loading available nurses..." />}>
+      <PatientNursesPageInner />
+    </Suspense>
   );
 }

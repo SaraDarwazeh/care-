@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,7 +35,7 @@ function formatDays(days: string[]) {
   return days.length ? days.join(", ") : "Availability shared after setup";
 }
 
-export default function NurseProfilePage() {
+function NurseProfilePageInner() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const { appUser } = useAuth();
@@ -383,5 +383,13 @@ export default function NurseProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NurseProfilePage() {
+  return (
+    <Suspense fallback={<LoadingScreen text="Loading nurse profile..." />}>
+      <NurseProfilePageInner />
+    </Suspense>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BookingWithParticipants } from "@/lib/types";
+import { BookingWithParticipants, MedicalRecord } from "@/lib/types";
 import PriceBreakdown from "@/components/common/PriceBreakdown";
 import { getRecordsForPatient } from "@/services/medicalService";
 
 export default function BookingDetails({ booking }: { booking: BookingWithParticipants }) {
-  const [records, setRecords] = useState<any[]>([]);
+  const [records, setRecords] = useState<MedicalRecord[]>([]);
 
   useEffect(() => {
     let active = true;

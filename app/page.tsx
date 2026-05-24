@@ -637,10 +637,12 @@ export default function Home() {
                         </div>
                         <p className="text-xs text-emerald-300">{nurse.specialization}</p>
                       </div>
-                      <div className="flex items-center gap-1 rounded-lg bg-black/30 px-2 py-0.5 text-xs font-bold backdrop-blur-sm">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        {nurse.rating.toFixed(1)}
-                      </div>
+                      {nurse.rating > 0 && (
+                        <div className="flex items-center gap-1 rounded-lg bg-black/30 px-2 py-0.5 text-xs font-bold backdrop-blur-sm">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          {nurse.rating.toFixed(1)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col p-4">

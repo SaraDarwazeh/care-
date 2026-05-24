@@ -126,6 +126,24 @@ service cloud.firestore {
       }
     }
 
+    // Reviews: public read (review counts power marketplace + dashboard),
+    // patient creates only their own, owner can edit/delete their review,
+    // admin can moderate.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.patientId == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.patientId || isAdmin()
+      );
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.patientId || isAdmin()
+      );
+    }
+
     // Notifications: recipient + admin can read. Any authenticated user can
     // create one (notifications flow between users — patient creates one for
     // nurse on booking, nurse creates one for patient on accept, etc.).

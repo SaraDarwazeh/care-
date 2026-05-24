@@ -39,9 +39,11 @@ export default function NurseProfileForm({
   const [acceptsOvernight, setAcceptsOvernight] = useState(false);
   const [languages, setLanguages] = useState("");
 
-  // Step 3: Certificates (Mock upload)
+  // Step 3: Certificates (Mock upload) + descriptive content
   const [certificates, setCertificates] = useState<string[]>([]);
   const [newCertName, setNewCertName] = useState("");
+  const [carePhilosophy, setCarePhilosophy] = useState("");
+  const [gallery, setGallery] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -72,7 +74,9 @@ export default function NurseProfileForm({
       setLanguages((profile.languages ?? []).join(", "));
       
       setCertificates(profile.certificates ?? []);
-      
+      setCarePhilosophy(profile.carePhilosophy ?? "");
+      setGallery((profile.gallery ?? []).join("\n"));
+
       setLoading(false);
     }
     void loadProfile();
@@ -112,7 +116,9 @@ export default function NurseProfileForm({
     setSaving(true);
     setMessage("");
 
-    const payload: NurseProfile = {
+    // saveNurseProfile's signature Omits rating + reviewCount because those
+    // are aggregate fields owned by reviewService.
+    const payload: Omit<NurseProfile, "rating" | "reviewCount"> = {
       userId,
       fullName,
       profileImage,
@@ -127,10 +133,14 @@ export default function NurseProfileForm({
       languages: languages.split(",").map((item) => item.trim()).filter(Boolean),
       availableDays,
       availableShifts,
-      availableHours: { from: "00:00", to: "23:59" }, // Deprecated field technically since we use shifts now, but kept for schema compat
+      availableHours: { from: "00:00", to: "23:59" }, // Kept for schema compat; shifts drive scheduling.
       acceptsOvernight,
       certificates,
-      rating: 4.8, // Initial mock rating
+      carePhilosophy: carePhilosophy.trim() || undefined,
+      gallery: gallery
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean),
     };
 
     await saveNurseProfile(payload);
@@ -327,6 +337,29 @@ export default function NurseProfileForm({
                   />
                   <button type="button" onClick={addMockCertificate} className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700">Add</button>
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">Care Philosophy (optional)</label>
+                <textarea
+                  value={carePhilosophy}
+                  onChange={(e) => setCarePhilosophy(e.target.value)}
+                  placeholder="Your approach to patient care, what families can expect from you..."
+                  className="min-h-[100px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">Gallery URLs (optional, one per line)</label>
+                <textarea
+                  value={gallery}
+                  onChange={(e) => setGallery(e.target.value)}
+                  placeholder={"https://...\nhttps://..."}
+                  className="min-h-[80px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500 font-mono"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Photos from your work — care environments, equipment, certifications. Patients see these on your profile.
+                </p>
               </div>
 
               <div className="space-y-3">

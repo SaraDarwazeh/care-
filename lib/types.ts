@@ -46,6 +46,22 @@ export interface NurseProfile {
   onLeave?: boolean;
   leaveStartDate?: string;
   leaveEndDate?: string;
+  // Aggregate cached on the profile doc; recomputed on each new review.
+  reviewCount?: number;
+  // Optional descriptive content shown on the nurse detail page.
+  carePhilosophy?: string;
+  gallery?: string[];
+}
+
+export interface NurseReview {
+  id: string;
+  nurseId: string;
+  patientId: string;
+  patientName?: string;
+  bookingId?: string;
+  rating: number; // 1–5 inclusive
+  comment: string;
+  createdAt: string;
 }
 
 export interface NurseMarketplaceProfile extends NurseProfile {

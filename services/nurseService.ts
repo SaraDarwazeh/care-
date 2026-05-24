@@ -24,7 +24,12 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
     services: Array.isArray(nurseData.services) ? (nurseData.services as NurseProfile["services"]) : [],
     pricePerHour:
       typeof nurseData.pricePerHour === "number" ? nurseData.pricePerHour : undefined,
-    rating: typeof nurseData.rating === "number" ? nurseData.rating : 4.8,
+    // rating defaults to 0 when no reviews exist; UI hides the rating pill
+    // for nurses with rating === 0 so we don't fake a star count.
+    rating: typeof nurseData.rating === "number" ? nurseData.rating : 0,
+    reviewCount: typeof nurseData.reviewCount === "number" ? nurseData.reviewCount : 0,
+    carePhilosophy: typeof nurseData.carePhilosophy === "string" ? nurseData.carePhilosophy : undefined,
+    gallery: Array.isArray(nurseData.gallery) ? (nurseData.gallery as string[]) : undefined,
     availableDays: Array.isArray(nurseData.availableDays)
       ? (nurseData.availableDays as NurseProfile["availableDays"])
       : [],
@@ -50,7 +55,10 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
   };
 }
 
-export async function saveNurseProfile(input: NurseProfile) {
+// Accepts everything EXCEPT the aggregate fields that reviewService owns.
+// Without this Omit, a profile save would overwrite the cached rating /
+// reviewCount that reviewService recomputes after every new review.
+export async function saveNurseProfile(input: Omit<NurseProfile, "rating" | "reviewCount">) {
   const { db } = ensureClientFirebase();
   await setDoc(doc(db, "nurseProfiles", input.userId), input, { merge: true });
 }

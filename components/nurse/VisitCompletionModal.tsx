@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, X, Activity, Pill, AlertTriangle, Plus } from "lucide-react";
 import type { BookingWithParticipants, Vitals } from "@/lib/types";
@@ -39,6 +39,44 @@ export default function VisitCompletionModal({
   const [step, setStep] = useState<"form" | "saving" | "done">("form");
   const [error, setError] = useState<string | null>(null);
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
+
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+
+  // Initial focus on the summary input.
+  useEffect(() => {
+    firstFieldRef.current?.focus();
+  }, []);
+
+  // Escape closes (only when not actively saving).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && step !== "saving") {
+        onClose();
+      }
+      // Trap Tab within the dialog.
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])',
+        );
+        const enabled = Array.from(focusables).filter(
+          (el) => !el.hasAttribute("disabled") && el.tabIndex !== -1,
+        );
+        if (enabled.length === 0) return;
+        const first = enabled[0];
+        const last = enabled[enabled.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [step, onClose]);
 
   function addAlert() {
     const trimmed = alertDraft.trim();
@@ -96,8 +134,16 @@ export default function VisitCompletionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="visit-completion-heading"
+    >
+      <div
+        ref={dialogRef}
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl"
+      >
         <button
           onClick={onClose}
           disabled={step === "saving"}
@@ -135,7 +181,10 @@ export default function VisitCompletionModal({
           <form onSubmit={handleSubmit} className="p-6 sm:p-8">
             <div className="mb-6">
               <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">Complete Visit</p>
-              <h2 className="mt-1 text-xl font-extrabold text-slate-800">
+              <h2
+                id="visit-completion-heading"
+                className="mt-1 text-xl font-extrabold text-slate-800"
+              >
                 {booking.service} · {booking.patientName}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
@@ -148,6 +197,7 @@ export default function VisitCompletionModal({
               <div>
                 <label className={labelClass}>Visit Summary</label>
                 <input
+                  ref={firstFieldRef}
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="One-line summary, e.g. 'Wound dressing change — healing well'"

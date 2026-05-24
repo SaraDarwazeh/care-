@@ -117,6 +117,14 @@ export interface Booking {
   status: BookingStatus;
   createdAt: string;
   rejectionReason?: string;
+  // Snapshot fields denormalized at create time so the appointments + bookings
+  // pages don't need a follow-up join to render the participant names.
+  // Older bookings without these fall back to the join.
+  patientNameSnapshot?: string;
+  patientEmailSnapshot?: string;
+  nurseNameSnapshot?: string;
+  nurseSpecializationSnapshot?: string;
+  nurseProfileImageSnapshot?: string;
 }
 
 export interface BookingWithParticipants extends Booking {

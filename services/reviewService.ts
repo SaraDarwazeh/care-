@@ -9,7 +9,10 @@ import {
   where,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
+import { createLogger } from "@/lib/logger";
 import type { NurseReview } from "@/lib/types";
+
+const log = createLogger("reviewService");
 
 const COLLECTION = "reviews";
 
@@ -34,11 +37,21 @@ function mapDoc(id: string, data: Record<string, unknown>): NurseReview {
   };
 }
 
-export async function getReviewsForNurse(nurseId: string): Promise<NurseReview[]> {
+// Reviews are unbounded over a nurse's lifetime; cap default reads at 30 so
+// the marketplace + detail pages stay snappy. The cached aggregate on the
+// nurse profile (rating + reviewCount) reflects ALL reviews, not just this page.
+export const REVIEWS_DEFAULT_LIMIT = 30;
+
+export async function getReviewsForNurse(
+  nurseId: string,
+  opts: { limit?: number } = {},
+): Promise<NurseReview[]> {
   const { db } = ensureClientFirebase();
   const snap = await getDocs(query(collection(db, COLLECTION), where("nurseId", "==", nurseId)));
   const items = snap.docs.map((d) => mapDoc(d.id, d.data() as Record<string, unknown>));
-  return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const cap = opts.limit ?? REVIEWS_DEFAULT_LIMIT;
+  return items.slice(0, cap);
 }
 
 export function summarize(reviews: NurseReview[]): ReviewSummary {
@@ -111,7 +124,7 @@ async function refreshNurseAggregate(nurseId: string): Promise<void> {
     });
   } catch (error) {
     // Profile doc may not exist yet (edge case). Don't fail the review write.
-    console.warn("[reviewService] failed to update nurse aggregate", error);
+    log.warn("failed to update nurse aggregate", error);
   }
 }
 

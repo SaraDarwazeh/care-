@@ -6,6 +6,9 @@ import {
   where,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("publicStats");
 
 export interface PublicStats {
   verifiedNurses: number;
@@ -60,7 +63,7 @@ export async function getPublicStats(): Promise<PublicStats> {
       familiesServed: patientIds.size,
     };
   } catch (error) {
-    console.error("[publicStats] Failed to fetch public stats", error);
+    log.error("Failed to fetch public stats", error);
     return EMPTY;
   }
 }

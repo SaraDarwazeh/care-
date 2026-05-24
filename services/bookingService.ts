@@ -214,10 +214,26 @@ export async function createBooking(input: Omit<Booking, "id" | "status" | "crea
   const { db } = ensureClientFirebase();
   await validateBooking(input);
 
+  // Snapshot the participant names onto the booking doc at create time so
+  // the appointments + bookings pages can render without an N+1 join.
+  const [patientSnap, nurseSnap] = await Promise.all([
+    getDoc(doc(db, "users", input.patientId)),
+    getDoc(doc(db, "nurseProfiles", input.nurseId)),
+  ]);
+  const patientData = patientSnap.exists() ? (patientSnap.data() as Record<string, unknown>) : {};
+  const nurseData = nurseSnap.exists() ? (nurseSnap.data() as Record<string, unknown>) : {};
+
   const payload = {
     ...input,
     status: "pending" as BookingStatus,
     createdAt: new Date().toISOString(),
+    patientNameSnapshot: typeof patientData.name === "string" ? patientData.name : undefined,
+    patientEmailSnapshot: typeof patientData.email === "string" ? patientData.email : undefined,
+    nurseNameSnapshot: typeof nurseData.fullName === "string" ? nurseData.fullName : undefined,
+    nurseSpecializationSnapshot:
+      typeof nurseData.specialization === "string" ? nurseData.specialization : undefined,
+    nurseProfileImageSnapshot:
+      typeof nurseData.profileImage === "string" ? nurseData.profileImage : undefined,
   };
 
   const ref = await addDoc(collection(db, "bookings"), payload);
@@ -244,68 +260,55 @@ export async function getBookingsForNurse(nurseId: string) {
   return sortBookingsByDateDesc(bookings);
 }
 
+// Resolve participant names from the snapshot on the booking doc when
+// present (set by createBooking after Phase O), falling back to per-booking
+// joins for legacy bookings without the snapshot. The fallback keeps the
+// page working for any bookings written before the denormalization landed.
+async function withParticipants(
+  db: ReturnType<typeof ensureClientFirebase>["db"],
+  booking: Booking,
+): Promise<BookingWithParticipants> {
+  const hasSnapshot =
+    Boolean(booking.patientNameSnapshot) || Boolean(booking.nurseNameSnapshot);
+
+  if (hasSnapshot) {
+    return {
+      ...booking,
+      patientName: booking.patientNameSnapshot ?? "Unknown patient",
+      patientEmail: booking.patientEmailSnapshot ?? "",
+      nurseName: booking.nurseNameSnapshot ?? "Unknown nurse",
+      nurseSpecialization: booking.nurseSpecializationSnapshot ?? "",
+      nurseProfileImage: booking.nurseProfileImageSnapshot ?? "",
+    } satisfies BookingWithParticipants;
+  }
+
+  const [patientSnapshot, nurseSnapshot] = await Promise.all([
+    getDoc(doc(db, "users", booking.patientId)),
+    getDoc(doc(db, "nurseProfiles", booking.nurseId)),
+  ]);
+  const patientData = patientSnapshot.exists() ? (patientSnapshot.data() as Record<string, unknown>) : {};
+  const nurseData = nurseSnapshot.exists() ? (nurseSnapshot.data() as Record<string, unknown>) : {};
+
+  return {
+    ...booking,
+    patientName: String(patientData.name ?? "Unknown patient"),
+    patientEmail: String(patientData.email ?? ""),
+    nurseName: String(nurseData.fullName ?? "Unknown nurse"),
+    nurseSpecialization: String(nurseData.specialization ?? ""),
+    nurseProfileImage: String(nurseData.profileImage ?? ""),
+  } satisfies BookingWithParticipants;
+}
+
 export async function getBookingsForNurseWithParticipants(nurseId: string) {
   const { db } = ensureClientFirebase();
   const bookings = await getBookingsForNurse(nurseId);
-
-  const joined = await Promise.all(
-    bookings.map(async (booking) => {
-      const [patientSnapshot, nurseSnapshot] = await Promise.all([
-        getDoc(doc(db, "users", booking.patientId)),
-        getDoc(doc(db, "nurseProfiles", booking.nurseId)),
-      ]);
-
-      const patientData = patientSnapshot.exists()
-        ? (patientSnapshot.data() as Record<string, unknown>)
-        : {};
-      const nurseData = nurseSnapshot.exists()
-        ? (nurseSnapshot.data() as Record<string, unknown>)
-        : {};
-
-      return {
-        ...booking,
-        patientName: String(patientData.name ?? "Unknown patient"),
-        patientEmail: String(patientData.email ?? ""),
-        nurseName: String(nurseData.fullName ?? "Unknown nurse"),
-        nurseSpecialization: String(nurseData.specialization ?? ""),
-        nurseProfileImage: String(nurseData.profileImage ?? ""),
-      } satisfies BookingWithParticipants;
-    }),
-  );
-
-  return joined;
+  return Promise.all(bookings.map((b) => withParticipants(db, b)));
 }
 
 export async function getBookingsForPatientWithParticipants(patientId: string) {
   const { db } = ensureClientFirebase();
   const bookings = await getBookingsForPatient(patientId);
-
-  const joined = await Promise.all(
-    bookings.map(async (booking) => {
-      const [patientSnapshot, nurseSnapshot] = await Promise.all([
-        getDoc(doc(db, "users", booking.patientId)),
-        getDoc(doc(db, "nurseProfiles", booking.nurseId)),
-      ]);
-
-      const patientData = patientSnapshot.exists()
-        ? (patientSnapshot.data() as Record<string, unknown>)
-        : {};
-      const nurseData = nurseSnapshot.exists()
-        ? (nurseSnapshot.data() as Record<string, unknown>)
-        : {};
-
-      return {
-        ...booking,
-        patientName: String(patientData.name ?? "Unknown patient"),
-        patientEmail: String(patientData.email ?? ""),
-        nurseName: String(nurseData.fullName ?? "Unknown nurse"),
-        nurseSpecialization: String(nurseData.specialization ?? ""),
-        nurseProfileImage: String(nurseData.profileImage ?? ""),
-      } satisfies BookingWithParticipants;
-    }),
-  );
-
-  return joined;
+  return Promise.all(bookings.map((b) => withParticipants(db, b)));
 }
 
 export async function updateBookingStatus(

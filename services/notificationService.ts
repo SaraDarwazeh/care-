@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { getCurrentIdToken } from "@/services/authService";
+import { createLogger } from "@/lib/logger";
 import type {
   Booking,
   BookingStatus,
@@ -18,6 +19,8 @@ import type {
   NotificationType,
   StoreOrder,
 } from "@/lib/types";
+
+const log = createLogger("notificationService");
 
 const COLLECTION = "notifications";
 
@@ -57,7 +60,7 @@ async function createNotification(input: CreateNotificationInput): Promise<void>
 async function broadcastToAdmins(input: Omit<CreateNotificationInput, "userId">): Promise<void> {
   const token = await getCurrentIdToken();
   if (!token) {
-    console.warn("[notificationService] broadcastToAdmins skipped: no auth token");
+    log.warn("broadcastToAdmins skipped: no auth token");
     return;
   }
   try {
@@ -71,13 +74,17 @@ async function broadcastToAdmins(input: Omit<CreateNotificationInput, "userId">)
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      console.warn("[notificationService] broadcastToAdmins non-ok", res.status, detail);
+      log.warn("broadcastToAdmins non-ok", res.status, detail);
     }
   } catch (error) {
     // Notifications are best-effort — never fail the parent transaction.
-    console.warn("[notificationService] broadcastToAdmins failed", error);
+    log.warn("broadcastToAdmins failed", error);
   }
 }
+
+// Default cap: pulls the most recent N to keep client memory bounded.
+// Callers can request more via opts.limit (e.g. 100 for an admin export).
+export const NOTIFICATIONS_DEFAULT_LIMIT = 50;
 
 export async function getNotificationsForUser(
   userId: string,
@@ -88,7 +95,8 @@ export async function getNotificationsForUser(
   const snap = await getDocs(q);
   const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Notification, "id">) }));
   items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return typeof opts.limit === "number" ? items.slice(0, opts.limit) : items;
+  const cap = opts.limit ?? NOTIFICATIONS_DEFAULT_LIMIT;
+  return items.slice(0, cap);
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
@@ -117,7 +125,7 @@ export function subscribeUnreadCount(
     q,
     (snap) => cb(snap.size),
     (err) => {
-      console.warn("[notificationService] subscribeUnreadCount error", err);
+      log.warn("subscribeUnreadCount error", err);
       cb(0);
     },
   );
@@ -160,7 +168,7 @@ function safe<T>(fn: () => Promise<T>): Promise<void> {
   return fn()
     .then(() => undefined)
     .catch((err) => {
-      console.warn("[notificationService] event helper failed", err);
+      log.warn("event helper failed", err);
     });
 }
 

@@ -10,7 +10,6 @@ import {
   getFirestore,
   query,
   setDoc,
-  updateDoc,
   where,
 } from "firebase/firestore";
 import { STORE_ITEMS } from "../lib/data/store";
@@ -451,6 +450,16 @@ function isoOffsetDate(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
   return d.toISOString().slice(0, 10);
+}
+
+// Firestore client SDK rejects undefined values; this strips them while
+// preserving null, 0, empty strings, and empty arrays.
+function stripUndefined<T extends Record<string, unknown>>(input: T): T {
+  const out: Record<string, unknown> = {};
+  Object.entries(input).forEach(([k, v]) => {
+    if (v !== undefined) out[k] = v;
+  });
+  return out as T;
 }
 
 function getNurseProfile(index: number, nurseName: string): NurseSeedProfile {
@@ -1042,11 +1051,8 @@ async function createAdminSeeder(): Promise<Seeder> {
 
   async function ensureNurseProfile(uid: string, profile: NurseSeedProfile) {
     const ref = db.collection("nurseProfiles").doc(uid);
-    if ((await ref.get()).exists) {
-      await ref.update({ profileImage: profile.profileImage });
-      return;
-    }
-    await ref.set({ userId: uid, ...profile });
+    const payload = stripUndefined({ userId: uid, ...profile });
+    await ref.set(payload, { merge: true });
   }
 
   async function ensurePatientProfile(
@@ -1083,7 +1089,7 @@ async function createAdminSeeder(): Promise<Seeder> {
 
   async function ensureReview(input: ReviewSeedInput) {
     const ref = db.collection("reviews").doc(input.id);
-    await ref.set(input, { merge: true });
+    await ref.set(stripUndefined({ ...input }), { merge: true });
   }
 
   async function ensureMedicalRecord(input: MedicalRecordSeedInput) {
@@ -1237,11 +1243,8 @@ async function createClientSeeder(): Promise<Seeder> {
 
   async function ensureNurseProfile(uid: string, profile: NurseSeedProfile) {
     const ref = doc(db, "nurseProfiles", uid);
-    if ((await getDoc(ref)).exists()) {
-      await updateDoc(ref, { profileImage: profile.profileImage });
-      return;
-    }
-    await setDoc(ref, { userId: uid, ...profile });
+    const payload = stripUndefined({ userId: uid, ...profile });
+    await setDoc(ref, payload, { merge: true });
   }
 
   async function ensurePatientProfile(
@@ -1278,7 +1281,7 @@ async function createClientSeeder(): Promise<Seeder> {
 
   async function ensureReview(input: ReviewSeedInput) {
     const ref = doc(db, "reviews", input.id);
-    await setDoc(ref, input, { merge: true });
+    await setDoc(ref, stripUndefined({ ...input }), { merge: true });
   }
 
   async function ensureMedicalRecord(input: MedicalRecordSeedInput) {

@@ -12,8 +12,6 @@ import {
   ShieldCheck,
   HeartPulse,
   ChevronRight,
-  Apple,
-  Activity,
   Plus,
   BookOpen,
   Package,
@@ -51,12 +49,6 @@ const QUICK_ACTIONS = [
   { label: "Medical Records", desc: "View your care history", href: "/patient/records", icon: BookOpen, color: "bg-emerald-50 text-emerald-600 border-emerald-100", iconBg: "bg-emerald-100" },
   { label: "Care Packages", desc: "Multi-day nursing packages", href: "/services/packages", icon: Package, color: "bg-violet-50 text-violet-600 border-violet-100", iconBg: "bg-violet-100" },
   { label: "Health Store", desc: "Order medical supplies", href: "/patient/store", icon: Store, color: "bg-amber-50 text-amber-600 border-amber-100", iconBg: "bg-amber-100" },
-];
-
-const HEALTH_TIPS = [
-  { id: 1, title: "Stay Hydrated", desc: "Drink at least 8 glasses a day.", image: "https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&q=80", icon: Activity },
-  { id: 2, title: "Healthy Diet", desc: "Balance your meals with greens.", image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80", icon: Apple },
-  { id: 3, title: "Regular Exercise", desc: "30 mins of daily activity.", image: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&q=80", icon: HeartPulse },
 ];
 
 interface PreviousNurse {
@@ -615,7 +607,7 @@ export default function PatientHomePage() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <div className="inline-flex items-center gap-2 text-violet-700 font-bold mb-2">
-                  <Store className="h-5 w-5" /> Care Plus Store
+                  <Store className="h-5 w-5" /> Care+ Store
                 </div>
                 <h2 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-3xl">Essential Supplies</h2>
               </div>
@@ -650,36 +642,6 @@ export default function PatientHomePage() {
           </div>
         </section>
       )}
-
-      {/* 11. Health tips */}
-      <section>
-        <div className="mb-6">
-          <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Daily Health Tips</h2>
-          <p className="text-slate-500 font-medium">Small steps for a healthier life.</p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {HEALTH_TIPS.map((tip) => (
-            <div key={tip.id} className="group relative overflow-hidden rounded-3xl bg-white shadow-sm border border-slate-100 cursor-pointer h-40">
-              <Image
-                src={tip.image}
-                alt={tip.title}
-                fill
-                className="object-cover opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent group-hover:from-black/90 transition-colors" />
-              <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                <div className="bg-white/20 backdrop-blur-md w-fit p-2 rounded-xl mb-3 border border-white/30 text-white group-hover:bg-white group-hover:text-sky-600 transition-colors">
-                  <tip.icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-white text-lg leading-tight">{tip.title}</h3>
-                <p className="text-slate-200 text-sm font-medium opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  {tip.desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Replaced "View All" mobile CTAs with a single quick-link footer */}
       <div className="flex items-center justify-center gap-3 pt-2 text-sm font-bold text-slate-500 sm:hidden">

@@ -89,9 +89,16 @@ function NurseRow({
                   <p className="text-slate-500 font-medium">No certificates uploaded.</p>
                 ) : (
                   <ul className="flex flex-wrap gap-2">
-                    {profile.certificates.map((cert, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sky-700 bg-sky-50 px-4 py-2 rounded-xl font-bold border border-sky-100 transition hover:bg-sky-100">
-                        <FileText className="h-4 w-4" /> {cert}
+                    {profile.certificates.map((cert) => (
+                      <li key={cert.id} className="flex items-center gap-2 text-sky-700 bg-sky-50 px-4 py-2 rounded-xl font-bold border border-sky-100 transition hover:bg-sky-100">
+                        <FileText className="h-4 w-4" />
+                        {cert.url ? (
+                          <a href={cert.url} target="_blank" rel="noreferrer noopener" className="hover:underline">
+                            {cert.name}
+                          </a>
+                        ) : (
+                          <span>{cert.name} <span className="ml-1 text-xs italic text-amber-700">(legacy)</span></span>
+                        )}
                       </li>
                     ))}
                   </ul>

@@ -10,9 +10,35 @@ import {
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import {
   AppUser,
+  NurseCertificate,
   NurseMarketplaceProfile,
   NurseProfile,
 } from "@/lib/types";
+
+// Legacy certificate entries were typed filenames (string[]). Coerce them
+// into the new NurseCertificate shape so the UI can treat both uniformly.
+// Real uploads land as objects with url + uploadedAt populated.
+export function coerceCertificates(raw: unknown): NurseCertificate[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry, idx): NurseCertificate | null => {
+      if (typeof entry === "string") {
+        return { id: `legacy-${idx}`, name: entry, url: "", uploadedAt: "" };
+      }
+      if (entry && typeof entry === "object") {
+        const obj = entry as Partial<NurseCertificate>;
+        if (typeof obj.name !== "string" || obj.name.length === 0) return null;
+        return {
+          id: typeof obj.id === "string" && obj.id ? obj.id : `cert-${idx}`,
+          name: obj.name,
+          url: typeof obj.url === "string" ? obj.url : "",
+          uploadedAt: typeof obj.uploadedAt === "string" ? obj.uploadedAt : "",
+        };
+      }
+      return null;
+    })
+    .filter((c): c is NurseCertificate => c !== null);
+}
 
 function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): NurseMarketplaceProfile {
   return {
@@ -44,7 +70,7 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
     location: typeof nurseData.location === "string" ? nurseData.location : undefined,
     gender: typeof nurseData.gender === "string" ? (nurseData.gender as "male" | "female" | "other") : undefined,
     availableShifts: Array.isArray(nurseData.availableShifts) ? (nurseData.availableShifts as string[]) : [],
-    certificates: Array.isArray(nurseData.certificates) ? (nurseData.certificates as string[]) : [],
+    certificates: coerceCertificates(nurseData.certificates),
     languages: Array.isArray(nurseData.languages) ? (nurseData.languages as string[]) : [],
     transportAvailable: Boolean(nurseData.transportAvailable),
     onLeave: Boolean(nurseData.onLeave),
@@ -55,12 +81,24 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
   };
 }
 
+// Firestore client SDK rejects undefined values. Profile fields that are
+// genuinely "not set" (no pricePerHour, no leave dates, no carePhilosophy)
+// arrive as undefined from the form — drop them so the write succeeds.
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) (out as Record<string, unknown>)[key] = value;
+  }
+  return out;
+}
+
 // Accepts everything EXCEPT the aggregate fields that reviewService owns.
 // Without this Omit, a profile save would overwrite the cached rating /
 // reviewCount that reviewService recomputes after every new review.
 export async function saveNurseProfile(input: Omit<NurseProfile, "rating" | "reviewCount">) {
   const { db } = ensureClientFirebase();
-  await setDoc(doc(db, "nurseProfiles", input.userId), input, { merge: true });
+  const cleaned = stripUndefined(input as unknown as Record<string, unknown>);
+  await setDoc(doc(db, "nurseProfiles", input.userId), cleaned, { merge: true });
 }
 
 export async function getNurseProfileByUserId(userId: string) {
@@ -71,7 +109,14 @@ export async function getNurseProfileByUserId(userId: string) {
     return null;
   }
 
-  return snapshot.data() as NurseProfile;
+  // Run legacy-certificate coercion here too so the nurse profile editor
+  // sees a normalized shape (string[] entries become objects with url:"").
+  const raw = snapshot.data() as Record<string, unknown>;
+  const profile = raw as unknown as NurseProfile;
+  return {
+    ...profile,
+    certificates: coerceCertificates(raw.certificates),
+  };
 }
 
 export async function getApprovedNurseMarketplaceProfiles() {

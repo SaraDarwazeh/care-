@@ -3,6 +3,7 @@
 import { Settings, Shield, Bell, Palette, Database } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import PricingConfigEditor from "@/components/admin/PricingConfigEditor";
 
 export default function AdminSettingsPage() {
   const { appUser, loading } = useProtectedRoute({ allowedRoles: ["admin"] });
@@ -70,6 +71,9 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Pricing config — live editor */}
+      <PricingConfigEditor />
 
       {/* Settings Grid */}
       <div className="grid gap-4 sm:grid-cols-2">

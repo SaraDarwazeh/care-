@@ -39,7 +39,7 @@ export default function PlatformFooter() {
       <div className="mx-auto max-w-6xl">
         <div className="flex items-center justify-center gap-2 text-sky-700 mb-8">
           <ShieldCheck className="h-6 w-6" />
-          <span className="text-lg font-extrabold">Care Plus</span>
+          <span className="text-lg font-extrabold">Care+</span>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4 mb-10">
@@ -66,7 +66,7 @@ export default function PlatformFooter() {
 
         <div className="border-t border-slate-200 pt-6 text-center">
           <p className="text-sm text-slate-500">
-            © {new Date().getFullYear()} Care Plus. Premium home healthcare across patients, nurses, and families.
+            © {new Date().getFullYear()} Care+. Premium home healthcare across patients, nurses, and families.
           </p>
           <div className="mt-4 flex items-center justify-center flex-wrap gap-4">
             <Link href="/privacy" className="text-xs text-slate-500 hover:text-slate-700 transition">

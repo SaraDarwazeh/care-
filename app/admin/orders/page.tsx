@@ -1,11 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingBag, Package, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import {
+  ShoppingBag,
+  Package,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  Download,
+  MapPin,
+  Phone,
+  Mail,
+  CheckCircle2,
+  CircleDot,
+  Circle,
+} from "lucide-react";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { ensureClientFirebase } from "@/lib/firebase/config";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { StoreOrder, StoreItem } from "@/lib/types";
-import { getOrders, getProducts, updateOrderStatus } from "@/services/storeService";
+import { StoreOrder, StoreItem, PatientProfile } from "@/lib/types";
+import { updateOrderStatus } from "@/services/storeService";
+import { getPatientLocations } from "@/services/patientService";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import { downloadCsv, timestampedFilename, type CsvColumn } from "@/lib/csvExport";
 
 const ORDER_STATUS_COLORS: Record<StoreOrder["status"], string> = {
   pending: "bg-amber-100 text-amber-700 border-amber-200",
@@ -21,12 +38,59 @@ const STATUS_TRANSITIONS: Record<StoreOrder["status"], StoreOrder["status"][]> =
   delivered: [],
 };
 
+const LIFECYCLE_ORDER: StoreOrder["status"][] = ["pending", "processing", "shipped", "delivered"];
+
+interface PatientSummary {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  defaultLocation: string;
+  allLocations: string;
+}
+
+interface EnrichedOrder extends StoreOrder {
+  patient: PatientSummary | null;
+}
+
+function StatusLifecycle({ current }: { current: StoreOrder["status"] }) {
+  const currentIdx = LIFECYCLE_ORDER.indexOf(current);
+  return (
+    <div className="flex items-center gap-1.5 text-xs">
+      {LIFECYCLE_ORDER.map((step, idx) => {
+        const reached = idx <= currentIdx;
+        const isCurrent = idx === currentIdx;
+        const Icon = reached ? (isCurrent ? CircleDot : CheckCircle2) : Circle;
+        return (
+          <div key={step} className="flex items-center gap-1.5">
+            <Icon
+              className={`h-3.5 w-3.5 ${
+                reached ? "text-emerald-600" : "text-slate-300"
+              } ${isCurrent ? "text-sky-600" : ""}`}
+            />
+            <span
+              className={`font-semibold capitalize ${
+                isCurrent ? "text-sky-700" : reached ? "text-emerald-700" : "text-slate-400"
+              }`}
+            >
+              {step}
+            </span>
+            {idx < LIFECYCLE_ORDER.length - 1 && (
+              <span className={`h-px w-4 ${reached ? "bg-emerald-300" : "bg-slate-200"}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function OrderCard({
   order,
   products,
   onStatusChange,
 }: {
-  order: StoreOrder;
+  order: EnrichedOrder;
   products: StoreItem[];
   onStatusChange: (id: string, status: StoreOrder["status"]) => void;
 }) {
@@ -40,7 +104,6 @@ function OrderCard({
   async function handleStatusChange(newStatus: StoreOrder["status"]) {
     setUpdating(true);
     try {
-      // Routing through the service ensures the patient gets a notification.
       await updateOrderStatus(order.id, newStatus);
       onStatusChange(order.id, newStatus);
     } catch (err) {
@@ -51,33 +114,33 @@ function OrderCard({
   }
 
   const nextStatuses = STATUS_TRANSITIONS[order.status];
+  const patient = order.patient;
 
   return (
     <div className="rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-sky-200 transition-all overflow-hidden">
-      {/* Header row */}
-      <div
-        className="flex items-start justify-between gap-4 p-6 cursor-pointer hover:bg-slate-50 transition-colors"
+      <button
+        type="button"
         onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-start justify-between gap-4 p-6 text-left hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100">
             <Package className="h-5 w-5 text-sky-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="font-bold text-slate-800 text-lg">
               Order #{order.id.slice(-8).toUpperCase()}
             </p>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Patient ID:{" "}
-              <span className="font-semibold text-slate-600">{order.patientId.slice(0, 12)}…</span>
-              {" · "}
-              {new Date(order.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
+            <p className="mt-0.5 text-sm font-semibold text-slate-700">
+              {patient?.name || "Unknown patient"}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">{order.items.length} item(s)</p>
+            <p className="text-xs text-slate-500">
+              {patient?.email || order.patientId}
+              {patient?.phone ? ` · ${patient.phone}` : ""}
+            </p>
+            <p className="mt-0.5 text-xs text-slate-400">
+              {new Date(order.createdAt).toLocaleString()} · {order.items.length} item(s)
+            </p>
           </div>
         </div>
 
@@ -94,11 +157,64 @@ function OrderCard({
             <ChevronDown className="h-4 w-4 text-slate-400" />
           )}
         </div>
-      </div>
+      </button>
 
-      {/* Expanded details */}
       {expanded && (
         <div className="border-t border-slate-100 bg-slate-50 p-6 space-y-4">
+          {/* Lifecycle */}
+          <div className="rounded-2xl bg-white border border-slate-100 p-4">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              Fulfillment lifecycle
+            </p>
+            <StatusLifecycle current={order.status} />
+          </div>
+
+          {/* Patient + delivery */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl bg-white border border-slate-100 p-4">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Patient contact
+              </p>
+              {patient ? (
+                <div className="space-y-1.5 text-sm">
+                  <p className="font-bold text-slate-800">{patient.name}</p>
+                  <p className="flex items-center gap-1.5 text-slate-600">
+                    <Mail className="h-3.5 w-3.5 text-slate-400" /> {patient.email || "—"}
+                  </p>
+                  <p className="flex items-center gap-1.5 text-slate-600">
+                    <Phone className="h-3.5 w-3.5 text-slate-400" /> {patient.phone || "—"}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400">Patient record not available.</p>
+              )}
+            </div>
+
+            <div className="rounded-2xl bg-white border border-slate-100 p-4">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Delivery address
+              </p>
+              {patient?.defaultLocation ? (
+                <>
+                  <p className="flex items-start gap-1.5 text-sm font-semibold text-slate-700">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    {patient.defaultLocation}
+                  </p>
+                  {patient.allLocations && patient.allLocations !== patient.defaultLocation && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      Other saved addresses: {patient.allLocations}
+                    </p>
+                  )}
+                  <p className="mt-2 text-[10px] text-slate-400">
+                    Pulled from patient&rsquo;s default profile address. Confirm with the patient before dispatch.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-slate-400">No address on file. Contact the patient before fulfilling.</p>
+              )}
+            </div>
+          </div>
+
           {/* Items list */}
           <div className="rounded-2xl bg-white border border-slate-100 p-4">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Items</p>
@@ -134,8 +250,7 @@ function OrderCard({
                   <button
                     key={status}
                     disabled={updating}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       void handleStatusChange(status);
                     }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all disabled:opacity-50 disabled:cursor-not-allowed capitalize ${colorMap[status]}`}
@@ -159,24 +274,64 @@ function OrderCard({
   );
 }
 
+async function enrichOrders(orders: StoreOrder[]): Promise<EnrichedOrder[]> {
+  const { db } = ensureClientFirebase();
+  const uniquePatientIds = Array.from(new Set(orders.map((o) => o.patientId).filter(Boolean)));
+  const patientMap = new Map<string, PatientSummary>();
+
+  await Promise.all(
+    uniquePatientIds.map(async (pid) => {
+      const [userSnap, profileSnap] = await Promise.all([
+        getDoc(doc(db, "users", pid)),
+        getDoc(doc(db, "patientProfiles", pid)),
+      ]);
+      const userData = userSnap.exists() ? (userSnap.data() as Record<string, unknown>) : null;
+      const profile = profileSnap.exists() ? (profileSnap.data() as PatientProfile) : null;
+      const locations = profile ? getPatientLocations(profile) : [];
+      patientMap.set(pid, {
+        id: pid,
+        name: String(userData?.name ?? "Unknown patient"),
+        email: String(userData?.email ?? ""),
+        phone: String(profile?.phone ?? ""),
+        defaultLocation: profile?.defaultLocation ?? locations.find((l) => l.isDefault)?.address ?? "",
+        allLocations: locations.map((l) => `${l.label}: ${l.address}`).join("; "),
+      });
+    }),
+  );
+
+  return orders.map((order) => ({
+    ...order,
+    patient: patientMap.get(order.patientId) ?? null,
+  }));
+}
+
 export default function AdminOrdersPage() {
   const { appUser, loading: authLoading } = useProtectedRoute({ allowedRoles: ["admin"] });
-  const [orders, setOrders] = useState<StoreOrder[]>([]);
+  const [orders, setOrders] = useState<EnrichedOrder[]>([]);
   const [products, setProducts] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StoreOrder["status"] | "all">("all");
 
   useEffect(() => {
     let active = true;
-    async function load() {
-      const [ordersData, productsData] = await Promise.all([getOrders(), getProducts()]);
-      if (active) {
-        setOrders(ordersData);
-        setProducts(productsData);
-        setLoading(false);
-      }
-    }
-    void load();
+    const { db } = ensureClientFirebase();
+
+    Promise.all([
+      getDocs(collection(db, "orders")),
+      getDocs(collection(db, "products")),
+    ])
+      .then(async ([ordersSnap, productsSnap]) => {
+        const rawOrders = ordersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<StoreOrder, "id">) }));
+        const enriched = await enrichOrders(rawOrders);
+        if (!active) return;
+        setOrders(enriched);
+        setProducts(productsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<StoreItem, "id">) })));
+      })
+      .catch((err) => console.error("[admin/orders] load failed", err))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
     };
@@ -184,6 +339,31 @@ export default function AdminOrdersPage() {
 
   function handleStatusChange(id: string, status: StoreOrder["status"]) {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+  }
+
+  function exportOrdersCsv() {
+    const columns: CsvColumn<EnrichedOrder>[] = [
+      { header: "Order ID", accessor: (o) => o.id },
+      { header: "Created at", accessor: (o) => o.createdAt },
+      { header: "Status", accessor: (o) => o.status },
+      { header: "Patient name", accessor: (o) => o.patient?.name ?? "" },
+      { header: "Patient email", accessor: (o) => o.patient?.email ?? "" },
+      { header: "Patient phone", accessor: (o) => o.patient?.phone ?? "" },
+      { header: "Delivery address", accessor: (o) => o.patient?.defaultLocation ?? "" },
+      { header: "Item count", accessor: (o) => o.items.length },
+      {
+        header: "Items",
+        accessor: (o) =>
+          o.items
+            .map((it) => {
+              const name = products.find((p) => p.id === it.productId)?.name ?? it.productId;
+              return `${name} × ${it.quantity} @ $${it.price}`;
+            })
+            .join(" | "),
+      },
+      { header: "Total", accessor: (o) => o.total.toFixed(2) },
+    ];
+    downloadCsv(timestampedFilename("careplus-orders"), filtered, columns);
   }
 
   if (authLoading || !appUser || loading) return <LoadingScreen text="Loading orders..." />;
@@ -210,13 +390,21 @@ export default function AdminOrdersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Orders</h1>
-          <p className="text-slate-500 mt-1">Track and manage all medical store purchases.</p>
+          <p className="text-slate-500 mt-1">Track and fulfill all medical store purchases.</p>
         </div>
-        <div className="rounded-2xl bg-white border border-slate-200 px-5 py-2.5 text-center shadow-sm">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Total Orders
-          </p>
-          <p className="text-2xl font-extrabold text-slate-800">{orders.length}</p>
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-white border border-slate-200 px-5 py-2.5 text-center shadow-sm">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
+            <p className="text-2xl font-extrabold text-slate-800">{orders.length}</p>
+          </div>
+          <button
+            type="button"
+            onClick={exportOrdersCsv}
+            disabled={filtered.length === 0}
+            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </button>
         </div>
       </div>
 

@@ -18,7 +18,7 @@ export default function NurseNotificationsPage() {
           Notifications
         </h1>
         <p className="mt-2 text-slate-600">
-          Booking requests, profile updates, and announcements from the Care Plus team.
+          Booking requests, profile updates, and announcements from the Care+ team.
         </p>
       </div>
       <NotificationList userId={appUser.id} />

@@ -33,7 +33,7 @@ export default function PatientRecordsPage() {
       <div className="mb-6 flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <Lock className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
         <p className="text-xs text-slate-500 leading-relaxed">
-          Your medical records are private and encrypted. Only you, your assigned nurses, and Care Plus administrators can view this information.
+          Your medical records are private and encrypted. Only you, your assigned nurses, and Care+ administrators can view this information.
           <Link href="/privacy" className="text-sky-600 hover:underline ml-1">Privacy Policy</Link>
         </p>
       </div>

@@ -40,6 +40,7 @@ function mapDoc(id: string, data: Record<string, unknown>): CarePackage {
       typeof data.basePricePerDay === "number" ? data.basePricePerDay : undefined,
     currency: typeof data.currency === "string" ? data.currency : undefined,
     addOns: Array.isArray(data.addOns) ? (data.addOns as string[]) : undefined,
+    pricingMode: data.pricingMode === "fixed" ? "fixed" : data.pricingMode === "dynamic" ? "dynamic" : undefined,
     image: typeof data.image === "string" ? data.image : undefined,
     images: Array.isArray(data.images) ? (data.images as string[]) : undefined,
     active: data.active !== false,
@@ -116,10 +117,20 @@ export type CarePackageInput = Omit<CarePackage, "id" | "createdAt" | "updatedAt
   id?: string;
 };
 
+// Firestore client SDK rejects undefined values; admin form fields that
+// are left blank arrive as undefined. Drop them so the write succeeds.
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) (out as Record<string, unknown>)[key] = value;
+  }
+  return out;
+}
+
 export async function createPackage(input: CarePackageInput): Promise<CarePackage> {
   const { db } = ensureClientFirebase();
   const now = new Date().toISOString();
-  const payload = { ...input, createdAt: now, updatedAt: now };
+  const payload = stripUndefined({ ...input, createdAt: now, updatedAt: now });
 
   if (input.id) {
     await setDoc(doc(db, COLLECTION, input.id), payload);
@@ -134,10 +145,8 @@ export async function updatePackage(
   patch: Partial<CarePackageInput>,
 ): Promise<void> {
   const { db } = ensureClientFirebase();
-  await updateDoc(doc(db, COLLECTION, id), {
-    ...patch,
-    updatedAt: new Date().toISOString(),
-  });
+  const cleaned = stripUndefined({ ...patch, updatedAt: new Date().toISOString() });
+  await updateDoc(doc(db, COLLECTION, id), cleaned);
 }
 
 export async function deletePackage(id: string): Promise<void> {

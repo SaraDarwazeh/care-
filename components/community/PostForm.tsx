@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { uploadBytesResumable, getDownloadURL, ref, getStorage } from "firebase/storage";
+import { uploadFile } from "@/services/storageService";
 import { createDonationPost } from "@/services/communityService";
 import { DonationPost } from "@/lib/types";
 
@@ -22,17 +22,8 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
       const images: string[] = [];
 
       if (imageFile) {
-        const storage = getStorage();
-        const path = `community/${Date.now()}_${imageFile.name}`;
-        const storageRef = ref(storage, path);
-        const uploadTask = uploadBytesResumable(storageRef, imageFile);
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on("state_changed", null, reject, async () => {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            images.push(url);
-            resolve();
-          });
-        });
+        const { url } = await uploadFile(imageFile, { scope: "community" });
+        images.push(url);
       }
 
       const postInput: Omit<DonationPost, "id" | "createdAt"> = {

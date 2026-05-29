@@ -10,7 +10,7 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-8 text-slate-700">
           <section>
             <h2 className="text-xl font-bold text-slate-800 mb-3">Data We Collect</h2>
-            <p className="text-sm leading-relaxed">Care Plus collects name, email, phone number, address, and medical history to facilitate home healthcare services. This information is used solely to connect you with healthcare professionals and manage your bookings.</p>
+            <p className="text-sm leading-relaxed">Care+ collects name, email, phone number, address, and medical history to facilitate home healthcare services. This information is used solely to connect you with healthcare professionals and manage your bookings.</p>
           </section>
 
           <section>

@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, MapPin, Clock, ChevronRight, X, FileText } from "lucide-react";
+import { CalendarClock, MapPin, Clock, ChevronRight, X, FileText, Star } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import SectionContainer from "@/components/patient/SectionContainer";
+import ReviewForm from "@/components/patient/ReviewForm";
 import { useAuth } from "@/hooks/useAuth";
 import { BookingWithParticipants } from "@/lib/types";
 import { getBookingsForPatientWithParticipants, updateBookingStatus } from "@/services/bookingService";
 import { getRecordsForPatient } from "@/services/medicalService";
+import { canPatientReview } from "@/services/reviewService";
 
 const STATUS_STYLES: Record<BookingWithParticipants["status"], string> = {
   pending: "bg-amber-100 text-amber-700",
@@ -31,11 +33,15 @@ function BookingCard({
   onCancel,
   cancelling,
   recordId,
+  canReview,
+  onReview,
 }: {
   booking: BookingWithParticipants;
   onCancel: (id: string) => void;
   cancelling: boolean;
   recordId?: string;
+  canReview: boolean;
+  onReview: (booking: BookingWithParticipants) => void;
 }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col gap-4">
@@ -131,6 +137,18 @@ function BookingCard({
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       )}
+
+      {/* Review CTA for completed bookings the patient hasn't reviewed yet */}
+      {booking.status === "completed" && canReview && (
+        <button
+          type="button"
+          onClick={() => onReview(booking)}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-700 transition hover:bg-amber-100"
+        >
+          <Star className="h-4 w-4" />
+          Leave a review
+        </button>
+      )}
     </div>
   );
 }
@@ -142,6 +160,11 @@ export default function PatientAppointmentsPage() {
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [recordsByBooking, setRecordsByBooking] = useState<Record<string, string>>({});
+  // Tracks which nurses the patient is eligible to review right now —
+  // populated once per page load by canPatientReview(). Updated locally
+  // when the patient submits a review so the CTA disappears immediately.
+  const [reviewableNurseIds, setReviewableNurseIds] = useState<Set<string>>(new Set());
+  const [reviewingBooking, setReviewingBooking] = useState<BookingWithParticipants | null>(null);
 
   useEffect(() => {
     if (!appUser) return;
@@ -162,6 +185,23 @@ export default function PatientAppointmentsPage() {
           if (r.bookingId) map[r.bookingId] = r.id;
         });
         setRecordsByBooking(map);
+
+        // For each unique nurse with at least one completed booking, check
+        // whether the patient can review them right now (no existing review).
+        const completedNurseIds = Array.from(
+          new Set(items.filter((b) => b.status === "completed").map((b) => b.nurseId)),
+        );
+        const eligibilityResults = await Promise.all(
+          completedNurseIds.map(async (nurseId) => ({
+            nurseId,
+            check: await canPatientReview(nurseId, patientId),
+          })),
+        );
+        if (!active) return;
+        const eligible = new Set(
+          eligibilityResults.filter((r) => r.check.eligible).map((r) => r.nurseId),
+        );
+        setReviewableNurseIds(eligible);
       } catch (loadError) {
         console.error("[patient/appointments] failed to load bookings", loadError);
         if (active) setError("Unable to load appointments right now.");
@@ -173,6 +213,15 @@ export default function PatientAppointmentsPage() {
     void loadBookings();
     return () => { active = false; };
   }, [appUser]);
+
+  useEffect(() => {
+    if (!reviewingBooking) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setReviewingBooking(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [reviewingBooking]);
 
   async function handleCancel(bookingId: string) {
     if (cancellingId) return;
@@ -260,6 +309,8 @@ export default function PatientAppointmentsPage() {
                 onCancel={handleCancel}
                 cancelling={cancellingId === booking.id}
                 recordId={recordsByBooking[booking.id]}
+                canReview={reviewableNurseIds.has(booking.nurseId)}
+                onReview={(b) => setReviewingBooking(b)}
               />
             ))}
           </div>
@@ -273,6 +324,50 @@ export default function PatientAppointmentsPage() {
       >
         Book a New Nurse <ChevronRight className="h-4 w-4" />
       </Link>
+
+      {/* Review modal */}
+      {reviewingBooking && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm sm:items-center">
+          <div
+            className="absolute inset-0"
+            onClick={() => setReviewingBooking(null)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">Rate your visit</p>
+                <h2 className="text-lg font-bold text-slate-800">{reviewingBooking.nurseName}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReviewingBooking(null)}
+                aria-label="Close"
+                className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <ReviewForm
+                nurseId={reviewingBooking.nurseId}
+                patientId={appUser.id}
+                patientName={appUser.name}
+                onSubmitted={() => {
+                  const submittedNurseId = reviewingBooking.nurseId;
+                  setReviewableNurseIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(submittedNurseId);
+                    return next;
+                  });
+                  setReviewingBooking(null);
+                }}
+                onCancel={() => setReviewingBooking(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

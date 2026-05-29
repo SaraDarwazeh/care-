@@ -4,7 +4,9 @@ export const dynamic = "force-dynamic";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Filter, SlidersHorizontal, Search } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, Filter, History, SlidersHorizontal, Search } from "lucide-react";
+import { getLastPreferences } from "@/lib/bookingPreferences";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseMarketplaceCard from "@/components/patient/NurseMarketplaceCard";
 import MarketplaceFilters, {
@@ -54,6 +56,10 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
   return {
     filters: {
       service: params.get("service") ?? "",
+      additionalServices: (params.get("extras") ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       shift: (params.get("shift") ?? "").toLowerCase(),
       gender: params.get("gender") ?? "",
       overnight: params.get("overnight") ?? "any",
@@ -63,7 +69,6 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
       transportAvailable: params.get("transport") === "1",
       skills: (params.get("skills") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
       certifications: (params.get("certs") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
-      languages: (params.get("languages") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     },
     sortBy,
   };
@@ -72,6 +77,7 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
 function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey): URLSearchParams {
   const p = new URLSearchParams();
   if (values.service) p.set("service", values.service);
+  if (values.additionalServices.length) p.set("extras", values.additionalServices.join(","));
   if (values.shift) p.set("shift", values.shift);
   if (values.gender) p.set("gender", values.gender);
   if (values.overnight !== "any") p.set("overnight", values.overnight);
@@ -81,7 +87,6 @@ function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey):
   if (values.transportAvailable) p.set("transport", "1");
   if (values.skills.length) p.set("skills", values.skills.join(","));
   if (values.certifications.length) p.set("certs", values.certifications.join(","));
-  if (values.languages.length) p.set("languages", values.languages.join(","));
   if (sortBy !== "rating") p.set("sort", sortBy);
   return p;
 }
@@ -99,6 +104,24 @@ function PatientNursesPageInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Last preferences from the patient's most recent booking. Surfaced as a
+  // one-click "Use last preferences" chip when the current filter state is
+  // empty (so we don't override what the patient has already typed).
+  const lastPrefs = useMemo(() => getLastPreferences(), []);
+  function applyLastPreferences() {
+    if (!lastPrefs) return;
+    setFilters((prev) => ({
+      ...prev,
+      service: lastPrefs.service ?? prev.service,
+      shift: lastPrefs.shift ? lastPrefs.shift.toLowerCase() : prev.shift,
+    }));
+  }
+  const showLastPrefsChip =
+    !!lastPrefs &&
+    (lastPrefs.service || lastPrefs.shift) &&
+    !filters.service &&
+    !filters.shift;
 
   // Load nurses once on mount.
   useEffect(() => {
@@ -143,13 +166,20 @@ function PatientNursesPageInner() {
 
   const availableCertifications = useMemo(() => {
     const set = new Set<string>();
-    nurses.forEach((n) => (n.certificates ?? []).forEach((c) => set.add(c)));
+    nurses.forEach((n) => (n.certificates ?? []).forEach((c) => set.add(c.name)));
     return Array.from(set).sort();
   }, [nurses]);
 
-  const availableLanguages = useMemo(() => {
+  // Extra services come from each nurse's additionalServices[] (cooking,
+  // transport, companionship, etc.). Same chip-collection pattern as
+  // medical services, but feeds the new Extra services filter section.
+  const availableAdditionalServices = useMemo(() => {
     const set = new Set<string>();
-    nurses.forEach((n) => (n.languages ?? []).forEach((l) => set.add(l)));
+    nurses.forEach((n) =>
+      (n.additionalServices ?? []).forEach((s) => {
+        if (s.name) set.add(s.name);
+      }),
+    );
     return Array.from(set).sort();
   }, [nurses]);
 
@@ -206,15 +236,15 @@ function PatientNursesPageInner() {
       }
 
       if (filters.certifications.length > 0) {
-        const certs = (nurse.certificates ?? []).map((c) => c.toLowerCase());
+        const certs = (nurse.certificates ?? []).map((c) => c.name.toLowerCase());
         const wanted = filters.certifications.map((c) => c.toLowerCase());
         if (!wanted.every((w) => certs.includes(w))) return false;
       }
 
-      if (filters.languages.length > 0) {
-        const langs = (nurse.languages ?? []).map((l) => l.toLowerCase());
-        const wanted = filters.languages.map((l) => l.toLowerCase());
-        if (!wanted.every((w) => langs.includes(w))) return false;
+      if (filters.additionalServices.length > 0) {
+        const extras = (nurse.additionalServices ?? []).map((s) => s.name.toLowerCase());
+        const wanted = filters.additionalServices.map((s) => s.toLowerCase());
+        if (!wanted.every((w) => extras.includes(w))) return false;
       }
 
       return true;
@@ -254,11 +284,31 @@ function PatientNursesPageInner() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link
+        href="/"
+        className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" /> Back to home
+      </Link>
       <div className="mb-8">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-3xl">Find Your Nurse</h1>
         <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">
           Browse approved healthcare professionals, filter by your needs, and book instantly.
         </p>
+        {showLastPrefsChip && (
+          <button
+            type="button"
+            onClick={applyLastPreferences}
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+          >
+            <History className="h-3.5 w-3.5" />
+            Use last preferences
+            {lastPrefs?.service && <span className="font-semibold">· {lastPrefs.service}</span>}
+            {lastPrefs?.shift && (
+              <span className="font-semibold">· {shiftLabel(lastPrefs.shift.toLowerCase())}</span>
+            )}
+          </button>
+        )}
       </div>
 
       {activeRouteLabel ? (
@@ -297,9 +347,9 @@ function PatientNursesPageInner() {
               onChange={setFilters}
               onClear={() => setFilters(EMPTY_FILTERS)}
               availableServices={availableServices}
+              availableAdditionalServices={availableAdditionalServices}
               availableSkills={availableSkills}
               availableCertifications={availableCertifications}
-              availableLanguages={availableLanguages}
               sortBy={sortBy}
               onSortChange={setSortBy}
             />

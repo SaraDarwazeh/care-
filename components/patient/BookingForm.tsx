@@ -5,16 +5,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronRight, ChevronLeft, MapPin, Calendar, Clock, Stethoscope, HeartHandshake, ListChecks } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
-import { Booking, CarePackage, NurseMarketplaceProfile } from "@/lib/types";
+import { Booking, CarePackage, NurseMarketplaceProfile, PatientLocation } from "@/lib/types";
 import AddOnItem from "@/components/common/AddOnItem";
 import { createBooking } from "@/services/bookingService";
-import { getPatientProfile } from "@/services/patientService";
+import { getPatientLocations, getPatientProfile } from "@/services/patientService";
 import { listPackages } from "@/services/packageService";
+import { getPricingConfig } from "@/services/pricingConfigService";
+import type { PricingConfig } from "@/services/pricingConfigService";
+import { getLastPreferences, saveLastPreferences } from "@/lib/bookingPreferences";
 import {
   AVAILABLE_ADDONS,
-  SHIFT_BILLED_HOURS,
   SHIFT_LABELS,
-  TAX_RATE,
   round2,
 } from "@/lib/pricingConstants";
 
@@ -39,21 +40,44 @@ export default function BookingForm({
   const [step, setStep] = useState(1);
   const totalSteps = 5;
 
-  const [bookingType, setBookingType] = useState<"one-time" | "shift" | "package">(() =>
-    initialPackage ? "package" : initialShift ? "shift" : "one-time",
-  );
+  // URL params (initialService / initialShift / initialPackage /
+  // initialDurationDays) always win; localStorage fills in the rest from
+  // the patient's last completed booking so returning patients don't
+  // re-enter the same choices every time.
+  const lastPrefs = useMemo(() => getLastPreferences(), []);
+
+  const [bookingType, setBookingType] = useState<"one-time" | "shift" | "package">(() => {
+    if (initialPackage) return "package";
+    if (initialShift) return "shift";
+    if (lastPrefs?.bookingType) return lastPrefs.bookingType;
+    return "one-time";
+  });
   const [packageId, setPackageId] = useState<string | undefined>(initialPackage);
-  const [durationDays, setDurationDays] = useState<number>(initialDurationDays ?? 1);
-  const [addOns, setAddOns] = useState<string[]>([]);
+  const [durationDays, setDurationDays] = useState<number>(
+    initialDurationDays ?? lastPrefs?.durationDays ?? 1,
+  );
+  const [addOns, setAddOns] = useState<string[]>(() => lastPrefs?.addOnIds ?? []);
 
   const [service, setService] = useState(() => {
-    const matchedService = nurse.services.find((item) => item.name.toLowerCase() === initialService?.toLowerCase());
-    return matchedService?.name ?? nurse.services[0]?.name ?? "General Visit";
+    const fromUrl = nurse.services.find((item) => item.name.toLowerCase() === initialService?.toLowerCase());
+    if (fromUrl) return fromUrl.name;
+    const fromPrefs = lastPrefs?.service
+      ? nurse.services.find((item) => item.name.toLowerCase() === lastPrefs.service?.toLowerCase())
+      : undefined;
+    if (fromPrefs) return fromPrefs.name;
+    return nurse.services[0]?.name ?? "General Visit";
   });
-  const [shift, setShift] = useState(() => initialShift?.toUpperCase() ?? "");
+  const [shift, setShift] = useState(() => {
+    if (initialShift) return initialShift.toUpperCase();
+    if (lastPrefs?.shift) return lastPrefs.shift.toUpperCase();
+    return "";
+  });
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
+  const [savedLocations, setSavedLocations] = useState<PatientLocation[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
+  const [useCustomLocation, setUseCustomLocation] = useState(false);
   const [notes, setNotes] = useState("");
   
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -76,7 +100,44 @@ export default function BookingForm({
   const [packages, setPackages] = useState<CarePackage[]>([]);
   const [packagesLoading, setPackagesLoading] = useState(false);
 
+  const [pricingConfig, setPricingConfig] = useState<PricingConfig | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getPricingConfig()
+      .then((cfg) => {
+        if (active) setPricingConfig(cfg);
+      })
+      .catch((err) => {
+        console.error("[BookingForm] failed to load pricing config", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const globalAddons = pricingConfig?.addons ?? AVAILABLE_ADDONS;
+  const shiftBilledHours = pricingConfig?.shiftBilledHours ?? 8;
+  const taxRate = pricingConfig?.taxRate ?? 0.05;
+
   const serviceOptions = useMemo(() => nurse.services, [nurse.services]);
+
+  // If the nurse has defined their own add-on offerings, surface those instead
+  // of the global catalog. Each entry needs an id for selection tracking — we
+  // derive a stable slug from the name.
+  const effectiveAddons = useMemo(() => {
+    const custom = nurse.additionalServices ?? [];
+    if (custom.length > 0) {
+      return custom.map((item, idx) => ({
+        id: `nurse-${(item.name || `addon-${idx}`).toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+        name: item.name,
+        price: item.price,
+      }));
+    }
+    return globalAddons.map((a) => ({ id: a.id, name: a.name, price: a.price }));
+  }, [nurse.additionalServices, globalAddons]);
+
+  const usingNurseAddons = (nurse.additionalServices?.length ?? 0) > 0;
 
   async function ensurePackagesLoaded() {
     if (packages.length > 0 || packagesLoading) return;
@@ -106,7 +167,17 @@ export default function BookingForm({
     async function fetchProfile() {
       const profile = await getPatientProfile(patientId);
       if (!active) return;
-      if (profile?.defaultLocation) setLocation(profile.defaultLocation);
+      const locations = getPatientLocations(profile);
+      setSavedLocations(locations);
+      const preferred = locations.find((l) => l.isDefault) ?? locations[0];
+      if (preferred) {
+        setSelectedLocationId(preferred.id);
+        setLocation(preferred.address);
+        setUseCustomLocation(false);
+      } else {
+        setUseCustomLocation(true);
+        if (profile?.defaultLocation) setLocation(profile.defaultLocation);
+      }
       setProfileCompleted(!!profile?.profileCompleted);
       setLoadingProfile(false);
 
@@ -123,6 +194,20 @@ export default function BookingForm({
     return () => { active = false; };
   }, [patientId, initialPackage]);
 
+  function pickSavedLocation(id: string) {
+    const match = savedLocations.find((l) => l.id === id);
+    if (!match) return;
+    setSelectedLocationId(id);
+    setLocation(match.address);
+    setUseCustomLocation(false);
+  }
+
+  function switchToCustomLocation() {
+    setUseCustomLocation(true);
+    setSelectedLocationId("");
+    setLocation("");
+  }
+
   const selectedPrice = useMemo(() => {
     const selected = nurse.services.find((item) => item.name === service);
     return selected?.price ?? nurse.pricePerHour ?? 0;
@@ -133,34 +218,47 @@ export default function BookingForm({
     return packages.find((p) => p.id === packageId || p.slug === packageId) ?? null;
   }, [packageId, packages]);
 
+  // Default to "dynamic" when pricingMode is unset (legacy packages).
+  const isFixedPackage = (selectedPackage?.pricingMode ?? "dynamic") === "fixed";
+
+  // For fixed packages the duration is always the package's locked value,
+  // regardless of any state the user may have set before selection or via
+  // URL query params. Derive it instead of syncing through state so we
+  // don't trip the "no setState in effect" rule.
+  const effectiveDurationDays = isFixedPackage && selectedPackage
+    ? selectedPackage.durationDays
+    : durationDays;
+
   const selectedDurationOption = useMemo(() => {
+    if (isFixedPackage) return null;
     if (!selectedPackage?.durationOptions) return null;
-    return selectedPackage.durationOptions.find((opt) => opt.days === durationDays) ?? null;
-  }, [selectedPackage, durationDays]);
+    return selectedPackage.durationOptions.find((opt) => opt.days === effectiveDurationDays) ?? null;
+  }, [isFixedPackage, selectedPackage, effectiveDurationDays]);
 
   const pricing = useMemo(() => {
     let base = 0;
     if (bookingType === "shift") {
-      base = selectedPrice * SHIFT_BILLED_HOURS;
+      base = selectedPrice * shiftBilledHours;
     } else if (bookingType === "package") {
-      const days = Math.max(1, durationDays || 1);
-      let perDay = selectedPrice * SHIFT_BILLED_HOURS;
+      const days = Math.max(1, effectiveDurationDays || 1);
+      let perDay = selectedPrice * shiftBilledHours;
       if (selectedPackage?.basePricePerDay && selectedPackage.basePricePerDay > 0) {
         perDay = selectedPackage.basePricePerDay;
       }
-      const modifier = selectedDurationOption?.priceModifier ?? 1;
+      // Fixed packages ignore priceModifier — duration is locked.
+      const modifier = isFixedPackage ? 1 : (selectedDurationOption?.priceModifier ?? 1);
       base = round2(perDay * days * modifier);
     } else {
       base = selectedPrice;
     }
-    const addons = AVAILABLE_ADDONS.filter((a) => addOns.includes(a.id));
+    const addons = effectiveAddons.filter((a) => addOns.includes(a.id));
     const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
     const transport = 0;
     const subtotal = round2(base + addonsTotal + transport);
-    const tax = round2(subtotal * TAX_RATE);
+    const tax = round2(subtotal * taxRate);
     const total = round2(subtotal + tax);
     return { base, addons, transport, subtotal, tax, total };
-  }, [selectedPrice, bookingType, addOns, durationDays, selectedPackage, selectedDurationOption]);
+  }, [selectedPrice, bookingType, addOns, effectiveDurationDays, isFixedPackage, selectedPackage, selectedDurationOption, effectiveAddons, shiftBilledHours, taxRate]);
 
   // When the user reaches the review step, ask the server to compute the
   // canonical price using the same payload we'll send on submit. Intentionally
@@ -174,10 +272,10 @@ export default function BookingForm({
       service,
       bookingType,
       packageId: bookingType === "package" ? packageId : undefined,
-      durationDays: bookingType === "package" ? durationDays : undefined,
+      durationDays: bookingType === "package" ? effectiveDurationDays : undefined,
       shift: bookingType === "shift" ? shift : undefined,
       pricing: {
-        addons: AVAILABLE_ADDONS.filter((a) => addOns.includes(a.id)).map((a) => ({
+        addons: effectiveAddons.filter((a) => addOns.includes(a.id)).map((a) => ({
           id: a.id,
           name: a.name,
           price: a.price,
@@ -234,7 +332,7 @@ export default function BookingForm({
       service,
       bookingType,
       packageId: bookingType === "package" ? packageId : undefined,
-      durationDays: bookingType === "package" ? durationDays : undefined,
+      durationDays: bookingType === "package" ? effectiveDurationDays : undefined,
       shift: bookingType === "shift" ? shift : undefined,
       price: serverPriceObj.total,
       pricing: {
@@ -253,6 +351,14 @@ export default function BookingForm({
 
     try {
       await createBooking(booking);
+      // Persist these choices for next time. No PII; just selection state.
+      saveLastPreferences({
+        bookingType,
+        service,
+        shift: bookingType === "shift" ? shift : undefined,
+        durationDays: bookingType === "package" ? effectiveDurationDays : undefined,
+        addOnIds: addOns,
+      });
       setSuccess(true);
       onBooked?.();
       setTimeout(() => {
@@ -570,7 +676,17 @@ export default function BookingForm({
               {bookingType === "package" && (
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">Package Duration</label>
-                  {selectedPackage?.durationOptions && selectedPackage.durationOptions.length > 0 ? (
+                  {isFixedPackage ? (
+                    <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-4">
+                      <p className="text-sm font-bold text-slate-800">
+                        {selectedPackage?.durationDays} days — fixed bundle
+                      </p>
+                      <p className="mt-1 text-xs text-slate-600">
+                        This package is offered as a complete, pre-priced bundle. Duration and shifts are
+                        set by the package; you can&rsquo;t change them at booking time.
+                      </p>
+                    </div>
+                  ) : selectedPackage?.durationOptions && selectedPackage.durationOptions.length > 0 ? (
                     <div className="grid gap-2 sm:grid-cols-3">
                       {selectedPackage.durationOptions.map((opt) => (
                         <label
@@ -619,17 +735,79 @@ export default function BookingForm({
           {step === 4 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><MapPin className="h-5 w-5 text-sky-600"/> Service Location</h3>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Full Address / Location</label>
-                <input
-                  required
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-                  placeholder="Street name, building, apartment number..."
-                />
-                <p className="mt-2 text-xs text-slate-500">We pre-filled this based on your profile default location.</p>
-              </div>
+              {savedLocations.length > 0 && !useCustomLocation && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-700">Pick a saved address</label>
+                  <div className="grid gap-2">
+                    {savedLocations.map((loc) => (
+                      <label
+                        key={loc.id}
+                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                          selectedLocationId === loc.id
+                            ? "border-sky-500 bg-sky-50 shadow-sm"
+                            : "border-slate-200 hover:border-sky-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="savedLocation"
+                          value={loc.id}
+                          checked={selectedLocationId === loc.id}
+                          onChange={() => pickSavedLocation(loc.id)}
+                          className="mt-1 h-4 w-4 text-sky-600 focus:ring-sky-600"
+                        />
+                        <div>
+                          <p className="text-sm font-bold text-slate-700">
+                            {loc.label}
+                            {loc.isDefault && (
+                              <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                                Default
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-slate-500">{loc.address}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={switchToCustomLocation}
+                    className="text-xs font-bold text-sky-600 hover:text-sky-700"
+                  >
+                    Use a different one-time address →
+                  </button>
+                </div>
+              )}
+              {(savedLocations.length === 0 || useCustomLocation) && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">Full Address / Location</label>
+                  <input
+                    required
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    placeholder="Street name, building, apartment number..."
+                  />
+                  {savedLocations.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const preferred = savedLocations.find((l) => l.isDefault) ?? savedLocations[0];
+                        if (preferred) pickSavedLocation(preferred.id);
+                      }}
+                      className="mt-2 text-xs font-bold text-sky-600 hover:text-sky-700"
+                    >
+                      ← Use a saved address instead
+                    </button>
+                  )}
+                  {savedLocations.length === 0 && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      Tip: save labeled addresses in your <Link href="/patient/profile" className="font-bold text-sky-600 hover:underline">profile</Link> for faster bookings.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -649,19 +827,37 @@ export default function BookingForm({
                   {bookingType === "shift" && shift && ` (${SHIFT_LABELS[shift]})`}
                   {bookingType === "one-time" && time && ` at ${time}`}
                   {bookingType === "package" &&
-                    ` · ${selectedDurationOption?.label ?? `${durationDays} day${durationDays > 1 ? "s" : ""}`}`}
+                    ` · ${selectedDurationOption?.label ?? `${effectiveDurationDays} day${effectiveDurationDays > 1 ? "s" : ""}`}`}
                 </p>
                 <p><strong>Location:</strong> {location}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700 mb-4">
-                <p className="font-medium mb-2">Add-on Services</p>
-                <div className="grid gap-2">
-                  {AVAILABLE_ADDONS.map((a) => (
-                    <AddOnItem key={a.id} id={a.id} name={a.name} price={a.price} checked={addOns.includes(a.id)} onChange={(checked) => {
-                      setAddOns((prev) => checked ? [...prev, a.id] : prev.filter((p) => p !== a.id));
-                    }} />
-                  ))}
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="font-medium">Add-on Services</p>
+                  {usingNurseAddons && (
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                      Offered by {nurse.fullName.split(" ")[0]}
+                    </span>
+                  )}
                 </div>
+                {effectiveAddons.length === 0 ? (
+                  <p className="text-xs italic text-slate-500">No add-ons available for this nurse.</p>
+                ) : (
+                  <div className="grid gap-2">
+                    {effectiveAddons.map((a) => (
+                      <AddOnItem
+                        key={a.id}
+                        id={a.id}
+                        name={a.name}
+                        price={a.price}
+                        checked={addOns.includes(a.id)}
+                        onChange={(checked) => {
+                          setAddOns((prev) => (checked ? [...prev, a.id] : prev.filter((p) => p !== a.id)));
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="rounded-xl bg-white p-4 border border-slate-100">

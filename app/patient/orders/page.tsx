@@ -184,7 +184,7 @@ function OrderCard({
           )}
           {order.status === "delivered" && (
             <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
-              This order has been delivered. Thank you for choosing Care Plus.
+              This order has been delivered. Thank you for choosing Care+.
             </p>
           )}
         </div>

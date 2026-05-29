@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Users,
   Stethoscope,
@@ -10,10 +11,13 @@ import {
   TrendingUp,
   DollarSign,
   UserCheck,
+  Clock,
+  ArrowRight,
+  FileWarning,
 } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { getDashboardStats } from "@/services/adminService";
+import { getDashboardStats, type AttentionItem } from "@/services/adminService";
 
 interface DashboardStats {
   totalUsers: number;
@@ -26,6 +30,11 @@ interface DashboardStats {
   thisMonthRevenue: number;
   bookingTrendDays: string[];
   bookingTrendCounts: number[];
+  stalePendingBookingsCount: number;
+  stalePendingBookings: AttentionItem[];
+  pendingNursePreview: AttentionItem[];
+  disputedRecordsCount: number;
+  disputedRecordsPreview: AttentionItem[];
 }
 
 export default function AdminDashboardPage() {
@@ -44,6 +53,11 @@ export default function AdminDashboardPage() {
     thisMonthRevenue: 0,
     bookingTrendDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     bookingTrendCounts: [0, 0, 0, 0, 0, 0, 0],
+    stalePendingBookingsCount: 0,
+    stalePendingBookings: [],
+    pendingNursePreview: [],
+    disputedRecordsCount: 0,
+    disputedRecordsPreview: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -135,14 +149,14 @@ export default function AdminDashboardPage() {
             Welcome back, {appUser.name}!
           </h1>
           <p className="text-sky-100 max-w-xl text-sm sm:text-lg">
-            Here are the latest updates across the Care Plus platform today.
+            Here are the latest updates across the Care+ platform today.
           </p>
         </div>
         <div className="absolute right-0 top-0 h-64 w-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <Activity className="absolute right-10 bottom-0 translate-y-1/4 h-48 w-48 text-white/5" />
       </div>
 
-      {/* Metrics Grid */}
+      {/* Metrics Grid — operators want the big-picture overview first. */}
       <div>
         <h2 className="text-xl font-bold text-slate-800 mb-4">Platform Overview</h2>
         <div className="grid gap-4 grid-cols-2 sm:gap-6 lg:grid-cols-3">
@@ -162,6 +176,47 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Needs Attention — after the overview so operators triage with
+          context, not before they've seen the platform's baseline state. */}
+      <div>
+        <h2 className="text-xl font-bold text-slate-800 mb-4">Needs attention</h2>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <AttentionCard
+            icon={Clock}
+            iconBg="bg-amber-100"
+            iconColor="text-amber-700"
+            label="Stale pending bookings"
+            description="Bookings older than 24h waiting on a nurse response."
+            count={stats.stalePendingBookingsCount}
+            items={stats.stalePendingBookings}
+            href="/admin/bookings"
+            cta="Review bookings"
+          />
+          <AttentionCard
+            icon={ShieldAlert}
+            iconBg="bg-violet-100"
+            iconColor="text-violet-700"
+            label="Pending nurse approvals"
+            description="New nurses awaiting credential review."
+            count={stats.pendingApprovals}
+            items={stats.pendingNursePreview}
+            href="/admin/nurses"
+            cta="Review approvals"
+          />
+          <AttentionCard
+            icon={FileWarning}
+            iconBg="bg-rose-100"
+            iconColor="text-rose-700"
+            label="Disputed medical records"
+            description="Patients have flagged something inaccurate."
+            count={stats.disputedRecordsCount}
+            items={stats.disputedRecordsPreview}
+            href="/admin/records?status=disputed"
+            cta="Open disputed queue"
+          />
         </div>
       </div>
 
@@ -294,6 +349,79 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function AttentionCard({
+  icon: Icon,
+  iconBg,
+  iconColor,
+  label,
+  description,
+  count,
+  items,
+  href,
+  cta,
+}: {
+  icon: typeof Clock;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  description: string;
+  count: number;
+  items: AttentionItem[];
+  href: string;
+  cta: string;
+}) {
+  const isEmpty = count === 0;
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm border border-slate-200">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconBg} ${iconColor}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-800">{label}</p>
+            <p className="text-xs text-slate-500">{description}</p>
+          </div>
+        </div>
+        <span
+          className={`shrink-0 rounded-2xl px-3 py-1 text-base font-extrabold ${
+            isEmpty ? "bg-slate-100 text-slate-400" : `${iconBg} ${iconColor}`
+          }`}
+        >
+          {count}
+        </span>
+      </div>
+
+      {isEmpty ? (
+        <p className="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+          All clear — nothing waiting on you.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((item) => (
+            <li
+              key={item.id}
+              className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2"
+            >
+              <p className="line-clamp-1 text-sm font-bold text-slate-700">{item.title}</p>
+              {item.subtitle && (
+                <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">{item.subtitle}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Link
+        href={href}
+        className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-700"
+      >
+        {cta} <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
     </div>
   );
 }

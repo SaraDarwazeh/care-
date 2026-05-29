@@ -1,6 +1,34 @@
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { PatientProfile } from "@/lib/types";
+import { PatientLocation, PatientProfile } from "@/lib/types";
+
+// Returns the canonical list of saved locations for a patient. If the
+// profile predates multi-location support, derives a single "Home" entry
+// from defaultLocation so callers can treat both shapes uniformly.
+export function getPatientLocations(profile: PatientProfile | null): PatientLocation[] {
+  if (!profile) return [];
+  if (profile.locations && profile.locations.length > 0) return profile.locations;
+  if (profile.defaultLocation && profile.defaultLocation.trim().length > 0) {
+    return [
+      {
+        id: "home",
+        label: "Home",
+        address: profile.defaultLocation,
+        isDefault: true,
+      },
+    ];
+  }
+  return [];
+}
+
+// Picks the address string that should populate the legacy defaultLocation
+// field. Used both when saving (derive from locations[]) and when reading
+// (fallback if locations[] is missing).
+export function pickDefaultAddress(locations: PatientLocation[]): string {
+  if (locations.length === 0) return "";
+  const flagged = locations.find((loc) => loc.isDefault);
+  return (flagged ?? locations[0]).address;
+}
 
 // Fields that MUST be present for a patient to book. Keep this list as the
 // single source of truth so UI progress + booking gate stay in sync.
@@ -74,10 +102,23 @@ export async function ensurePatientProfile(userId: string) {
 }
 
 export async function savePatientProfile(profile: PatientProfile) {
+  // Mirror the chosen default address onto defaultLocation so legacy
+  // readers (booking form, admin tables) keep working without changes.
+  const locations = profile.locations ?? [];
+  const derivedDefault = locations.length > 0
+    ? pickDefaultAddress(locations)
+    : profile.defaultLocation;
+
+  const merged: PatientProfile = {
+    ...profile,
+    defaultLocation: derivedDefault,
+    locations,
+  };
+
   // Always compute profileCompleted from the actual data; never trust a client-set flag.
   const normalized: PatientProfile = {
-    ...profile,
-    profileCompleted: computeProfileCompleted(profile),
+    ...merged,
+    profileCompleted: computeProfileCompleted(merged),
   };
 
   const { db } = ensureClientFirebase();

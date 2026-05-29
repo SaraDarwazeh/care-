@@ -35,7 +35,7 @@ function PatientProfilePageInner() {
           <div className="flex items-start gap-3">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" />
             <div className="flex-1">
-              <p className="font-bold text-sky-800">Welcome to Care Plus</p>
+              <p className="font-bold text-sky-800">Welcome to Care+</p>
               <p className="mt-1 text-sm text-sky-700">
                 Add the following so we can match you with the right nurse safely:
               </p>

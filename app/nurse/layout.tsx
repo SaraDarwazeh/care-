@@ -1,13 +1,12 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, CalendarClock, Clock, User, DollarSign, Store, LogOut, Menu, X, Stethoscope, CalendarDays, Bell, FileText } from "lucide-react";
+import { LayoutDashboard, CalendarClock, Clock, User, DollarSign, Store, Menu, X, Stethoscope, CalendarDays, Bell, FileText } from "lucide-react";
 import { useState } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
 import { CartProvider } from "@/components/patient/CartContext";
 import NotificationBell from "@/components/common/NotificationBell";
+import ProfileMenu from "@/components/common/ProfileMenu";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/nurse", icon: LayoutDashboard },
@@ -23,13 +22,7 @@ const NAV_ITEMS = [
 
 export default function NurseLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-
-  async function handleLogout() {
-    if (auth) await signOut(auth);
-    router.push("/login");
-  }
 
   return (
     <CartProvider>
@@ -41,7 +34,7 @@ export default function NurseLayout({ children }: { children: React.ReactNode })
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
             <Stethoscope className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold text-white">Care Plus</span>
+          <span className="text-xl font-bold text-white">Care+</span>
           <button className="ml-auto lg:hidden" onClick={() => setOpen(false)}>
             <X className="h-6 w-6 text-slate-400" />
           </button>
@@ -63,10 +56,7 @@ export default function NurseLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <button onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all">
-            <LogOut className="h-5 w-5" /> Sign Out
-          </button>
+          <ProfileMenu variant="sidebar" />
         </div>
       </aside>
 

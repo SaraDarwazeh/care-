@@ -11,7 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { AppUser, UserRole, UserStatus } from "@/lib/types";
+import { AppUser, UserConsent, UserRole, UserStatus } from "@/lib/types";
 import { notifyNurseSignup } from "@/services/notificationService";
 
 function mapDocToUser(
@@ -34,6 +34,7 @@ export async function createUserProfile(input: {
   name: string;
   email: string;
   role: Exclude<UserRole, "admin">;
+  consent?: UserConsent;
 }) {
   const { db } = ensureClientFirebase();
   const status: UserStatus = input.role === "nurse" ? "pending" : "approved";
@@ -52,6 +53,10 @@ export async function createUserProfile(input: {
     status,
     createdAt: new Date().toISOString(),
     createdAtServer: serverTimestamp(),
+    // Consent block is optional only for backward compat — the register
+    // flow always passes one. Legacy accounts created before consent
+    // capture stay readable without this field.
+    ...(input.consent ? { consent: input.consent } : {}),
   });
 
   if (input.role === "nurse") {

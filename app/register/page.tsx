@@ -8,6 +8,7 @@ import { ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowR
 import { registerWithEmail } from "@/services/authService";
 import { getErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
+import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -16,16 +17,31 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"patient" | "nurse">("patient");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (!consentAccepted) {
+      setError("Please review and accept the Terms of Service and Privacy Policy to continue.");
+      return;
+    }
     setLoading(true);
 
     try {
-      const user = await registerWithEmail({ name, email, password, role });
+      const user = await registerWithEmail({
+        name,
+        email,
+        password,
+        role,
+        consent: {
+          termsVersion: TERMS_VERSION,
+          privacyVersion: PRIVACY_VERSION,
+          acceptedAt: new Date().toISOString(),
+        },
+      });
       const profile = await getUserProfile(user.uid);
 
       if (!profile) {
@@ -74,7 +90,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16">
           <Link href="/" className="flex items-center gap-2 text-white hover:opacity-90 transition">
             <ShieldCheck className="h-8 w-8" />
-            <span className="text-2xl font-extrabold tracking-tight">Care Plus</span>
+            <span className="text-2xl font-extrabold tracking-tight">Care+</span>
           </Link>
           
           <div className="max-w-lg mb-4 md:mb-10">
@@ -100,7 +116,7 @@ export default function RegisterPage() {
             <div className="animate-in fade-in slide-in-from-right-8 duration-500">
               <div className="mb-10">
                 <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Create Account</h2>
-                <p className="mt-2 text-slate-500 font-medium">First, tell us how you want to use Care Plus.</p>
+                <p className="mt-2 text-slate-500 font-medium">First, tell us how you want to use Care+.</p>
               </div>
 
               <div className="space-y-4">
@@ -234,6 +250,30 @@ export default function RegisterPage() {
                   </div>
                 )}
 
+                {/* Consent block — required before signup completes. Stamped
+                    onto the user doc with the exact policy versions accepted. */}
+                <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <input
+                    type="checkbox"
+                    checked={consentAccepted}
+                    onChange={(e) => setConsentAccepted(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  <span className="text-xs leading-relaxed text-slate-600">
+                    I agree to Care+&rsquo;s{" "}
+                    <Link href="/terms" target="_blank" className="font-bold text-sky-600 hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" target="_blank" className="font-bold text-sky-600 hover:underline">
+                      Privacy Policy
+                    </Link>
+                    . I understand that Care+ is a marketplace connecting me with verified
+                    healthcare professionals and that medical decisions are made jointly with my
+                    nurse — not by the platform.
+                  </span>
+                </label>
+
                 {error && (
                   <div className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600 border border-rose-100 flex items-start gap-3">
                     <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -245,7 +285,7 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !consentAccepted}
                   className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:-translate-y-0 disabled:cursor-not-allowed mt-8 ${
                     role === "patient" ? "bg-gradient-to-r from-sky-500 to-sky-600 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
                   }`}

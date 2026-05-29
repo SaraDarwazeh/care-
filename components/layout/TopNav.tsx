@@ -19,7 +19,7 @@ export default function TopNav() {
     <header className="border-b border-sky-100 bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
         <Link href="/" className="text-lg font-bold text-sky-700">
-          Care Plus
+          Care+
         </Link>
         <div className="flex items-center gap-3">
           <p className="hidden text-sm text-slate-600 sm:block">

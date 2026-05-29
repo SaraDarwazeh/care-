@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,8 +10,8 @@ import { DonationPost } from "@/lib/types";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import PlatformShell from "@/components/layout/PlatformShell";
 
-export default function CommunityDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function CommunityDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [post, setPost] = useState<DonationPost | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
       <div className="space-y-4">
         {/* Disclaimer */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-          <strong>Platform Note:</strong> Care Plus only facilitates visibility. Contact donors directly. We are not responsible for transactions or deliveries.
+          <strong>Platform Note:</strong> Care+ only facilitates visibility. Contact donors directly. We are not responsible for transactions or deliveries.
         </div>
 
         {/* Main card */}

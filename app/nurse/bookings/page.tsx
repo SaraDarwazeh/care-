@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { CalendarClock, Search, CheckCircle, XCircle, ClipboardCheck } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { BookingWithParticipants, BookingStatus } from "@/lib/types";
@@ -117,8 +117,8 @@ export default function NurseBookingsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map(b => (
-                  <>
-                  <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                  <Fragment key={b.id}>
+                  <tr className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <p className="font-bold text-slate-800">{b.patientName}</p>
                       <p className="text-xs text-slate-400">{b.patientEmail}</p>
@@ -163,13 +163,13 @@ export default function NurseBookingsPage() {
                     </td>
                   </tr>
                   {openId === b.id && (
-                    <tr key={`${b.id}-details`}>
+                    <tr>
                       <td colSpan={6} className="px-6 py-4">
                         <BookingDetails booking={b} />
                       </td>
                     </tr>
                   )}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>

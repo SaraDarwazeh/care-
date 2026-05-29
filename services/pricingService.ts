@@ -1,16 +1,8 @@
 import { doc, getDoc } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import type { Booking, CarePackage } from "@/lib/types";
-import {
-  AVAILABLE_ADDONS,
-  AddOn,
-  OVERNIGHT_SURCHARGE_ACCEPTED,
-  OVERNIGHT_SURCHARGE_REGULAR,
-  SHIFT_BILLED_HOURS,
-  TAX_RATE,
-  findAddOn,
-  round2,
-} from "@/lib/pricingConstants";
+import { AddOn, round2 } from "@/lib/pricingConstants";
+import { getPricingConfig } from "@/services/pricingConfigService";
 
 export interface PricingResult {
   base: number;
@@ -32,6 +24,8 @@ async function loadPackage(db: ReturnType<typeof ensureClientFirebase>["db"], pa
 
 export async function computePricing(input: PricingInput): Promise<PricingResult> {
   const { db } = ensureClientFirebase();
+  const config = await getPricingConfig();
+  const findGlobalAddOn = (id: string) => config.addons.find((a) => a.id === id);
 
   let nurse: Record<string, unknown> | null = null;
   if (input.nurseId) {
@@ -51,21 +45,33 @@ export async function computePricing(input: PricingInput): Promise<PricingResult
 
   let base = 0;
   if (input.bookingType === "shift") {
-    base = servicePrice * SHIFT_BILLED_HOURS;
+    base = servicePrice * config.shiftBilledHours;
   } else if (input.bookingType === "package") {
-    const days = Math.max(1, Number(input.durationDays ?? 1));
-    let perDay = servicePrice * SHIFT_BILLED_HOURS;
+    let perDay = servicePrice * config.shiftBilledHours;
     let modifier = 1;
+    // For dynamic packages we honor the patient's duration choice. For
+    // fixed packages we lock to the package's predefined durationDays so
+    // the server total can't be inflated by a tampered client payload.
+    let days = Math.max(1, Number(input.durationDays ?? 1));
 
     if (input.packageId) {
       const pkg = await loadPackage(db, String(input.packageId));
       if (pkg) {
-        if (pkg.basePricePerDay && pkg.basePricePerDay > 0) {
-          perDay = pkg.basePricePerDay;
-        }
-        const match = pkg.durationOptions?.find((opt) => opt.days === days);
-        if (match?.priceModifier && match.priceModifier > 0) {
-          modifier = match.priceModifier;
+        const mode = pkg.pricingMode ?? "dynamic";
+        if (mode === "fixed") {
+          days = Math.max(1, pkg.durationDays);
+          if (pkg.basePricePerDay && pkg.basePricePerDay > 0) {
+            perDay = pkg.basePricePerDay;
+          }
+          // priceModifier is meaningless in fixed mode — duration is locked.
+        } else {
+          if (pkg.basePricePerDay && pkg.basePricePerDay > 0) {
+            perDay = pkg.basePricePerDay;
+          }
+          const match = pkg.durationOptions?.find((opt) => opt.days === days);
+          if (match?.priceModifier && match.priceModifier > 0) {
+            modifier = match.priceModifier;
+          }
         }
       }
     }
@@ -75,14 +81,39 @@ export async function computePricing(input: PricingInput): Promise<PricingResult
     base = servicePrice;
   }
 
-  // Normalize addons against the canonical catalog. Unknown ids fall back to the
-  // values supplied by the caller so we never silently lose money — but we never
-  // add a separate transport line on top of the addon's own price.
+  // Build a lookup of the nurse's custom add-ons so we can trust THEIR price
+  // for nurse-prefixed ids rather than the caller's. Mirrors the slug rule used
+  // in BookingForm.tsx so ids round-trip cleanly.
+  function slugify(name: string): string {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  }
+  const nurseAddons: AddOn[] = Array.isArray(nurse?.additionalServices)
+    ? (nurse!.additionalServices as Array<Record<string, unknown>>)
+        .map((item, idx) => {
+          const name = String(item.name ?? "");
+          if (!name) return null;
+          return {
+            id: `nurse-${slugify(name) || `addon-${idx}`}`,
+            name,
+            price: Number(item.price ?? 0),
+          };
+        })
+        .filter((a): a is AddOn => a !== null)
+    : [];
+  const nurseAddonById = new Map(nurseAddons.map((a) => [a.id, a] as const));
+
+  // Normalize addons against the canonical catalogs. Order:
+  //   1. Global AVAILABLE_ADDONS — server-trusted prices.
+  //   2. Nurse-specific additionalServices — server-trusted from nurseProfile.
+  //   3. Fallback to caller-supplied values for ids we don't recognize so we
+  //      don't silently lose money on legitimate one-off cases.
   const requestedAddons = input.pricing?.addons ?? [];
   const addons: AddOn[] = requestedAddons.map((a) => {
     const aid = String(a.id ?? "");
-    const known = findAddOn(aid);
-    if (known) return known;
+    const knownGlobal = findGlobalAddOn(aid);
+    if (knownGlobal) return knownGlobal;
+    const knownNurse = nurseAddonById.get(aid);
+    if (knownNurse) return knownNurse;
     return {
       id: aid,
       name: String(a.name ?? aid),
@@ -98,19 +129,17 @@ export async function computePricing(input: PricingInput): Promise<PricingResult
   let overnight = 0;
   if (input.shift === "C") {
     overnight = nurse?.acceptsOvernight
-      ? OVERNIGHT_SURCHARGE_ACCEPTED
-      : OVERNIGHT_SURCHARGE_REGULAR;
+      ? config.overnightSurchargeAccepted
+      : config.overnightSurchargeRegular;
   }
 
   const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
   const subtotal = round2(base + addonsTotal + transport + overnight);
-  const tax = round2(subtotal * TAX_RATE);
+  const tax = round2(subtotal * config.taxRate);
   const total = round2(subtotal + tax);
 
   return { base, addons, transport, overnight, subtotal, tax, total };
 }
-
-export { AVAILABLE_ADDONS };
 
 const pricingService = { computePricing };
 export default pricingService;

@@ -6,7 +6,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { UserRole } from "@/lib/types";
+import { UserConsent, UserRole } from "@/lib/types";
 import { createUserProfile } from "@/services/userService";
 
 export async function registerWithEmail(input: {
@@ -14,6 +14,7 @@ export async function registerWithEmail(input: {
   email: string;
   password: string;
   role: Exclude<UserRole, "admin">;
+  consent: UserConsent;
 }) {
   const { auth } = ensureClientFirebase();
 
@@ -25,6 +26,7 @@ export async function registerWithEmail(input: {
       name: input.name,
       email: input.email,
       role: input.role,
+      consent: input.consent,
     });
 
     console.log("[authService] user registered with profile", {

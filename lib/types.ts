@@ -11,6 +11,17 @@ export interface NurseServiceItem {
   price: number;
 }
 
+// Credential document attached to a nurse profile. The url points at the
+// uploaded file in S3 (PDF or image). Legacy records that pre-date file
+// storage may carry strings here; nurseService.ts coerces those into
+// objects with url:"" on read so the UI doesn't crash.
+export interface NurseCertificate {
+  id: string;
+  name: string;
+  url: string;
+  uploadedAt: string;
+}
+
 export interface NurseAvailabilityHours {
   from: string;
   to: string;
@@ -33,9 +44,12 @@ export interface NurseProfile {
   location?: string;
   gender?: "male" | "female" | "other";
   availableShifts?: string[];
-  certificates?: string[];
+  certificates?: NurseCertificate[];
   packagesSupported?: string[];
-  additionalServices?: string[];
+  // Custom add-on offerings stacked on top of the global add-on catalog
+  // when this nurse is booked. Booking form shows these in place of the
+  // global add-ons; pricing service validates ids against this list.
+  additionalServices?: NurseServiceItem[];
   willingToServeLocations?: string[];
   transportAvailable?: boolean;
   languages?: string[];
@@ -75,9 +89,21 @@ export interface EmergencyContact {
   phone: string;
 }
 
+// A named address a patient can book against. Supports the "book for self
+// vs. parent's house" use case. The locations[] field is the source of
+// truth going forward; `defaultLocation` is kept as a derived mirror of
+// the entry flagged isDefault so legacy readers keep working.
+export interface PatientLocation {
+  id: string;
+  label: string;        // "Home", "Work", "Mother's house", etc.
+  address: string;
+  isDefault?: boolean;
+}
+
 export interface PatientProfile {
   userId: string;
   defaultLocation: string;
+  locations?: PatientLocation[];
   medicalHistory: string;
   phone?: string;
   diseases?: string[];
@@ -135,6 +161,15 @@ export interface BookingWithParticipants extends Booking {
   nurseProfileImage?: string;
 }
 
+// Consent block captured at signup. Stores the exact version strings
+// (from lib/consentVersions.ts) the user agreed to + when. Optional on
+// AppUser so legacy accounts that pre-date consent capture keep working.
+export interface UserConsent {
+  termsVersion: string;
+  privacyVersion: string;
+  acceptedAt: string;
+}
+
 export interface AppUser {
   id: string;
   name: string;
@@ -142,6 +177,7 @@ export interface AppUser {
   role: UserRole;
   status: UserStatus;
   createdAt: string;
+  consent?: UserConsent;
 }
 
 export interface StoreItem {
@@ -177,6 +213,17 @@ export interface PackageTimelineStep {
   description: string;
 }
 
+// Pricing mode controls whether a package locks duration/pricing or lets
+// patients tune the booking.
+//   fixed   — predefined duration + shifts + price. Patient sees the
+//             package as a bundle and books it as-is. basePricePerDay is
+//             required so the total is unambiguous.
+//   dynamic — patient picks one of the durationOptions (or a free-form
+//             day count if no options are defined). Pricing recalculates
+//             per choice using basePricePerDay or the nurse's hourly rate.
+// Records without pricingMode are treated as "dynamic" for backward compat.
+export type PackagePricingMode = "fixed" | "dynamic";
+
 export interface CarePackage {
   id: string;
   slug: string;
@@ -195,6 +242,7 @@ export interface CarePackage {
   basePricePerDay?: number;
   currency?: string;
   addOns?: string[];
+  pricingMode?: PackagePricingMode;
   image?: string;
   images?: string[];
   active: boolean;
@@ -211,6 +259,14 @@ export interface ContactInfo {
   notes?: string;
 }
 
+// Moderation lifecycle for community donation posts:
+//   active — visible on the public community listing (default for new posts).
+//   hidden — removed from public view by admin moderation; still recoverable.
+//   flagged — flagged for review (e.g. via future user-report feature) but
+//             may still be visible until the admin acts. Reserved for now.
+// Records without a status field are treated as "active" for backward compat.
+export type DonationPostStatus = "active" | "hidden" | "flagged";
+
 export interface DonationPost {
   id: string;
   title: string;
@@ -221,6 +277,9 @@ export interface DonationPost {
   contact: ContactInfo;
   createdBy?: string; // user id
   createdAt: string;
+  status?: DonationPostStatus;
+  moderatedAt?: string;
+  moderationNote?: string;
 }
 
 export interface DonationCategory {
@@ -280,6 +339,14 @@ export interface Notification {
   payload?: Record<string, unknown>;
 }
 
+// Lifecycle of a medical record:
+//   draft     — nurse is still editing observations (default on create)
+//   submitted — nurse marked it ready; awaiting patient confirmation
+//   confirmed — patient acknowledged the record is accurate
+//   disputed  — patient flagged an issue (see disputeNote); nurse can revise + resubmit
+// Records without a status field are treated as "draft" for backward compat.
+export type MedicalRecordStatus = "draft" | "submitted" | "confirmed" | "disputed";
+
 export interface MedicalRecord {
   id: string;
   patientId: string;
@@ -287,6 +354,37 @@ export interface MedicalRecord {
   bookingId?: string;
   summary?: string;
   observations?: Observation[]; // denormalized snapshot
+  status?: MedicalRecordStatus;
+  submittedAt?: string;
+  confirmedAt?: string;
+  disputedAt?: string;
+  disputeNote?: string; // patient's reason for disputing
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Education / trust cards shown on the homepage and managed by admins.
+// Three buckets that map to undecided-patient questions:
+//   why            — why home care could help (vs hospital / clinic / etc.)
+//   faq            — common operational questions about the platform
+//   what-to-expect — concrete reassurance about how a visit unfolds
+// Intentionally short text (title ≤60 chars, body ≤180 chars) — these
+// are scannable cards, not articles. Admin can disable/reorder without
+// touching code.
+export type EducationCardKind = "why" | "faq" | "what-to-expect";
+
+export const EDUCATION_ACCENTS = ["sky", "emerald", "violet", "amber", "rose"] as const;
+export type EducationCardAccent = (typeof EDUCATION_ACCENTS)[number];
+
+export interface EducationCard {
+  id: string;
+  kind: EducationCardKind;
+  title: string;
+  body: string;
+  icon?: string;       // lucide-react icon name; service curates the choices
+  accent?: EducationCardAccent;
+  order: number;
+  active: boolean;
   createdAt: string;
   updatedAt?: string;
 }

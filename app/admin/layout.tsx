@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -11,27 +11,29 @@ import {
   ShoppingBag,
   FileText,
   Settings,
-  LogOut,
   Menu,
   X,
   HeartHandshake,
+  HandHeart,
   Bell,
+  BookOpen,
   Activity,
 } from "lucide-react";
 import { useState } from "react";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/config";
 import NotificationBell from "@/components/common/NotificationBell";
+import ProfileMenu from "@/components/common/ProfileMenu";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Nurses", href: "/admin/nurses", icon: Stethoscope },
   { name: "Patients", href: "/admin/patients", icon: Users },
   { name: "Bookings", href: "/admin/bookings", icon: CalendarClock },
-  { name: "Packages", href: "/admin/packages", icon: HeartHandshake },
+  { name: "Manage Packages", href: "/admin/packages", icon: HeartHandshake },
   { name: "Products", href: "/admin/products", icon: Store },
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Medical Records", href: "/admin/records", icon: FileText },
+  { name: "Community", href: "/admin/community", icon: HandHeart },
+  { name: "Education", href: "/admin/education", icon: BookOpen },
   { name: "Notifications", href: "/admin/notifications", icon: Bell },
   { name: "System Status", href: "/admin/system-status", icon: Activity },
   { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -39,13 +41,7 @@ const NAV_ITEMS = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  async function handleLogout() {
-    if (auth) await signOut(auth);
-    router.push("/login");
-  }
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -67,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white shadow-lg shadow-sky-500/20">
               <Stethoscope className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-white tracking-tight">Care Plus Admin</span>
+            <span className="text-xl font-bold text-white tracking-tight">Care+ Admin</span>
           </Link>
           <button className="ml-auto lg:hidden" onClick={() => setSidebarOpen(false)}>
             <X className="h-6 w-6 text-slate-400" />
@@ -101,13 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <button 
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all"
-          >
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </button>
+          <ProfileMenu variant="sidebar" />
         </div>
       </aside>
 

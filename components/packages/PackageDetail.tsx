@@ -1,135 +1,315 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, CheckCircle2, Clock, Sparkles, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+  Users,
+  Tag,
+  ArrowRight,
+  ListChecks,
+  Target,
+  ShieldCheck,
+} from "lucide-react";
 import type { CarePackage } from "@/lib/types";
 
+function uniqueImages(pkg: CarePackage): string[] {
+  const all: string[] = [];
+  if (pkg.image) all.push(pkg.image);
+  for (const url of pkg.images ?? []) {
+    if (!all.includes(url)) all.push(url);
+  }
+  return all;
+}
+
 export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
-  const heroImage = pkg.image ?? pkg.images?.[0];
+  const images = useMemo(() => uniqueImages(pkg), [pkg]);
+  const [activeImage, setActiveImage] = useState(0);
+  const heroImage = images[activeImage];
+
   const bookHref = `/patient/nurses?service=${encodeURIComponent(pkg.title)}&package=${
     pkg.slug ?? pkg.id
   }&durationDays=${pkg.durationDays}`;
 
+  const currency = pkg.currency ?? "$";
+  const isFixed = (pkg.pricingMode ?? "dynamic") === "fixed";
+  // Fixed-mode packages lock the duration regardless of any stored
+  // durationOptions, so we never advertise alternatives for them.
+  const hasMultipleDurations = !isFixed && (pkg.durationOptions?.length ?? 0) > 1;
+
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <header className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-        {heroImage && (
-          <div className="relative h-56 w-full sm:h-72">
-            <Image
-              src={heroImage}
-              alt={pkg.title}
-              fill
-              unoptimized
-              className="object-cover"
-              priority
-            />
-            {pkg.featured && (
-              <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700 shadow">
-                <Sparkles className="h-3.5 w-3.5" /> Featured
-              </span>
+    <div className="mx-auto max-w-6xl">
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        {/* MAIN COLUMN */}
+        <div className="space-y-6">
+          {/* Hero */}
+          <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+            {heroImage ? (
+              <div className="relative aspect-[16/9] w-full sm:aspect-[2/1]">
+                <Image
+                  src={heroImage}
+                  alt={pkg.title}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  priority
+                />
+                {pkg.featured && (
+                  <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700 shadow">
+                    <Sparkles className="h-3.5 w-3.5" /> Featured
+                  </span>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 to-transparent p-6">
+                  <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow sm:text-4xl">
+                    {pkg.title}
+                  </h1>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 sm:p-8">
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{pkg.title}</h1>
+              </div>
+            )}
+
+            {/* Carousel thumbnails */}
+            {images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto border-b border-slate-100 p-3">
+                {images.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    onClick={() => setActiveImage(idx)}
+                    className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-xl transition ${
+                      idx === activeImage
+                        ? "ring-2 ring-sky-500 ring-offset-2"
+                        : "opacity-70 hover:opacity-100"
+                    }`}
+                    aria-label={`Show image ${idx + 1}`}
+                  >
+                    <Image src={src} alt="" fill unoptimized className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="p-6 sm:p-8">
+              <p className="text-base leading-relaxed text-slate-600">{pkg.summary}</p>
+              {pkg.description && (
+                <p className="mt-4 text-sm leading-relaxed text-slate-600">{pkg.description}</p>
+              )}
+
+              <div className="mt-6 flex flex-wrap gap-2 text-sm text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
+                  <CalendarDays className="h-4 w-4 text-sky-600" />
+                  <strong className="font-semibold">{pkg.durationDays}</strong> days
+                  {hasMultipleDurations && <span className="text-slate-400">· flexible</span>}
+                </span>
+                {pkg.shiftOptions && pkg.shiftOptions.length > 0 && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
+                    <Clock className="h-4 w-4 text-sky-600" />
+                    Shifts: <strong className="font-semibold">{pkg.shiftOptions.join(", ")}</strong>
+                  </span>
+                )}
+                {pkg.targetAudience && (
+                  <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
+                    <Users className="h-4 w-4 text-sky-600" />
+                    {pkg.targetAudience}
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* What's included + Outcomes */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                <ListChecks className="h-4 w-4 text-emerald-600" /> Included care
+              </h2>
+              <ul className="mt-4 space-y-3">
+                {pkg.includedServices.map((s) => (
+                  <li key={s} className="flex items-start gap-2 text-sm text-slate-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {pkg.outcomes && pkg.outcomes.length > 0 && (
+              <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                  <Target className="h-4 w-4 text-sky-600" /> Expected outcomes
+                </h2>
+                <ul className="mt-4 space-y-3">
+                  {pkg.outcomes.map((o) => (
+                    <li key={o} className="flex items-start gap-2 text-sm text-slate-700">
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+                      <span>{o}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
           </div>
-        )}
-        <div className="p-6 sm:p-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{pkg.title}</h1>
-          <p className="mt-3 text-base leading-relaxed text-slate-600">{pkg.summary}</p>
-          {pkg.description && (
-            <p className="mt-4 text-sm leading-relaxed text-slate-600">{pkg.description}</p>
+
+          {/* Care timeline */}
+          {pkg.careTimeline && pkg.careTimeline.length > 0 && (
+            <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                <CalendarDays className="h-4 w-4 text-violet-600" /> Care timeline
+              </h2>
+              <ol className="mt-5 space-y-5 border-l-2 border-sky-100 pl-6">
+                {pkg.careTimeline.map((step) => (
+                  <li key={`${step.day}-${step.title}`} className="relative">
+                    <span className="absolute -left-[1.85rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-sky-200 bg-white text-[10px] font-bold text-sky-700">
+                      D{step.day}
+                    </span>
+                    <p className="text-base font-bold text-slate-800">{step.title}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{step.description}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
           )}
 
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-600">
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-              <CalendarDays className="h-4 w-4 text-sky-600" />
-              <strong className="font-semibold">{pkg.durationDays}</strong> days default
-            </span>
-            {pkg.shiftOptions && pkg.shiftOptions.length > 0 && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-                <Clock className="h-4 w-4 text-sky-600" />
-                Shifts: <strong className="font-semibold">{pkg.shiftOptions.join(", ")}</strong>
-              </span>
-            )}
-            {pkg.targetAudience && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-                <Users className="h-4 w-4 text-sky-600" />
-                {pkg.targetAudience}
-              </span>
-            )}
-          </div>
+          {/* Recommended for */}
+          {pkg.recommendedFor && pkg.recommendedFor.length > 0 && (
+            <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                <Users className="h-4 w-4 text-slate-600" /> Recommended for
+              </h2>
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                {pkg.recommendedFor.map((r) => (
+                  <li key={r} className="flex items-start gap-2 text-sm text-slate-700">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                    <span>{r}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {/* Highlights pills */}
+          {pkg.highlights && pkg.highlights.length > 0 && (
+            <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+              <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+                <Tag className="h-4 w-4 text-amber-600" /> Highlights
+              </h2>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {pkg.highlights.map((h) => (
+                  <li
+                    key={h}
+                    className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
+                  >
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+
+        {/* PRICING SIDEBAR — sticky on desktop */}
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+            {isFixed && pkg.basePricePerDay ? (
+              <>
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                  Fixed bundle · {pkg.durationDays} days
+                </p>
+                <p className="mt-1 text-3xl font-extrabold text-slate-900">
+                  {currency}
+                  {(pkg.basePricePerDay * pkg.durationDays).toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {currency}
+                  {pkg.basePricePerDay}/day × {pkg.durationDays} days — locked at booking.
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Add-ons and tax are added on top at checkout.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">From</p>
+                {pkg.basePricePerDay ? (
+                  <p className="mt-1 text-3xl font-extrabold text-slate-900">
+                    {currency}
+                    {pkg.basePricePerDay}
+                    <span className="ml-1 text-base font-medium text-slate-500">/day</span>
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xl font-bold text-slate-900">
+                    Nurse hourly × duration
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-slate-500">
+                  Final price is computed at booking from the nurse&rsquo;s rate, your duration choice,
+                  and any add-ons.
+                </p>
+              </>
+            )}
+
+            {hasMultipleDurations && (
+              <div className="mt-5 space-y-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Duration options
+                </p>
+                <ul className="space-y-1.5">
+                  {pkg.durationOptions!.map((opt) => (
+                    <li
+                      key={opt.days}
+                      className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
+                    >
+                      <span className="font-bold text-slate-700">{opt.label}</span>
+                      <span className="text-xs text-slate-500">
+                        {opt.days} days
+                        {opt.priceModifier && opt.priceModifier !== 1 && (
+                          <span
+                            className={`ml-2 font-bold ${
+                              opt.priceModifier < 1 ? "text-emerald-700" : "text-amber-700"
+                            }`}
+                          >
+                            {opt.priceModifier < 1
+                              ? `−${Math.round((1 - opt.priceModifier) * 100)}%`
+                              : `+${Math.round((opt.priceModifier - 1) * 100)}%`}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <Link
               href={bookHref}
-              className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
             >
-              Book this package
+              Book this package <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/services/packages"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
             >
               Back to all packages
             </Link>
+
+            <div className="mt-5 flex items-start gap-2 rounded-xl bg-sky-50/60 p-3 text-xs text-slate-600">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+              <p>
+                All nurses are verified by Care+. Cancel free up to 24h before your visit
+                starts.
+              </p>
+            </div>
           </div>
-        </div>
-      </header>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Included care</h2>
-          <ul className="mt-4 space-y-2">
-            {pkg.includedServices.map((s) => (
-              <li key={s} className="flex items-start gap-2 text-sm text-slate-700">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                <span>{s}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {pkg.outcomes && pkg.outcomes.length > 0 && (
-          <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Expected outcomes</h2>
-            <ul className="mt-4 space-y-2">
-              {pkg.outcomes.map((o) => (
-                <li key={o} className="flex items-start gap-2 text-sm text-slate-700">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
-                  <span>{o}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        </aside>
       </div>
-
-      {pkg.recommendedFor && pkg.recommendedFor.length > 0 && (
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Recommended for</h2>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {pkg.recommendedFor.map((r) => (
-              <li key={r} className="flex items-start gap-2 text-sm text-slate-700">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {pkg.careTimeline && pkg.careTimeline.length > 0 && (
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Care timeline</h2>
-          <ol className="mt-4 space-y-4 border-l-2 border-sky-100 pl-5">
-            {pkg.careTimeline.map((step) => (
-              <li key={`${step.day}-${step.title}`} className="relative">
-                <span className="absolute -left-[1.6rem] top-0 inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-sky-200 bg-white text-[10px] font-bold text-sky-700">
-                  D{step.day}
-                </span>
-                <p className="text-sm font-semibold text-slate-800">{step.title}</p>
-                <p className="text-sm text-slate-600">{step.description}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
     </div>
   );
 }

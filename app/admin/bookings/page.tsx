@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { CalendarClock, Search } from "lucide-react";
+import { CalendarClock, Download, Search } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { BookingStatus, BookingWithParticipants } from "@/lib/types";
 import { updateBookingStatus } from "@/services/bookingService";
 import { doc, getDoc } from "firebase/firestore";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import { downloadCsv, timestampedFilename, type CsvColumn } from "@/lib/csvExport";
 
 async function enrichBooking(raw: Record<string, unknown> & { id: string }): Promise<BookingWithParticipants> {
   const { db } = ensureClientFirebase();
@@ -94,6 +95,27 @@ export default function AdminBookingsPage() {
     }
   }
 
+  function exportBookingsCsv() {
+    const columns: CsvColumn<BookingWithParticipants>[] = [
+      { header: "Booking ID", accessor: (b) => b.id },
+      { header: "Patient", accessor: (b) => b.patientName },
+      { header: "Patient email", accessor: (b) => b.patientEmail },
+      { header: "Nurse", accessor: (b) => b.nurseName },
+      { header: "Nurse specialization", accessor: (b) => b.nurseSpecialization ?? "" },
+      { header: "Service", accessor: (b) => b.service },
+      { header: "Type", accessor: (b) => b.bookingType ?? "" },
+      { header: "Date", accessor: (b) => b.date },
+      { header: "Time / Shift", accessor: (b) => b.time || b.shift || "" },
+      { header: "Duration (days)", accessor: (b) => b.durationDays ?? "" },
+      { header: "Location", accessor: (b) => b.location },
+      { header: "Price", accessor: (b) => b.price },
+      { header: "Status", accessor: (b) => b.status },
+      { header: "Notes", accessor: (b) => b.notes },
+      { header: "Created at", accessor: (b) => b.createdAt },
+    ];
+    downloadCsv(timestampedFilename("careplus-bookings"), filtered, columns);
+  }
+
   if (authLoading || !appUser || loading) {
     return <LoadingScreen text="Loading bookings..." />;
   }
@@ -111,9 +133,19 @@ export default function AdminBookingsPage() {
             </span>
           </p>
         </div>
-        <div className="rounded-2xl bg-white border border-slate-200 px-5 py-2.5 text-center shadow-sm">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-extrabold text-slate-800">{bookings.length}</p>
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-white border border-slate-200 px-5 py-2.5 text-center shadow-sm">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
+            <p className="text-2xl font-extrabold text-slate-800">{bookings.length}</p>
+          </div>
+          <button
+            type="button"
+            onClick={exportBookingsCsv}
+            disabled={filtered.length === 0}
+            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </button>
         </div>
       </div>
 

@@ -17,6 +17,7 @@ import {
   Quote,
   Camera,
   Sparkles,
+  ChevronLeft,
 } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import BookingForm from "@/components/patient/BookingForm";
@@ -103,6 +104,12 @@ function NurseProfilePageInner() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <Link
+        href="/patient/nurses"
+        className="mb-4 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" /> All nurses
+      </Link>
       <div className="grid gap-8 lg:grid-cols-3 lg:items-start">
         {/* Main Content (Left Column) */}
         <div className="space-y-8 lg:col-span-2">
@@ -325,12 +332,12 @@ function NurseProfilePageInner() {
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 mt-4">
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="h-5 w-5 text-emerald-600" />
-              <h3 className="font-bold text-emerald-800 text-sm">Verified by Care Plus</h3>
+              <h3 className="font-bold text-emerald-800 text-sm">Verified by Care+</h3>
             </div>
             <ul className="space-y-1.5">
               <li className="flex items-center gap-2 text-xs text-emerald-700">
                 <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                Profile submitted and reviewed by the Care Plus team
+                Profile submitted and reviewed by the Care+ team
               </li>
               <li className="flex items-center gap-2 text-xs text-emerald-700">
                 <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />

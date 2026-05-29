@@ -18,7 +18,7 @@ export default function PatientNotificationsPage() {
           Notifications
         </h1>
         <p className="mt-2 text-slate-600">
-          Updates on your bookings, orders, and other Care Plus activity.
+          Updates on your bookings, orders, and other Care+ activity.
         </p>
       </div>
       <NotificationList userId={appUser.id} />

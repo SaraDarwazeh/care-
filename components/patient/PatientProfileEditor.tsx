@@ -19,20 +19,26 @@ import {
   Pill,
   Plus,
   X,
+  MapPin,
+  Home,
+  Trash2,
 } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
-import { EmergencyContact, PatientProfile } from "@/lib/types";
+import { EmergencyContact, PatientLocation, PatientProfile } from "@/lib/types";
 import {
   computeProfileCompleted,
   getMissingFieldLabels,
+  getPatientLocations,
   getPatientProfile,
   savePatientProfile,
 } from "@/services/patientService";
 import { useAuth } from "@/hooks/useAuth";
 
+type SectionId = "personal" | "locations" | "medical" | "emergency" | "payment";
+
 interface FormState {
   phone: string;
-  defaultLocation: string;
+  locations: PatientLocation[];
   dateOfBirth: string;
   bloodType: string;
   diseases: string[];
@@ -45,7 +51,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   phone: "",
-  defaultLocation: "",
+  locations: [],
   dateOfBirth: "",
   bloodType: "",
   diseases: [],
@@ -58,10 +64,20 @@ const EMPTY_FORM: FormState = {
 
 const BLOOD_TYPES = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
+const LOCATION_LABEL_PRESETS = ["Home", "Work", "Parent's house", "Vacation home"];
+
+function newLocationId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `loc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function profileToForm(profile: PatientProfile): FormState {
+  const locations = getPatientLocations(profile);
   return {
     phone: profile.phone ?? "",
-    defaultLocation: profile.defaultLocation ?? "",
+    locations,
     dateOfBirth: profile.dateOfBirth ?? "",
     bloodType: profile.bloodType ?? "",
     diseases: profile.diseases ?? [],
@@ -74,10 +90,25 @@ function profileToForm(profile: PatientProfile): FormState {
 }
 
 function formToProfile(form: FormState, userId: string): PatientProfile {
+  const cleanedLocations: PatientLocation[] = form.locations
+    .map((loc) => ({
+      id: loc.id || newLocationId(),
+      label: loc.label.trim() || "Home",
+      address: loc.address.trim(),
+      isDefault: Boolean(loc.isDefault),
+    }))
+    .filter((loc) => loc.address.length > 0);
+
+  // Guarantee exactly one default if any location exists.
+  if (cleanedLocations.length > 0 && !cleanedLocations.some((l) => l.isDefault)) {
+    cleanedLocations[0].isDefault = true;
+  }
+
   return {
     userId,
     phone: form.phone.trim(),
-    defaultLocation: form.defaultLocation.trim(),
+    defaultLocation: "", // derived in savePatientProfile from locations[]
+    locations: cleanedLocations,
     dateOfBirth: form.dateOfBirth || undefined,
     bloodType: form.bloodType || undefined,
     diseases: form.diseases,
@@ -96,6 +127,19 @@ function formToProfile(form: FormState, userId: string): PatientProfile {
           }
         : undefined,
   };
+}
+
+function isPersonalComplete(form: FormState): boolean {
+  return form.phone.trim().length > 0;
+}
+function isLocationsComplete(form: FormState): boolean {
+  return form.locations.some((l) => l.address.trim().length > 0);
+}
+function isEmergencyComplete(form: FormState): boolean {
+  return (
+    form.emergencyContact.name.trim().length > 0 &&
+    form.emergencyContact.phone.trim().length > 0
+  );
 }
 
 function TagInput({
@@ -178,6 +222,169 @@ function TagInput({
   );
 }
 
+function LocationsEditor({
+  locations,
+  onChange,
+}: {
+  locations: PatientLocation[];
+  onChange: (next: PatientLocation[]) => void;
+}) {
+  function update(index: number, patch: Partial<PatientLocation>) {
+    onChange(locations.map((loc, i) => (i === index ? { ...loc, ...patch } : loc)));
+  }
+
+  function remove(index: number) {
+    const next = locations.filter((_, i) => i !== index);
+    // If we removed the default, promote the first remaining entry.
+    if (next.length > 0 && !next.some((l) => l.isDefault)) {
+      next[0] = { ...next[0], isDefault: true };
+    }
+    onChange(next);
+  }
+
+  function add() {
+    const isFirst = locations.length === 0;
+    onChange([
+      ...locations,
+      { id: newLocationId(), label: "Home", address: "", isDefault: isFirst },
+    ]);
+  }
+
+  function makeDefault(index: number) {
+    onChange(locations.map((loc, i) => ({ ...loc, isDefault: i === index })));
+  }
+
+  if (locations.length === 0) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+        <Home className="mx-auto mb-2 h-8 w-8 text-slate-400" />
+        <p className="text-sm font-medium text-slate-600">No saved addresses yet</p>
+        <p className="mt-1 text-xs text-slate-500">
+          Add at least one address so nurses know where to visit.
+        </p>
+        <button
+          type="button"
+          onClick={add}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-sky-700"
+        >
+          <Plus className="h-4 w-4" /> Add address
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {locations.map((loc, index) => (
+        <div
+          key={loc.id || index}
+          className={`rounded-2xl border p-4 transition ${
+            loc.isDefault ? "border-sky-200 bg-sky-50/40" : "border-slate-200 bg-white"
+          }`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-slate-600">Label</label>
+                  <input
+                    list={`location-presets-${index}`}
+                    value={loc.label}
+                    onChange={(e) => update(index, { label: e.target.value })}
+                    placeholder="Home / Work / Parent's house"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
+                  />
+                  <datalist id={`location-presets-${index}`}>
+                    {LOCATION_LABEL_PRESETS.map((p) => (
+                      <option key={p} value={p} />
+                    ))}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-slate-600">
+                    Address <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    value={loc.address}
+                    onChange={(e) => update(index, { address: e.target.value })}
+                    placeholder="Street, building, apartment"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                {loc.isDefault ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 font-bold text-sky-700">
+                    <CheckCircle2 className="h-3 w-3" /> Default address
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => makeDefault(index)}
+                    className="font-bold text-slate-500 hover:text-sky-700"
+                  >
+                    Set as default
+                  </button>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => remove(index)}
+              className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+              aria-label="Remove address"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={add}
+        className="flex items-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm font-bold text-slate-600 hover:border-sky-300 hover:text-sky-700"
+      >
+        <Plus className="h-4 w-4" /> Add another address
+      </button>
+    </div>
+  );
+}
+
+function SectionTabButton({
+  active,
+  complete,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean;
+  complete: boolean;
+  onClick: () => void;
+  icon: typeof UserCircle;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group flex items-center gap-2 whitespace-nowrap rounded-2xl border px-4 py-2.5 text-sm font-bold transition-all ${
+        active
+          ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
+          : "border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-slate-700"
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{label}</span>
+      <span
+        className={`h-2 w-2 rounded-full ${
+          complete ? "bg-emerald-500" : "bg-amber-400"
+        }`}
+        aria-label={complete ? "Complete" : "Incomplete"}
+      />
+    </button>
+  );
+}
+
 export default function PatientProfileEditor({ userId }: { userId: string }) {
   const { appUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -185,6 +392,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false);
   const [savedProfile, setSavedProfile] = useState<PatientProfile | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [activeSection, setActiveSection] = useState<SectionId>("personal");
 
   useEffect(() => {
     let active = true;
@@ -312,13 +520,57 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
           </div>
         </div>
 
+        {/* Saved addresses summary */}
+        {savedProfile && (
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                <MapPin className="h-4 w-4 text-sky-600" /> Saved addresses
+              </h3>
+              <button
+                onClick={() => {
+                  setActiveSection("locations");
+                  setIsEditing(true);
+                }}
+                className="text-xs font-bold text-sky-600 hover:text-sky-700"
+              >
+                Manage
+              </button>
+            </div>
+            {getPatientLocations(savedProfile).length === 0 ? (
+              <p className="text-sm text-slate-500">No addresses saved yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {getPatientLocations(savedProfile).map((loc) => (
+                  <li
+                    key={loc.id}
+                    className="flex items-start justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-slate-700">
+                        {loc.label}
+                        {loc.isDefault && (
+                          <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                            Default
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500">{loc.address}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         {/* Profile Navigation List */}
         <div className="rounded-3xl bg-white shadow-sm overflow-hidden divide-y divide-slate-50">
           {[
-            { id: "account", label: "Account Information", icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50", onClick: () => setIsEditing(true) },
-            { id: "medical", label: "Medical Information", icon: Activity, color: "text-rose-500", bg: "bg-rose-50", onClick: () => setIsEditing(true) },
+            { id: "account", label: "Account Information", icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50", onClick: () => { setActiveSection("personal"); setIsEditing(true); } },
+            { id: "medical", label: "Medical Information", icon: Activity, color: "text-rose-500", bg: "bg-rose-50", onClick: () => { setActiveSection("medical"); setIsEditing(true); } },
             { id: "bookings", label: "My Bookings", icon: CalendarClock, color: "text-emerald-500", bg: "bg-emerald-50", href: "/patient/appointments" },
-            { id: "payment", label: "Payment Methods", icon: CreditCard, color: "text-violet-500", bg: "bg-violet-50", onClick: () => setIsEditing(true) },
+            { id: "payment", label: "Payment Methods", icon: CreditCard, color: "text-violet-500", bg: "bg-violet-50", onClick: () => { setActiveSection("payment"); setIsEditing(true); } },
             { id: "reviews", label: "My Reviews", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "#" },
             { id: "settings", label: "Settings", icon: Settings, color: "text-slate-500", bg: "bg-slate-100", href: "#" },
             { id: "support", label: "Help & Support", icon: HelpCircle, color: "text-sky-500", bg: "bg-sky-50", href: "#" },
@@ -350,19 +602,34 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     );
   }
 
-  // Live completion preview for the edit form: compute on the form draft so the
-  // patient sees progress as they fill fields, not just after saving.
+  // Live completion preview for the edit form.
   const previewProfile: PatientProfile = formToProfile(form, userId);
   const previewMissing = getMissingFieldLabels(previewProfile);
   const previewComplete = previewMissing.length === 0;
 
+  const sectionComplete: Record<SectionId, boolean> = {
+    personal: isPersonalComplete(form),
+    locations: isLocationsComplete(form),
+    medical: true,
+    emergency: isEmergencyComplete(form),
+    payment: true,
+  };
+
+  const sections: { id: SectionId; label: string; icon: typeof UserCircle }[] = [
+    { id: "personal", label: "Personal", icon: UserCircle },
+    { id: "locations", label: "Locations", icon: MapPin },
+    { id: "medical", label: "Medical", icon: Pill },
+    { id: "emergency", label: "Emergency", icon: ShieldAlert },
+    { id: "payment", label: "Payment", icon: CreditCard },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl bg-white p-8 shadow-sm">
+      <div className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-2xl font-extrabold text-slate-800">Edit Profile</h2>
-            <p className="text-slate-500">Required fields are marked with an asterisk.</p>
+            <p className="text-slate-500">Fields marked with an asterisk are required.</p>
           </div>
           <div
             className={`rounded-2xl border px-4 py-3 text-sm font-semibold sm:max-w-xs ${
@@ -385,239 +652,290 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
           </div>
         </div>
 
+        {/* Section tabs */}
+        <div className="mb-6 -mx-1 flex gap-2 overflow-x-auto pb-1">
+          {sections.map((s) => (
+            <SectionTabButton
+              key={s.id}
+              active={activeSection === s.id}
+              complete={sectionComplete[s.id]}
+              onClick={() => setActiveSection(s.id)}
+              icon={s.icon}
+              label={s.label}
+            />
+          ))}
+        </div>
+
         <form className="space-y-8" onSubmit={onSubmit}>
-          {/* Contact section */}
-          <section>
-            <header className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
-                <Phone className="h-5 w-5 text-sky-600" />
+          {/* PERSONAL */}
+          {activeSection === "personal" && (
+            <section className="animate-in fade-in slide-in-from-right-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
+                  <Phone className="h-5 w-5 text-sky-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Personal</h3>
+                  <p className="text-xs text-slate-500">How nurses reach you and basic details.</p>
+                </div>
+              </header>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    Phone Number <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    placeholder="+1 234 567 890"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">Date of Birth</label>
+                  <input
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">Blood Type</label>
+                  <select
+                    value={form.bloodType}
+                    onChange={(e) => setForm({ ...form, bloodType: e.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                  >
+                    {BLOOD_TYPES.map((bt) => (
+                      <option key={bt || "unset"} value={bt}>
+                        {bt || "Prefer not to say"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Contact</h3>
-                <p className="text-xs text-slate-500">How nurses reach you and where they visit.</p>
-              </div>
-            </header>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  Phone Number <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                  placeholder="+1 234 567 890"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  Default Address <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  required
-                  value={form.defaultLocation}
-                  onChange={(e) => setForm({ ...form, defaultLocation: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                  placeholder="Street, building, apartment"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Date of Birth</label>
-                <input
-                  type="date"
-                  value={form.dateOfBirth}
-                  onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Blood Type</label>
-                <select
-                  value={form.bloodType}
-                  onChange={(e) => setForm({ ...form, bloodType: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                >
-                  {BLOOD_TYPES.map((bt) => (
-                    <option key={bt || "unset"} value={bt}>
-                      {bt || "Prefer not to say"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
-          {/* Emergency contact section */}
-          <section>
-            <header className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100">
-                <ShieldAlert className="h-5 w-5 text-rose-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Emergency Contact</h3>
-                <p className="text-xs text-slate-500">
-                  Who we contact if something goes wrong during a visit.
-                </p>
-              </div>
-            </header>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  required
-                  value={form.emergencyContact.name}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      emergencyContact: { ...form.emergencyContact, name: e.target.value },
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                  placeholder="Full name"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Relationship</label>
-                <input
-                  value={form.emergencyContact.relationship}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      emergencyContact: { ...form.emergencyContact, relationship: e.target.value },
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                  placeholder="Spouse, parent, sibling…"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">
-                  Phone <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  required
-                  type="tel"
-                  value={form.emergencyContact.phone}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      emergencyContact: { ...form.emergencyContact, phone: e.target.value },
-                    })
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                  placeholder="+1 234 567 890"
-                />
-              </div>
-            </div>
-          </section>
+          {/* LOCATIONS */}
+          {activeSection === "locations" && (
+            <section className="animate-in fade-in slide-in-from-right-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
+                  <MapPin className="h-5 w-5 text-sky-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Locations</h3>
+                  <p className="text-xs text-slate-500">
+                    Save labeled addresses so booking for a parent or work is one click.
+                  </p>
+                </div>
+              </header>
+              <LocationsEditor
+                locations={form.locations}
+                onChange={(locations) => setForm({ ...form, locations })}
+              />
+            </section>
+          )}
 
-          {/* Medical section */}
-          <section>
-            <header className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
-                <Pill className="h-5 w-5 text-violet-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Medical Information</h3>
-                <p className="text-xs text-slate-500">
-                  Helps nurses provide safe, appropriate care. Optional but recommended.
-                </p>
-              </div>
-            </header>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <TagInput
-                label="Chronic Conditions"
-                placeholder="e.g. Diabetes, Hypertension"
-                values={form.diseases}
-                onChange={(diseases) => setForm({ ...form, diseases })}
-                accent="violet"
-              />
-              <TagInput
-                label="Allergies"
-                placeholder="e.g. Penicillin, Latex"
-                values={form.allergies}
-                onChange={(allergies) => setForm({ ...form, allergies })}
-                accent="rose"
-              />
-              <TagInput
-                label="Current Medications"
-                placeholder="e.g. Metformin 500mg"
-                values={form.currentMedications}
-                onChange={(currentMedications) => setForm({ ...form, currentMedications })}
-                accent="sky"
-              />
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Additional Notes</label>
-                <textarea
-                  value={form.medicalHistory}
-                  onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
-                  className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                  placeholder="Anything else nurses should know — surgeries, family history, mobility limits…"
+          {/* MEDICAL */}
+          {activeSection === "medical" && (
+            <section className="animate-in fade-in slide-in-from-right-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
+                  <Pill className="h-5 w-5 text-violet-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Medical Information</h3>
+                  <p className="text-xs text-slate-500">
+                    Helps nurses provide safe, appropriate care. Optional but recommended.
+                  </p>
+                </div>
+              </header>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TagInput
+                  label="Chronic Conditions"
+                  placeholder="e.g. Diabetes, Hypertension"
+                  values={form.diseases}
+                  onChange={(diseases) => setForm({ ...form, diseases })}
+                  accent="violet"
                 />
+                <TagInput
+                  label="Allergies"
+                  placeholder="e.g. Penicillin, Latex"
+                  values={form.allergies}
+                  onChange={(allergies) => setForm({ ...form, allergies })}
+                  accent="rose"
+                />
+                <TagInput
+                  label="Current Medications"
+                  placeholder="e.g. Metformin 500mg"
+                  values={form.currentMedications}
+                  onChange={(currentMedications) => setForm({ ...form, currentMedications })}
+                  accent="sky"
+                />
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">Additional Notes</label>
+                  <textarea
+                    value={form.medicalHistory}
+                    onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+                    className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    placeholder="Anything else nurses should know — surgeries, family history, mobility limits…"
+                  />
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
-          {/* Payment section */}
-          <section>
-            <header className="mb-4 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-                <CreditCard className="h-5 w-5 text-emerald-600" />
+          {/* EMERGENCY */}
+          {activeSection === "emergency" && (
+            <section className="animate-in fade-in slide-in-from-right-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100">
+                  <ShieldAlert className="h-5 w-5 text-rose-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Emergency Contact</h3>
+                  <p className="text-xs text-slate-500">
+                    Who we contact if something goes wrong during a visit.
+                  </p>
+                </div>
+              </header>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    required
+                    value={form.emergencyContact.name}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        emergencyContact: { ...form.emergencyContact, name: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                    placeholder="Full name"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">Relationship</label>
+                  <input
+                    value={form.emergencyContact.relationship}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        emergencyContact: { ...form.emergencyContact, relationship: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                    placeholder="Spouse, parent, sibling…"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    Phone <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    required
+                    type="tel"
+                    value={form.emergencyContact.phone}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        emergencyContact: { ...form.emergencyContact, phone: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
+                    placeholder="+1 234 567 890"
+                  />
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Payment</h3>
-                <p className="text-xs text-slate-500">How you prefer to pay for visits.</p>
+            </section>
+          )}
+
+          {/* PAYMENT */}
+          {activeSection === "payment" && (
+            <section className="animate-in fade-in slide-in-from-right-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
+                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Payment</h3>
+                  <p className="text-xs text-slate-500">How you prefer to pay for visits.</p>
+                </div>
+              </header>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { id: "cash", label: "Cash" },
+                  { id: "bank", label: "Bank Transfer" },
+                ].map((option) => (
+                  <label
+                    key={option.id}
+                    className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${
+                      form.paymentMethods.includes(option.id)
+                        ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
+                        : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={form.paymentMethods.includes(option.id)}
+                      onChange={() => togglePayment(option.id)}
+                    />
+                    {option.label}
+                  </label>
+                ))}
               </div>
-            </header>
-            <div className="flex flex-wrap gap-3">
-              {[
-                { id: "cash", label: "Cash" },
-                { id: "bank", label: "Bank Transfer" },
-              ].map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${
-                    form.paymentMethods.includes(option.id)
-                      ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-                      : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"
+            </section>
+          )}
+
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span className="font-semibold">Section status:</span>
+              {sections.map((s) => (
+                <span
+                  key={s.id}
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${
+                    sectionComplete[s.id] ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={form.paymentMethods.includes(option.id)}
-                    onChange={() => togglePayment(option.id)}
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      sectionComplete[s.id] ? "bg-emerald-500" : "bg-amber-400"
+                    }`}
                   />
-                  {option.label}
-                </label>
+                  {s.label}
+                </span>
               ))}
             </div>
-          </section>
-
-          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-6 mt-8">
-            {savedProfile && (
-              <button
-                type="button"
-                onClick={() => {
-                  setForm(profileToForm(savedProfile));
-                  setIsEditing(false);
-                }}
-                className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
+            <div className="flex items-center justify-end gap-3">
+              {savedProfile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm(profileToForm(savedProfile));
+                    setIsEditing(false);
+                  }}
+                  className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+              <PatientButton
+                type="submit"
+                loading={saving}
+                className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
               >
-                Cancel
-              </button>
-            )}
-            <PatientButton
-              type="submit"
-              loading={saving}
-              className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
-            >
-              {saving ? "Saving..." : "Save Profile"}
-            </PatientButton>
+                {saving ? "Saving..." : "Save Profile"}
+              </PatientButton>
+            </div>
           </div>
         </form>
       </div>

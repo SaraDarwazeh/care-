@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import ImageUploadField from "@/components/common/ImageUploadField";
 import {
   createPackage,
   deletePackage,
@@ -20,7 +21,15 @@ import {
   updatePackage,
   type CarePackageInput,
 } from "@/services/packageService";
-import type { CarePackage } from "@/lib/types";
+import { getPricingConfig } from "@/services/pricingConfigService";
+import { AVAILABLE_ADDONS } from "@/lib/pricingConstants";
+import type { AddOn } from "@/lib/pricingConstants";
+import type {
+  CarePackage,
+  PackageDurationOption,
+  PackagePricingMode,
+  PackageTimelineStep,
+} from "@/lib/types";
 
 interface FormState {
   id: string;
@@ -34,9 +43,14 @@ interface FormState {
   highlights: string;
   outcomes: string;
   durationDays: string;
+  durationOptions: PackageDurationOption[];
+  careTimeline: PackageTimelineStep[];
   shiftOptions: string;
   basePricePerDay: string;
+  pricingMode: PackagePricingMode;
   image: string;
+  images: string[];
+  addOns: string[];
   active: boolean;
   featured: boolean;
 }
@@ -53,9 +67,14 @@ const EMPTY_FORM: FormState = {
   highlights: "",
   outcomes: "",
   durationDays: "",
+  durationOptions: [],
+  careTimeline: [],
   shiftOptions: "A, B",
   basePricePerDay: "",
+  pricingMode: "dynamic",
   image: "",
+  images: [],
+  addOns: [],
   active: true,
   featured: false,
 };
@@ -87,9 +106,14 @@ function packageToForm(pkg: CarePackage): FormState {
     highlights: (pkg.highlights ?? []).join("\n"),
     outcomes: (pkg.outcomes ?? []).join("\n"),
     durationDays: String(pkg.durationDays ?? ""),
+    durationOptions: pkg.durationOptions ?? [],
+    careTimeline: pkg.careTimeline ?? [],
     shiftOptions: (pkg.shiftOptions ?? []).join(", "),
     basePricePerDay: pkg.basePricePerDay ? String(pkg.basePricePerDay) : "",
+    pricingMode: pkg.pricingMode ?? "dynamic",
     image: pkg.image ?? pkg.images?.[0] ?? "",
+    images: pkg.images ?? [],
+    addOns: pkg.addOns ?? [],
     active: pkg.active,
     featured: pkg.featured,
   };
@@ -98,6 +122,23 @@ function packageToForm(pkg: CarePackage): FormState {
 function formToInput(form: FormState): CarePackageInput {
   const trimmedId = form.id.trim();
   const slug = (form.slug.trim() || trimmedId).toLowerCase().replace(/\s+/g, "-");
+  const cleanedDurationOptions = form.durationOptions
+    .filter((opt) => opt.days > 0 && opt.label.trim().length > 0)
+    .map((opt) => ({
+      days: opt.days,
+      label: opt.label.trim(),
+      ...(opt.priceModifier !== undefined && opt.priceModifier !== 1
+        ? { priceModifier: opt.priceModifier }
+        : {}),
+    }));
+  const cleanedTimeline = form.careTimeline
+    .filter((step) => step.title.trim().length > 0)
+    .map((step) => ({
+      day: step.day,
+      title: step.title.trim(),
+      description: step.description.trim(),
+    }));
+  const images = form.images.filter((url) => url.trim().length > 0);
   return {
     id: trimmedId || undefined,
     slug,
@@ -109,10 +150,22 @@ function formToInput(form: FormState): CarePackageInput {
     includedServices: splitLines(form.includedServices),
     highlights: splitLines(form.highlights),
     outcomes: splitLines(form.outcomes),
+    careTimeline: cleanedTimeline.length > 0 ? cleanedTimeline : undefined,
     durationDays: Math.max(1, Number(form.durationDays) || 1),
+    // Fixed-mode packages lock duration, so durationOptions are
+    // irrelevant — strip them on save to avoid confusing the booking form.
+    durationOptions:
+      form.pricingMode === "fixed"
+        ? undefined
+        : cleanedDurationOptions.length > 0
+        ? cleanedDurationOptions
+        : undefined,
     shiftOptions: splitCsv(form.shiftOptions.toUpperCase()),
     basePricePerDay: form.basePricePerDay ? Number(form.basePricePerDay) : undefined,
-    image: form.image.trim() || undefined,
+    pricingMode: form.pricingMode,
+    image: form.image.trim() || images[0] || undefined,
+    images: images.length > 0 ? images : undefined,
+    addOns: form.addOns.length > 0 ? form.addOns : undefined,
     active: form.active,
     featured: form.featured,
   };
@@ -128,6 +181,21 @@ export default function AdminPackagesPage() {
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [addonCatalog, setAddonCatalog] = useState<AddOn[]>(AVAILABLE_ADDONS as AddOn[]);
+
+  useEffect(() => {
+    let active = true;
+    getPricingConfig()
+      .then((cfg) => {
+        if (active) setAddonCatalog(cfg.addons);
+      })
+      .catch((err) => {
+        console.error("[AdminPackagesPage] failed to load pricing config", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function reload() {
     const data = await listPackages(true);
@@ -172,6 +240,10 @@ export default function AdminPackagesPage() {
       const payload = formToInput(form);
       if (!payload.title || !payload.summary) {
         setError("Title and summary are required.");
+        return;
+      }
+      if (payload.pricingMode === "fixed" && !payload.basePricePerDay) {
+        setError("Fixed-mode packages need a base price per day so the total is unambiguous.");
         return;
       }
       if (editingId) {
@@ -328,9 +400,58 @@ export default function AdminPackagesPage() {
                   placeholder="A, B, C"
                 />
               </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Pricing mode
+                </label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {([
+                    {
+                      id: "fixed" as const,
+                      title: "Fixed bundle",
+                      desc: "Duration, shifts, and price are locked. The patient books the package as-is. Requires a base price per day.",
+                    },
+                    {
+                      id: "dynamic" as const,
+                      title: "Dynamic",
+                      desc: "Patient picks a duration from the options below; price recalculates per choice.",
+                    },
+                  ]).map((opt) => {
+                    const active = form.pricingMode === opt.id;
+                    return (
+                      <label
+                        key={opt.id}
+                        className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+                          active
+                            ? "border-sky-500 bg-sky-50 shadow-sm"
+                            : "border-slate-200 bg-white hover:border-sky-200"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="pricingMode"
+                          value={opt.id}
+                          checked={active}
+                          onChange={() => setForm({ ...form, pricingMode: opt.id })}
+                          className="mt-1 h-4 w-4 text-sky-600 focus:ring-sky-600"
+                        />
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{opt.title}</p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{opt.desc}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                  Base price / day (optional)
+                  Base price / day{" "}
+                  {form.pricingMode === "fixed" ? (
+                    <span className="text-rose-500">*</span>
+                  ) : (
+                    <span className="font-normal text-slate-400">(optional)</span>
+                  )}
                 </label>
                 <input
                   type="number"
@@ -339,18 +460,20 @@ export default function AdminPackagesPage() {
                   value={form.basePricePerDay}
                   onChange={(e) => setForm({ ...form, basePricePerDay: e.target.value })}
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
-                  placeholder="leave empty to use nurse hourly rate"
+                  placeholder={
+                    form.pricingMode === "fixed"
+                      ? "Required — fixed price per day"
+                      : "leave empty to use nurse hourly rate"
+                  }
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">
-                  Hero image URL (optional)
-                </label>
-                <input
+                <ImageUploadField
+                  scope="package"
+                  label="Hero image (optional)"
                   value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
-                  placeholder="https://..."
+                  onChange={(image) => setForm({ ...form, image })}
+                  helperText="Used as the package cover on cards + detail page."
                 />
               </div>
               <div className="sm:col-span-2">
@@ -407,6 +530,261 @@ export default function AdminPackagesPage() {
                   className="w-full min-h-[90px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
                   placeholder={"Seniors at risk of isolation"}
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <ImageUploadField
+                  mode="multi"
+                  scope="package"
+                  label="Additional images (optional)"
+                  value={form.images}
+                  onChange={(images) => setForm({ ...form, images })}
+                  helperText="All images appear in the detail-page carousel. The first one is used as the hero if no hero is set above."
+                  maxFiles={8}
+                />
+              </div>
+            </div>
+
+            {/* Duration options — only relevant for dynamic-mode packages. */}
+            {form.pricingMode === "fixed" ? (
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 text-sm text-slate-700">
+                <p className="font-bold text-slate-800">Fixed-mode pricing</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                  Patients will book this package at its locked duration of{" "}
+                  <strong>{Math.max(1, Number(form.durationDays) || 1)} day(s)</strong>. Duration options
+                  are disabled — switch to <strong>Dynamic</strong> above if you want patients to choose.
+                </p>
+              </div>
+            ) : (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-slate-700">Duration options</p>
+                  <p className="text-xs text-slate-500">
+                    Let patients pick alternative lengths. Modifier 1.0 = base price, 0.9 = 10% discount.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      durationOptions: [
+                        ...form.durationOptions,
+                        { days: Number(form.durationDays) || 7, label: "", priceModifier: 1 },
+                      ],
+                    })
+                  }
+                  className="flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700"
+                >
+                  <Plus className="h-4 w-4" /> Add option
+                </button>
+              </div>
+              {form.durationOptions.length === 0 ? (
+                <p className="text-xs italic text-slate-500">
+                  No options yet — patients will be locked to the base duration.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {form.durationOptions.map((opt, index) => (
+                    <div key={index} className="grid gap-2 sm:grid-cols-[80px_1fr_100px_44px]">
+                      <input
+                        type="number"
+                        min={1}
+                        value={opt.days}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            durationOptions: form.durationOptions.map((o, i) =>
+                              i === index ? { ...o, days: Number(e.target.value) || 1 } : o,
+                            ),
+                          })
+                        }
+                        placeholder="Days"
+                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        value={opt.label}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            durationOptions: form.durationOptions.map((o, i) =>
+                              i === index ? { ...o, label: e.target.value } : o,
+                            ),
+                          })
+                        }
+                        placeholder="Label (e.g. 1 week)"
+                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="number"
+                        step="0.05"
+                        min={0.1}
+                        value={opt.priceModifier ?? 1}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            durationOptions: form.durationOptions.map((o, i) =>
+                              i === index
+                                ? { ...o, priceModifier: Number(e.target.value) || 1 }
+                                : o,
+                            ),
+                          })
+                        }
+                        placeholder="Modifier"
+                        className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            durationOptions: form.durationOptions.filter((_, i) => i !== index),
+                          })
+                        }
+                        className="rounded-lg bg-rose-50 px-3 text-rose-600 hover:bg-rose-100"
+                        aria-label="Remove duration option"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            )}
+
+            {/* Care timeline */}
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-slate-700">Care timeline</p>
+                  <p className="text-xs text-slate-500">
+                    Step-by-step milestones shown on the package detail page.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      careTimeline: [
+                        ...form.careTimeline,
+                        { day: form.careTimeline.length + 1, title: "", description: "" },
+                      ],
+                    })
+                  }
+                  className="flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700"
+                >
+                  <Plus className="h-4 w-4" /> Add step
+                </button>
+              </div>
+              {form.careTimeline.length === 0 ? (
+                <p className="text-xs italic text-slate-500">No timeline steps configured.</p>
+              ) : (
+                <div className="space-y-3">
+                  {form.careTimeline.map((step, index) => (
+                    <div key={index} className="rounded-xl bg-white p-3 shadow-sm">
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          value={step.day}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              careTimeline: form.careTimeline.map((s, i) =>
+                                i === index ? { ...s, day: Number(e.target.value) || 1 } : s,
+                              ),
+                            })
+                          }
+                          placeholder="Day"
+                          className="w-20 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                        />
+                        <input
+                          value={step.title}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              careTimeline: form.careTimeline.map((s, i) =>
+                                i === index ? { ...s, title: e.target.value } : s,
+                              ),
+                            })
+                          }
+                          placeholder="Step title"
+                          className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              careTimeline: form.careTimeline.filter((_, i) => i !== index),
+                            })
+                          }
+                          className="rounded-lg bg-rose-50 px-3 text-rose-600 hover:bg-rose-100"
+                          aria-label="Remove timeline step"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <textarea
+                        value={step.description}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            careTimeline: form.careTimeline.map((s, i) =>
+                              i === index ? { ...s, description: e.target.value } : s,
+                            ),
+                          })
+                        }
+                        placeholder="What happens on this day…"
+                        className="mt-2 w-full min-h-[60px] rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Default add-ons */}
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <p className="mb-1 text-sm font-bold text-slate-700">Default add-ons</p>
+              <p className="mb-3 text-xs text-slate-500">
+                Suggested add-ons attached to this package by default. Nurses can override these
+                with their own additional services.
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {addonCatalog.map((addon) => {
+                  const checked = form.addOns.includes(addon.id);
+                  return (
+                    <label
+                      key={addon.id}
+                      className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 text-sm transition ${
+                        checked
+                          ? "border-sky-500 bg-sky-50 text-sky-800 shadow-sm"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-sky-200"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={checked}
+                          onChange={() =>
+                            setForm({
+                              ...form,
+                              addOns: checked
+                                ? form.addOns.filter((id) => id !== addon.id)
+                                : [...form.addOns, addon.id],
+                            })
+                          }
+                        />
+                        <span className="font-bold">{addon.name}</span>
+                      </span>
+                      <span className="text-xs font-bold">${addon.price}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 

@@ -14,7 +14,7 @@ const bodyFont = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Care Plus",
+  title: "Care+",
   description: "Beginner-friendly healthcare MVP foundation",
 };
 

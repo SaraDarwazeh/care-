@@ -15,7 +15,7 @@ export default function ServicesOverviewPage() {
             </div>
             <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Choose the right care path before you book.</h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
-              Care Plus groups the main services into one-time visits, shift coverage, and care packages so families can move into the right booking flow faster.
+              Care+ groups the main services into one-time visits, shift coverage, and care packages so families can move into the right booking flow faster.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/patient/nurses" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700">

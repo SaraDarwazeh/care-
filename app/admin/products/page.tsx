@@ -79,7 +79,7 @@ export default function AdminProductsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Products</h1>
-          <p className="text-slate-500 mt-1">Manage the Care Plus medical store catalog.</p>
+          <p className="text-slate-500 mt-1">Manage the Care+ medical store catalog.</p>
         </div>
         <button
           onClick={openAdd}

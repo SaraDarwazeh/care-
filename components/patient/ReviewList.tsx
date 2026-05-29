@@ -91,7 +91,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-slate-800 truncate">
-                    {review.patientName ?? "Care Plus patient"}
+                    {review.patientName ?? "Care+ patient"}
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
                     <StarsRow value={review.rating} />

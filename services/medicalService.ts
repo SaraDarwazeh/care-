@@ -10,11 +10,18 @@ import {
   DocumentData,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { MedicalRecord, Observation } from "@/lib/types";
+import { MedicalRecord, MedicalRecordStatus, Observation } from "@/lib/types";
+
+// Records without an explicit status are legacy/pre-state-machine entries.
+// Treat them as "draft" so they show up in nurse's "needs submitting" lists.
+export function recordStatus(record: Pick<MedicalRecord, "status">): MedicalRecordStatus {
+  return record.status ?? "draft";
+}
 
 export async function createMedicalRecord(input: Omit<MedicalRecord, "id" | "createdAt">) {
   const { db } = ensureClientFirebase();
   const payload = {
+    status: "draft" as MedicalRecordStatus,
     ...input,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -22,6 +29,47 @@ export async function createMedicalRecord(input: Omit<MedicalRecord, "id" | "cre
 
   const ref = await addDoc(collection(db, "medicalRecords"), payload as DocumentData);
   return { id: ref.id, ...payload } as MedicalRecord;
+}
+
+export async function submitMedicalRecord(recordId: string): Promise<void> {
+  const { db } = ensureClientFirebase();
+  const now = new Date().toISOString();
+  await updateDoc(doc(db, "medicalRecords", recordId), {
+    status: "submitted",
+    submittedAt: now,
+    updatedAt: now,
+  });
+}
+
+export async function confirmMedicalRecord(recordId: string): Promise<void> {
+  const { db } = ensureClientFirebase();
+  const now = new Date().toISOString();
+  await updateDoc(doc(db, "medicalRecords", recordId), {
+    status: "confirmed",
+    confirmedAt: now,
+    updatedAt: now,
+  });
+}
+
+export async function disputeMedicalRecord(recordId: string, note: string): Promise<void> {
+  const { db } = ensureClientFirebase();
+  const now = new Date().toISOString();
+  await updateDoc(doc(db, "medicalRecords", recordId), {
+    status: "disputed",
+    disputedAt: now,
+    disputeNote: note,
+    updatedAt: now,
+  });
+}
+
+export async function getDisputedRecords(limitCount = 20): Promise<MedicalRecord[]> {
+  const { db } = ensureClientFirebase();
+  const q = query(collection(db, "medicalRecords"), where("status", "==", "disputed"));
+  const snaps = await getDocs(q);
+  const records = snaps.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) })) as MedicalRecord[];
+  return records
+    .sort((a, b) => (b.disputedAt ?? b.createdAt ?? "").localeCompare(a.disputedAt ?? a.createdAt ?? ""))
+    .slice(0, limitCount);
 }
 
 export async function addObservation(recordId: string, obs: Omit<Observation, "id" | "timestamp">) {
@@ -110,5 +158,10 @@ const medicalService = {
   getRecordById,
   getRecordsForBooking,
   ensureRecordForBooking,
+  submitMedicalRecord,
+  confirmMedicalRecord,
+  disputeMedicalRecord,
+  getDisputedRecords,
+  recordStatus,
 };
 export default medicalService;

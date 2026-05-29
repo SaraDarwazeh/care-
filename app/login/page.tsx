@@ -33,15 +33,15 @@ export default function LoginPage() {
       if (!profile) {
         router.replace(redirect || "/");
       } else if (profile.role === "admin") {
-        router.replace("/admin");
+        router.replace(redirect || "/admin");
       } else if (profile.role === "nurse") {
         if (profile.status === "approved") {
-          router.replace("/nurse");
+          router.replace(redirect || "/nurse");
         } else {
           router.replace("/pending-approval");
         }
       } else {
-        router.replace(redirect || "/");
+        router.replace(redirect || "/patient");
       }
     } catch (submitError) {
       console.error("[login] login failed", submitError);
@@ -68,7 +68,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16">
           <Link href="/" className="flex items-center gap-2 text-white hover:opacity-90 transition">
             <ShieldCheck className="h-8 w-8" />
-            <span className="text-2xl font-extrabold tracking-tight">Care Plus</span>
+            <span className="text-2xl font-extrabold tracking-tight">Care+</span>
           </Link>
           
           <div className="max-w-lg mb-4 md:mb-10">

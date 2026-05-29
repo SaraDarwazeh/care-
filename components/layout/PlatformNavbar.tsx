@@ -6,6 +6,7 @@ import { LogOut, ShieldCheck, UserCircle, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { logoutUser } from "@/services/authService";
 import { useState } from "react";
+import ProfileMenu from "@/components/common/ProfileMenu";
 
 interface NavLink {
   label: string;
@@ -14,8 +15,10 @@ interface NavLink {
 
 // Public navigation surfaces the four pillars of the platform plus the
 // "join as a nurse" CTA. Every link resolves to a real route — no anchor
-// links that only work on the homepage.
+// links that only work on the homepage. "Home" is explicit (not just the
+// logo) so non-technical users always have an obvious way back to /.
 const GUEST_NAV: NavLink[] = [
+  { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Care Packages", href: "/services/packages" },
   { label: "Find a Nurse", href: "/patient/nurses" },
@@ -23,12 +26,14 @@ const GUEST_NAV: NavLink[] = [
   { label: "Join as Nurse", href: "/register?role=nurse" },
 ];
 
-// Public-page navigation for signed-in PATIENTS. Browsing pages get the
-// same surfaces as guests plus a dashboard shortcut.
+// Signed-in PATIENT nav mirrors PatientNavbar's main nav: exploration
+// items only (Dashboard / Services / Care Packages / Medical Store /
+// Community). "Home" intentionally not here — in SaaS conventions the
+// dashboard *is* the user's home. The public marketing surface at `/`
+// stays reachable via the "About Care+" entry in the ProfileMenu dropdown.
 const PATIENT_NAV: NavLink[] = [
   { label: "Dashboard", href: "/patient" },
-  { label: "Appointments", href: "/patient/appointments" },
-  { label: "Find a Nurse", href: "/patient/nurses" },
+  { label: "Services", href: "/services" },
   { label: "Care Packages", href: "/services/packages" },
   { label: "Medical Store", href: "/patient/store" },
   { label: "Community", href: "/community" },
@@ -52,7 +57,7 @@ function dashboardHref(role?: string): string {
 
 function profileHref(role?: string): string {
   if (role === "nurse") return "/nurse/setup";
-  if (role === "admin") return "/admin";
+  if (role === "admin") return "/admin/settings";
   return "/patient/profile";
 }
 
@@ -72,9 +77,6 @@ export default function PlatformNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = navFor(appUser?.role);
-  const initials = appUser?.name
-    ? appUser.name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase()
-    : "CP";
 
   async function onLogout() {
     await logoutUser();
@@ -92,7 +94,7 @@ export default function PlatformNavbar() {
           className="flex shrink-0 items-center gap-2 text-sky-700 transition-opacity hover:opacity-75"
         >
           <ShieldCheck className="h-6 w-6" />
-          <span className="text-lg font-extrabold tracking-tight">Care Plus</span>
+          <span className="text-lg font-extrabold tracking-tight">Care+</span>
         </Link>
 
         {/* Centered nav — desktop only */}
@@ -111,42 +113,7 @@ export default function PlatformNavbar() {
         {/* Right actions — desktop */}
         <div className="hidden items-center gap-3 lg:flex">
           {appUser ? (
-            <div className="relative group">
-              <button
-                type="button"
-                className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-sky-200 hover:shadow"
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-200 text-xs font-bold text-sky-800">
-                  {initials}
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-slate-800 leading-none">{appUser.name.split(" ")[0]}</p>
-                  <p className="mt-0.5 text-xs font-medium capitalize text-slate-400">{appUser.role}</p>
-                </div>
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                <Link
-                  href={dashboardHref(appUser.role)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
-                >
-                  <UserCircle className="h-4 w-4 text-slate-400" /> Dashboard
-                </Link>
-                <Link
-                  href={profileHref(appUser.role)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
-                >
-                  <UserCircle className="h-4 w-4 text-slate-400" /> Profile
-                </Link>
-                <div className="border-t border-slate-100" />
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 transition"
-                >
-                  <LogOut className="h-4 w-4" /> Sign out
-                </button>
-              </div>
-            </div>
+            <ProfileMenu variant="dropdown" />
           ) : (
             <>
               <Link
@@ -200,6 +167,13 @@ export default function PlatformNavbar() {
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                   <UserCircle className="h-4 w-4 text-slate-400" /> Dashboard
+                </Link>
+                <Link
+                  href={profileHref(appUser.role)}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  <UserCircle className="h-4 w-4 text-slate-400" /> Profile
                 </Link>
                 <button
                   type="button"

@@ -67,6 +67,19 @@ import {
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 
+export interface AttentionItem {
+  id: string;
+  kind: "stale-booking" | "pending-nurse" | "disputed-record";
+  title: string;
+  subtitle?: string;
+  link: string;
+  ageHours?: number;
+}
+
+// Tunable threshold for what counts as a "stale" pending booking. 24h is
+// the operational SLA we promise nurses for accept/reject responses.
+const STALE_PENDING_BOOKING_HOURS = 24;
+
 export async function getDashboardStats() {
   const { db } = ensureClientFirebase();
 
@@ -136,6 +149,83 @@ export async function getDashboardStats() {
     }
   });
 
+  // Operational "needs attention" surfaces — stale pending bookings, pending
+  // nurse approvals (preview list), and disputed medical records.
+  const nowMs = Date.now();
+  const staleThresholdMs = STALE_PENDING_BOOKING_HOURS * 3600 * 1000;
+
+  const pendingBookingsSnap = await getDocs(
+    query(collection(db, "bookings"), where("status", "==", "pending"))
+  );
+  const stalePendingBookings: AttentionItem[] = pendingBookingsSnap.docs
+    .map((d) => {
+      const data = d.data() as Record<string, unknown>;
+      const created = new Date(String(data.createdAt ?? "")).getTime();
+      const ageMs = nowMs - created;
+      return {
+        id: d.id,
+        ageMs,
+        patientName: String(data.patientNameSnapshot ?? ""),
+        nurseName: String(data.nurseNameSnapshot ?? ""),
+        service: String(data.service ?? ""),
+        date: String(data.date ?? ""),
+      };
+    })
+    .filter((entry) => entry.ageMs >= staleThresholdMs)
+    .sort((a, b) => b.ageMs - a.ageMs)
+    .slice(0, 5)
+    .map<AttentionItem>((entry) => ({
+      id: entry.id,
+      kind: "stale-booking",
+      title: `${entry.patientName || "Patient"} · ${entry.service || "service"}`,
+      subtitle: `Pending ${Math.round(entry.ageMs / 3600000)}h · nurse: ${entry.nurseName || "—"}`,
+      link: "/admin/bookings",
+      ageHours: Math.round(entry.ageMs / 3600000),
+    }));
+  const stalePendingBookingsCount = pendingBookingsSnap.docs.filter((d) => {
+    const created = new Date(String(d.data().createdAt ?? "")).getTime();
+    return nowMs - created >= staleThresholdMs;
+  }).length;
+
+  const pendingNursesSnap = await getDocs(
+    query(collection(db, "users"), where("status", "==", "pending"), where("role", "==", "nurse"))
+  );
+  const pendingNursePreview: AttentionItem[] = pendingNursesSnap.docs.slice(0, 5).map((d) => {
+    const data = d.data() as Record<string, unknown>;
+    return {
+      id: d.id,
+      kind: "pending-nurse",
+      title: String(data.name ?? "Pending nurse"),
+      subtitle: String(data.email ?? ""),
+      link: "/admin/nurses",
+    };
+  });
+
+  const disputedSnap = await getDocs(
+    query(collection(db, "medicalRecords"), where("status", "==", "disputed"))
+  );
+  const disputedRecordsCount = disputedSnap.docs.length;
+  const disputedRecordsPreview: AttentionItem[] = disputedSnap.docs
+    .map((d) => {
+      const data = d.data() as Record<string, unknown>;
+      const disputedAt = String(data.disputedAt ?? data.updatedAt ?? data.createdAt ?? "");
+      return {
+        id: d.id,
+        disputedAt,
+        summary: String(data.summary ?? "Visit record"),
+        note: String(data.disputeNote ?? ""),
+      };
+    })
+    .sort((a, b) => b.disputedAt.localeCompare(a.disputedAt))
+    .slice(0, 5)
+    .map<AttentionItem>((entry) => ({
+      id: entry.id,
+      kind: "disputed-record",
+      title: entry.summary,
+      subtitle: entry.note ? `“${entry.note.slice(0, 80)}${entry.note.length > 80 ? "…" : ""}”` : "Awaiting nurse revision",
+      link: `/patient/records/${entry.id}`,
+    }));
+
   return {
     totalUsers: usersCount.data().count,
     totalNurses: nursesCount.data().count,
@@ -147,5 +237,11 @@ export async function getDashboardStats() {
     thisMonthRevenue,
     bookingTrendDays: days,
     bookingTrendCounts: dayCounts,
+    // Operational signals — populated regardless of which collections are empty.
+    stalePendingBookingsCount,
+    stalePendingBookings,
+    pendingNursePreview,
+    disputedRecordsCount,
+    disputedRecordsPreview,
   };
 }

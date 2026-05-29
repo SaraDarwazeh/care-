@@ -63,7 +63,7 @@ export default function NurseMarketplaceCard({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 mb-4">
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-100">
               <BadgeCheck className="h-3 w-3" />
-              Verified by Care Plus
+              Verified by Care+
             </span>
             {hasRating && (
               <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-md border border-amber-100">
@@ -97,10 +97,10 @@ export default function NurseMarketplaceCard({
             <div className="mb-3 flex flex-wrap gap-1.5">
               {nurse.certificates!.slice(0, 2).map((cert) => (
                 <span
-                  key={cert}
+                  key={cert.id}
                   className="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 border border-sky-100"
                 >
-                  {cert}
+                  {cert.name}
                 </span>
               ))}
               {nurse.certificates!.length > 2 && (

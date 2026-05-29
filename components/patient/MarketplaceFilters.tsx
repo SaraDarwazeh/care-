@@ -1,25 +1,30 @@
 "use client";
 
-import { Filter, MapPin, Sparkles, Truck, Award, Languages as LanguagesIcon } from "lucide-react";
+import { Filter, MapPin, Sparkles, Truck, Award, Stethoscope, HeartHandshake } from "lucide-react";
 
+// Filter values split medical/professional offerings (services[]) from
+// extras (additionalServices[]) — operationally distinct categories that
+// the patient picks for very different reasons. Languages used to be a
+// chip filter; it's now informational-only on the nurse detail page.
 export interface MarketplaceFilterValues {
-  service: string;
-  shift: string;            // "" | "a" | "b" | "c"
-  gender: string;           // "" | "any" | "male" | "female"
-  overnight: string;        // "any" | "yes" | "no"
+  service: string;              // medical/professional service (single select)
+  additionalServices: string[]; // extras (cooking, transport, etc.) multi-select
+  shift: string;                // "" | "a" | "b" | "c"
+  gender: string;               // "" | "any" | "male" | "female"
+  overnight: string;            // "any" | "yes" | "no"
   location: string;
-  minExperience: number;    // 0 = no filter
+  minExperience: number;        // 0 = no filter
   availableToday: boolean;
   transportAvailable: boolean;
-  skills: string[];         // selected skill chips
-  certifications: string[]; // selected certificate chips
-  languages: string[];      // selected language chips
+  skills: string[];             // selected skill chips
+  certifications: string[];     // selected certificate chips
 }
 
 export type SortKey = "rating" | "price_low" | "experience";
 
 export const EMPTY_FILTERS: MarketplaceFilterValues = {
   service: "",
+  additionalServices: [],
   shift: "",
   gender: "",
   overnight: "any",
@@ -29,12 +34,12 @@ export const EMPTY_FILTERS: MarketplaceFilterValues = {
   transportAvailable: false,
   skills: [],
   certifications: [],
-  languages: [],
 };
 
 export function countActiveFilters(f: MarketplaceFilterValues): number {
   let n = 0;
   if (f.service) n++;
+  n += f.additionalServices.length;
   if (f.shift && f.shift !== "any") n++;
   if (f.gender && f.gender !== "any") n++;
   if (f.overnight !== "any") n++;
@@ -44,7 +49,6 @@ export function countActiveFilters(f: MarketplaceFilterValues): number {
   if (f.transportAvailable) n++;
   n += f.skills.length;
   n += f.certifications.length;
-  n += f.languages.length;
   return n;
 }
 
@@ -53,9 +57,9 @@ interface MarketplaceFiltersProps {
   onChange: (next: MarketplaceFilterValues) => void;
   onClear: () => void;
   availableServices: string[];
+  availableAdditionalServices: string[];
   availableSkills: string[];
   availableCertifications: string[];
-  availableLanguages: string[];
   sortBy: SortKey;
   onSortChange: (next: SortKey) => void;
 }
@@ -116,9 +120,9 @@ export default function MarketplaceFilters({
   onChange,
   onClear,
   availableServices,
+  availableAdditionalServices,
   availableSkills,
   availableCertifications,
-  availableLanguages,
   sortBy,
   onSortChange,
 }: MarketplaceFiltersProps) {
@@ -126,7 +130,7 @@ export default function MarketplaceFilters({
     onChange({ ...values, ...p });
   }
 
-  function toggleIn(field: "skills" | "certifications" | "languages", value: string) {
+  function toggleIn(field: "skills" | "certifications" | "additionalServices", value: string) {
     const list = values[field];
     const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
     patch({ [field]: next } as Partial<MarketplaceFilterValues>);
@@ -161,22 +165,58 @@ export default function MarketplaceFilters({
           </div>
         </div>
 
-        {/* Service */}
+        {/* Medical & professional services */}
         {availableServices.length > 0 && (
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Service Needed</label>
+          <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-700">
+              <Stethoscope className="h-3.5 w-3.5" /> Medical &amp; professional services
+            </p>
             <select
               value={values.service}
               onChange={(e) => patch({ service: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
             >
-              <option value="">Any Service</option>
+              <option value="">Any medical service</option>
               {availableServices.map((service) => (
                 <option key={service} value={service}>
                   {service}
                 </option>
               ))}
             </select>
+            <p className="mt-2 text-[11px] text-slate-500">
+              Wound care, IV therapy, injections, post-op support, etc.
+            </p>
+          </div>
+        )}
+
+        {/* Extra services (cooking, transport, companionship…) */}
+        {availableAdditionalServices.length > 0 && (
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
+              <HeartHandshake className="h-3.5 w-3.5" /> Extra services
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {availableAdditionalServices.map((opt) => {
+                const isActive = values.additionalServices.includes(opt);
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => toggleIn("additionalServices", opt)}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      isActive
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              Cooking, transportation, cleaning, companionship — non-medical extras a nurse can provide.
+            </p>
           </div>
         )}
 
@@ -278,15 +318,6 @@ export default function MarketplaceFilters({
             <option value="male">Male</option>
           </select>
         </div>
-
-        <ChipMultiSelect
-          label="Languages"
-          icon={LanguagesIcon}
-          options={availableLanguages}
-          selected={values.languages}
-          onToggle={(v) => toggleIn("languages", v)}
-          accent="sky"
-        />
 
         <ChipMultiSelect
           label="Skills"

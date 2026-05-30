@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   UserCircle,
   Activity,
@@ -24,7 +25,7 @@ import {
   Trash2,
 } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
-import { EmergencyContact, PatientLocation, PatientProfile } from "@/lib/types";
+import type { EmergencyContact, PatientLocation, PatientProfile } from "@/lib/types";
 import {
   computeProfileCompleted,
   getMissingFieldLabels,
@@ -64,8 +65,6 @@ const EMPTY_FORM: FormState = {
 
 const BLOOD_TYPES = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-const LOCATION_LABEL_PRESETS = ["Home", "Work", "Parent's house", "Vacation home"];
-
 function newLocationId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -99,7 +98,6 @@ function formToProfile(form: FormState, userId: string): PatientProfile {
     }))
     .filter((loc) => loc.address.length > 0);
 
-  // Guarantee exactly one default if any location exists.
   if (cleanedLocations.length > 0 && !cleanedLocations.some((l) => l.isDefault)) {
     cleanedLocations[0].isDefault = true;
   }
@@ -107,7 +105,7 @@ function formToProfile(form: FormState, userId: string): PatientProfile {
   return {
     userId,
     phone: form.phone.trim(),
-    defaultLocation: "", // derived in savePatientProfile from locations[]
+    defaultLocation: "",
     locations: cleanedLocations,
     dateOfBirth: form.dateOfBirth || undefined,
     bloodType: form.bloodType || undefined,
@@ -155,6 +153,7 @@ function TagInput({
   onChange: (next: string[]) => void;
   accent?: "sky" | "rose" | "violet";
 }) {
+  const t = useTranslations("patient.profile.editor.tag");
   const [draft, setDraft] = useState("");
 
   const accentClasses = {
@@ -188,6 +187,7 @@ function TagInput({
             }
           }}
           placeholder={placeholder}
+          dir="auto"
           className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
         />
         <button
@@ -195,7 +195,7 @@ function TagInput({
           onClick={add}
           className="flex items-center gap-1 rounded-2xl bg-slate-100 px-3 text-sm font-bold text-slate-600 hover:bg-slate-200 transition"
         >
-          <Plus className="h-4 w-4" /> Add
+          <Plus className="h-4 w-4" /> {t("add")}
         </button>
       </div>
       {values.length > 0 && (
@@ -210,7 +210,7 @@ function TagInput({
                 type="button"
                 onClick={() => onChange(values.filter((v) => v !== value))}
                 className="inline-flex items-center justify-center rounded-full p-0.5 hover:bg-white/60"
-                aria-label={`Remove ${value}`}
+                aria-label={t("removeAria", { value })}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -229,13 +229,14 @@ function LocationsEditor({
   locations: PatientLocation[];
   onChange: (next: PatientLocation[]) => void;
 }) {
+  const t = useTranslations("patient.profile.editor.locations");
+
   function update(index: number, patch: Partial<PatientLocation>) {
     onChange(locations.map((loc, i) => (i === index ? { ...loc, ...patch } : loc)));
   }
 
   function remove(index: number) {
     const next = locations.filter((_, i) => i !== index);
-    // If we removed the default, promote the first remaining entry.
     if (next.length > 0 && !next.some((l) => l.isDefault)) {
       next[0] = { ...next[0], isDefault: true };
     }
@@ -258,16 +259,14 @@ function LocationsEditor({
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-8 text-center">
         <Home className="mx-auto mb-2 h-8 w-8 text-slate-400" />
-        <p className="text-sm font-medium text-slate-600">No saved addresses yet</p>
-        <p className="mt-1 text-xs text-slate-500">
-          Add at least one address so nurses know where to visit.
-        </p>
+        <p className="text-sm font-medium text-slate-600">{t("noAddressesTitle")}</p>
+        <p className="mt-1 text-xs text-slate-500">{t("noAddressesBody")}</p>
         <button
           type="button"
           onClick={add}
           className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-sky-700"
         >
-          <Plus className="h-4 w-4" /> Add address
+          <Plus className="h-4 w-4" /> {t("addAddress")}
         </button>
       </div>
     );
@@ -286,28 +285,24 @@ function LocationsEditor({
             <div className="flex-1 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-slate-600">Label</label>
+                  <label className="mb-1 block text-xs font-bold text-slate-600">{t("label")}</label>
                   <input
-                    list={`location-presets-${index}`}
                     value={loc.label}
                     onChange={(e) => update(index, { label: e.target.value })}
-                    placeholder="Home / Work / Parent's house"
+                    placeholder={t("labelPlaceholder")}
+                    dir="auto"
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
                   />
-                  <datalist id={`location-presets-${index}`}>
-                    {LOCATION_LABEL_PRESETS.map((p) => (
-                      <option key={p} value={p} />
-                    ))}
-                  </datalist>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-bold text-slate-600">
-                    Address <span className="text-rose-500">*</span>
+                    {t("address")} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     value={loc.address}
                     onChange={(e) => update(index, { address: e.target.value })}
-                    placeholder="Street, building, apartment"
+                    placeholder={t("addressPlaceholder")}
+                    dir="auto"
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
                   />
                 </div>
@@ -315,7 +310,7 @@ function LocationsEditor({
               <div className="flex items-center gap-3 text-xs">
                 {loc.isDefault ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 font-bold text-sky-700">
-                    <CheckCircle2 className="h-3 w-3" /> Default address
+                    <CheckCircle2 className="h-3 w-3" /> {t("defaultAddress")}
                   </span>
                 ) : (
                   <button
@@ -323,7 +318,7 @@ function LocationsEditor({
                     onClick={() => makeDefault(index)}
                     className="font-bold text-slate-500 hover:text-sky-700"
                   >
-                    Set as default
+                    {t("setDefault")}
                   </button>
                 )}
               </div>
@@ -332,7 +327,7 @@ function LocationsEditor({
               type="button"
               onClick={() => remove(index)}
               className="rounded-xl p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-              aria-label="Remove address"
+              aria-label={t("removeLabel")}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -344,7 +339,7 @@ function LocationsEditor({
         onClick={add}
         className="flex items-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm font-bold text-slate-600 hover:border-sky-300 hover:text-sky-700"
       >
-        <Plus className="h-4 w-4" /> Add another address
+        <Plus className="h-4 w-4" /> {t("addAnother")}
       </button>
     </div>
   );
@@ -356,12 +351,16 @@ function SectionTabButton({
   onClick,
   icon: Icon,
   label,
+  completeLabel,
+  incompleteLabel,
 }: {
   active: boolean;
   complete: boolean;
   onClick: () => void;
   icon: typeof UserCircle;
   label: string;
+  completeLabel: string;
+  incompleteLabel: string;
 }) {
   return (
     <button
@@ -379,7 +378,7 @@ function SectionTabButton({
         className={`h-2 w-2 rounded-full ${
           complete ? "bg-emerald-500" : "bg-amber-400"
         }`}
-        aria-label={complete ? "Complete" : "Incomplete"}
+        aria-label={complete ? completeLabel : incompleteLabel}
       />
     </button>
   );
@@ -387,6 +386,7 @@ function SectionTabButton({
 
 export default function PatientProfileEditor({ userId }: { userId: string }) {
   const { appUser } = useAuth();
+  const t = useTranslations("patient.profile.editor");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -451,7 +451,6 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
   if (!isEditing) {
     return (
       <div className="space-y-6">
-        {/* Profile Header */}
         <div className="rounded-3xl bg-white shadow-sm overflow-hidden flex items-center p-6 gap-6">
           <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-sky-100 text-3xl font-extrabold text-sky-700 ring-4 ring-slate-50">
             {appUser?.name.substring(0, 2).toUpperCase()}
@@ -464,11 +463,10 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             onClick={() => setIsEditing(true)}
             className="hidden sm:flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700 hover:bg-sky-100 transition"
           >
-            <Edit2 className="h-4 w-4" /> Edit Profile
+            <Edit2 className="h-4 w-4" /> {t("editProfile")}
           </button>
         </div>
 
-        {/* Completion status */}
         <div
           className={`rounded-3xl p-5 shadow-sm border ${
             completion
@@ -484,17 +482,13 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             )}
             <div className="flex-1">
               <p className={`font-bold ${completion ? "text-emerald-800" : "text-amber-800"}`}>
-                {completion ? "Profile complete" : "Profile incomplete — booking is locked"}
+                {completion ? t("completeTitle") : t("incompleteTitle")}
               </p>
               {completion ? (
-                <p className="mt-1 text-sm text-emerald-700">
-                  All required fields are filled. You can book nurses freely.
-                </p>
+                <p className="mt-1 text-sm text-emerald-700">{t("completeBody")}</p>
               ) : (
                 <>
-                  <p className="mt-1 text-sm text-amber-700">
-                    Add the following to start booking:
-                  </p>
+                  <p className="mt-1 text-sm text-amber-700">{t("incompleteIntro")}</p>
                   <ul className="mt-2 space-y-1 text-sm text-amber-700">
                     {missingLabels.map((label) => (
                       <li key={label} className="flex items-center gap-1.5">
@@ -513,19 +507,18 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                     : "text-amber-700 hover:text-amber-800"
                 }`}
               >
-                {completion ? "Review profile" : "Complete now"}
+                {completion ? t("reviewProfile") : t("completeNow")}
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Saved addresses summary */}
         {savedProfile && (
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                <MapPin className="h-4 w-4 text-sky-600" /> Saved addresses
+                <MapPin className="h-4 w-4 text-sky-600" /> {t("savedAddresses")}
               </h3>
               <button
                 onClick={() => {
@@ -534,11 +527,11 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                 }}
                 className="text-xs font-bold text-sky-600 hover:text-sky-700"
               >
-                Manage
+                {t("manage")}
               </button>
             </div>
             {getPatientLocations(savedProfile).length === 0 ? (
-              <p className="text-sm text-slate-500">No addresses saved yet.</p>
+              <p className="text-sm text-slate-500">{t("noAddressesYet")}</p>
             ) : (
               <ul className="space-y-2">
                 {getPatientLocations(savedProfile).map((loc) => (
@@ -550,8 +543,8 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                       <p className="text-sm font-bold text-slate-700">
                         {loc.label}
                         {loc.isDefault && (
-                          <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
-                            Default
+                          <span className="ms-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                            {t("defaultBadge")}
                           </span>
                         )}
                       </p>
@@ -564,16 +557,15 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
           </div>
         )}
 
-        {/* Profile Navigation List */}
         <div className="rounded-3xl bg-white shadow-sm overflow-hidden divide-y divide-slate-50">
           {[
-            { id: "account", label: "Account Information", icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50", onClick: () => { setActiveSection("personal"); setIsEditing(true); } },
-            { id: "medical", label: "Medical Information", icon: Activity, color: "text-rose-500", bg: "bg-rose-50", onClick: () => { setActiveSection("medical"); setIsEditing(true); } },
-            { id: "bookings", label: "My Bookings", icon: CalendarClock, color: "text-emerald-500", bg: "bg-emerald-50", href: "/patient/appointments" },
-            { id: "payment", label: "Payment Methods", icon: CreditCard, color: "text-violet-500", bg: "bg-violet-50", onClick: () => { setActiveSection("payment"); setIsEditing(true); } },
-            { id: "reviews", label: "My Reviews", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "#" },
-            { id: "settings", label: "Settings", icon: Settings, color: "text-slate-500", bg: "bg-slate-100", href: "#" },
-            { id: "support", label: "Help & Support", icon: HelpCircle, color: "text-sky-500", bg: "bg-sky-50", href: "#" },
+            { id: "account", labelKey: "account", icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50", onClick: () => { setActiveSection("personal"); setIsEditing(true); } },
+            { id: "medical", labelKey: "medical", icon: Activity, color: "text-rose-500", bg: "bg-rose-50", onClick: () => { setActiveSection("medical"); setIsEditing(true); } },
+            { id: "bookings", labelKey: "bookings", icon: CalendarClock, color: "text-emerald-500", bg: "bg-emerald-50", href: "/patient/appointments" },
+            { id: "payment", labelKey: "payment", icon: CreditCard, color: "text-violet-500", bg: "bg-violet-50", onClick: () => { setActiveSection("payment"); setIsEditing(true); } },
+            { id: "reviews", labelKey: "reviews", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "#" },
+            { id: "settings", labelKey: "settings", icon: Settings, color: "text-slate-500", bg: "bg-slate-100", href: "#" },
+            { id: "support", labelKey: "support", icon: HelpCircle, color: "text-sky-500", bg: "bg-sky-50", href: "#" },
           ].map((item) => {
             const content = (
               <div className="flex items-center justify-between p-5 hover:bg-slate-50 transition cursor-pointer group">
@@ -581,7 +573,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} ${item.color}`}>
                     <item.icon className="h-6 w-6" />
                   </div>
-                  <span className="font-bold text-slate-800 text-lg group-hover:text-sky-700 transition">{item.label}</span>
+                  <span className="font-bold text-slate-800 text-lg group-hover:text-sky-700 transition">{t(`menu.${item.labelKey}`)}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-sky-600 transition group-hover:translate-x-1" />
               </div>
@@ -602,7 +594,6 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     );
   }
 
-  // Live completion preview for the edit form.
   const previewProfile: PatientProfile = formToProfile(form, userId);
   const previewMissing = getMissingFieldLabels(previewProfile);
   const previewComplete = previewMissing.length === 0;
@@ -615,12 +606,12 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     payment: true,
   };
 
-  const sections: { id: SectionId; label: string; icon: typeof UserCircle }[] = [
-    { id: "personal", label: "Personal", icon: UserCircle },
-    { id: "locations", label: "Locations", icon: MapPin },
-    { id: "medical", label: "Medical", icon: Pill },
-    { id: "emergency", label: "Emergency", icon: ShieldAlert },
-    { id: "payment", label: "Payment", icon: CreditCard },
+  const sections: { id: SectionId; tabKey: string; icon: typeof UserCircle }[] = [
+    { id: "personal", tabKey: "personal", icon: UserCircle },
+    { id: "locations", tabKey: "locations", icon: MapPin },
+    { id: "medical", tabKey: "medical", icon: Pill },
+    { id: "emergency", tabKey: "emergency", icon: ShieldAlert },
+    { id: "payment", tabKey: "payment", icon: CreditCard },
   ];
 
   return (
@@ -628,8 +619,8 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
       <div className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-800">Edit Profile</h2>
-            <p className="text-slate-500">Fields marked with an asterisk are required.</p>
+            <h2 className="text-2xl font-extrabold text-slate-800">{t("header")}</h2>
+            <p className="text-slate-500">{t("requiredHint")}</p>
           </div>
           <div
             className={`rounded-2xl border px-4 py-3 text-sm font-semibold sm:max-w-xs ${
@@ -641,18 +632,17 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             {previewComplete ? (
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                Profile complete — ready to save
+                {t("previewComplete")}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                {previewMissing.length} required field{previewMissing.length === 1 ? "" : "s"} remaining
+                {t("previewRemaining", { n: previewMissing.length })}
               </span>
             )}
           </div>
         </div>
 
-        {/* Section tabs */}
         <div className="mb-6 -mx-1 flex gap-2 overflow-x-auto pb-1">
           {sections.map((s) => (
             <SectionTabButton
@@ -661,40 +651,42 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
               complete={sectionComplete[s.id]}
               onClick={() => setActiveSection(s.id)}
               icon={s.icon}
-              label={s.label}
+              label={t(`tabs.${s.tabKey}`)}
+              completeLabel={t("tabState.complete")}
+              incompleteLabel={t("tabState.incomplete")}
             />
           ))}
         </div>
 
         <form className="space-y-8" onSubmit={onSubmit}>
-          {/* PERSONAL */}
           {activeSection === "personal" && (
-            <section className="animate-in fade-in slide-in-from-right-2">
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
                   <Phone className="h-5 w-5 text-sky-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Personal</h3>
-                  <p className="text-xs text-slate-500">How nurses reach you and basic details.</p>
+                  <h3 className="text-lg font-bold text-slate-800">{t("personal.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("personal.subtitle")}</p>
                 </div>
               </header>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-bold text-slate-700">
-                    Phone Number <span className="text-rose-500">*</span>
+                    {t("personal.phone")} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="tel"
                     required
+                    dir="ltr"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                    placeholder="+1 234 567 890"
+                    placeholder={t("personal.phonePlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-bold text-slate-700">Date of Birth</label>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">{t("personal.dob")}</label>
                   <input
                     type="date"
                     value={form.dateOfBirth}
@@ -703,7 +695,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-bold text-slate-700">Blood Type</label>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">{t("personal.bloodType")}</label>
                   <select
                     value={form.bloodType}
                     onChange={(e) => setForm({ ...form, bloodType: e.target.value })}
@@ -711,7 +703,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                   >
                     {BLOOD_TYPES.map((bt) => (
                       <option key={bt || "unset"} value={bt}>
-                        {bt || "Prefer not to say"}
+                        {bt || t("personal.preferNotToSay")}
                       </option>
                     ))}
                   </select>
@@ -720,18 +712,15 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             </section>
           )}
 
-          {/* LOCATIONS */}
           {activeSection === "locations" && (
-            <section className="animate-in fade-in slide-in-from-right-2">
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
                   <MapPin className="h-5 w-5 text-sky-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Locations</h3>
-                  <p className="text-xs text-slate-500">
-                    Save labeled addresses so booking for a parent or work is one click.
-                  </p>
+                  <h3 className="text-lg font-bold text-slate-800">{t("locations.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("locations.subtitle")}</p>
                 </div>
               </header>
               <LocationsEditor
@@ -741,76 +730,72 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
             </section>
           )}
 
-          {/* MEDICAL */}
           {activeSection === "medical" && (
-            <section className="animate-in fade-in slide-in-from-right-2">
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
                   <Pill className="h-5 w-5 text-violet-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Medical Information</h3>
-                  <p className="text-xs text-slate-500">
-                    Helps nurses provide safe, appropriate care. Optional but recommended.
-                  </p>
+                  <h3 className="text-lg font-bold text-slate-800">{t("medical.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("medical.subtitle")}</p>
                 </div>
               </header>
               <div className="grid gap-4 sm:grid-cols-2">
                 <TagInput
-                  label="Chronic Conditions"
-                  placeholder="e.g. Diabetes, Hypertension"
+                  label={t("medical.conditions")}
+                  placeholder={t("medical.conditionsPlaceholder")}
                   values={form.diseases}
                   onChange={(diseases) => setForm({ ...form, diseases })}
                   accent="violet"
                 />
                 <TagInput
-                  label="Allergies"
-                  placeholder="e.g. Penicillin, Latex"
+                  label={t("medical.allergies")}
+                  placeholder={t("medical.allergiesPlaceholder")}
                   values={form.allergies}
                   onChange={(allergies) => setForm({ ...form, allergies })}
                   accent="rose"
                 />
                 <TagInput
-                  label="Current Medications"
-                  placeholder="e.g. Metformin 500mg"
+                  label={t("medical.medications")}
+                  placeholder={t("medical.medicationsPlaceholder")}
                   values={form.currentMedications}
                   onChange={(currentMedications) => setForm({ ...form, currentMedications })}
                   accent="sky"
                 />
                 <div>
-                  <label className="mb-2 block text-sm font-bold text-slate-700">Additional Notes</label>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">{t("medical.notes")}</label>
                   <textarea
                     value={form.medicalHistory}
                     onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+                    dir="auto"
                     className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                    placeholder="Anything else nurses should know — surgeries, family history, mobility limits…"
+                    placeholder={t("medical.notesPlaceholder")}
                   />
                 </div>
               </div>
             </section>
           )}
 
-          {/* EMERGENCY */}
           {activeSection === "emergency" && (
-            <section className="animate-in fade-in slide-in-from-right-2">
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100">
                   <ShieldAlert className="h-5 w-5 text-rose-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Emergency Contact</h3>
-                  <p className="text-xs text-slate-500">
-                    Who we contact if something goes wrong during a visit.
-                  </p>
+                  <h3 className="text-lg font-bold text-slate-800">{t("emergency.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("emergency.subtitle")}</p>
                 </div>
               </header>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-2 block text-sm font-bold text-slate-700">
-                    Name <span className="text-rose-500">*</span>
+                    {t("emergency.name")} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
+                    dir="auto"
                     value={form.emergencyContact.name}
                     onChange={(e) =>
                       setForm({
@@ -819,11 +804,11 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                       })
                     }
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                    placeholder="Full name"
+                    placeholder={t("emergency.namePlaceholder")}
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-bold text-slate-700">Relationship</label>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">{t("emergency.relationship")}</label>
                   <input
                     value={form.emergencyContact.relationship}
                     onChange={(e) =>
@@ -832,17 +817,19 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                         emergencyContact: { ...form.emergencyContact, relationship: e.target.value },
                       })
                     }
+                    dir="auto"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                    placeholder="Spouse, parent, sibling…"
+                    placeholder={t("emergency.relationshipPlaceholder")}
                   />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-bold text-slate-700">
-                    Phone <span className="text-rose-500">*</span>
+                    {t("emergency.phone")} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     required
                     type="tel"
+                    dir="ltr"
                     value={form.emergencyContact.phone}
                     onChange={(e) =>
                       setForm({
@@ -851,29 +838,28 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                       })
                     }
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all outline-none"
-                    placeholder="+1 234 567 890"
+                    placeholder={t("emergency.phonePlaceholder")}
                   />
                 </div>
               </div>
             </section>
           )}
 
-          {/* PAYMENT */}
           {activeSection === "payment" && (
-            <section className="animate-in fade-in slide-in-from-right-2">
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
                   <CreditCard className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Payment</h3>
-                  <p className="text-xs text-slate-500">How you prefer to pay for visits.</p>
+                  <h3 className="text-lg font-bold text-slate-800">{t("payment.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("payment.subtitle")}</p>
                 </div>
               </header>
               <div className="flex flex-wrap gap-3">
                 {[
-                  { id: "cash", label: "Cash" },
-                  { id: "bank", label: "Bank Transfer" },
+                  { id: "cash", labelKey: "cash" as const },
+                  { id: "bank", labelKey: "bank" as const },
                 ].map((option) => (
                   <label
                     key={option.id}
@@ -889,7 +875,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                       checked={form.paymentMethods.includes(option.id)}
                       onChange={() => togglePayment(option.id)}
                     />
-                    {option.label}
+                    {t(`payment.${option.labelKey}`)}
                   </label>
                 ))}
               </div>
@@ -898,7 +884,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
 
           <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <span className="font-semibold">Section status:</span>
+              <span className="font-semibold">{t("sectionStatus")}</span>
               {sections.map((s) => (
                 <span
                   key={s.id}
@@ -911,7 +897,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                       sectionComplete[s.id] ? "bg-emerald-500" : "bg-amber-400"
                     }`}
                   />
-                  {s.label}
+                  {t(`tabs.${s.tabKey}`)}
                 </span>
               ))}
             </div>
@@ -925,7 +911,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                   }}
                   className="px-6 py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
               )}
               <PatientButton
@@ -933,7 +919,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                 loading={saving}
                 className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
               >
-                {saving ? "Saving..." : "Save Profile"}
+                {saving ? t("saving") : t("save")}
               </PatientButton>
             </div>
           </div>

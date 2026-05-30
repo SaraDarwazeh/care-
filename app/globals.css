@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
+@variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
+
 :root {
   --background: #f7fbff;
   --foreground: #164e63;
+}
+
+/* Per-locale font selection. The body element inherits the active locale
+   from <html dir=...>; we resolve to the Latin pair for LTR and the
+   Arabic pair for RTL. Components keep referencing var(--font-body) /
+   var(--font-heading) — they don't need to know which language is on. */
+html[dir="ltr"] {
+  --font-body: var(--font-body-latin);
+  --font-heading: var(--font-heading-latin);
+}
+
+html[dir="rtl"] {
+  --font-body: var(--font-body-arabic);
+  --font-heading: var(--font-heading-arabic);
 }
 
 @theme inline {
@@ -24,4 +40,41 @@ h2,
 h3,
 h4 {
   font-family: var(--font-heading), sans-serif;
+}
+
+/* Arabic body copy reads better with slightly more leading and a bit
+   more letter-spacing on headings. Quiet, not loud. */
+html[dir="rtl"] body {
+  line-height: 1.65;
+}
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3 {
+  letter-spacing: 0;
+}
+
+/* Auto-flip every directional Lucide icon in RTL. lucide-react renders
+   each icon with a class like `lucide lucide-arrow-right`; matching on
+   the suffix covers Arrow*Right, Chevron*Right, Move*Right, and the
+   diagonal/big variants without per-instance class additions. */
+html[dir="rtl"] [class*="lucide-arrow-right"],
+html[dir="rtl"] [class*="lucide-arrow-left"],
+html[dir="rtl"] [class*="lucide-arrow-big-right"],
+html[dir="rtl"] [class*="lucide-arrow-big-left"],
+html[dir="rtl"] [class*="lucide-arrow-up-right"],
+html[dir="rtl"] [class*="lucide-arrow-up-left"],
+html[dir="rtl"] [class*="lucide-arrow-down-right"],
+html[dir="rtl"] [class*="lucide-arrow-down-left"],
+html[dir="rtl"] [class*="lucide-chevron-right"],
+html[dir="rtl"] [class*="lucide-chevron-left"],
+html[dir="rtl"] [class*="lucide-chevrons-right"],
+html[dir="rtl"] [class*="lucide-chevrons-left"],
+html[dir="rtl"] [class*="lucide-move-right"],
+html[dir="rtl"] [class*="lucide-move-left"],
+html[dir="rtl"] [class*="lucide-corner-up-right"],
+html[dir="rtl"] [class*="lucide-corner-up-left"],
+html[dir="rtl"] [class*="lucide-corner-down-right"],
+html[dir="rtl"] [class*="lucide-corner-down-left"] {
+  transform: scaleX(-1);
 }

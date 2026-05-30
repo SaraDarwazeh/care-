@@ -1,0 +1,54 @@
+{
+  "page": {
+    "title": "Community Donations",
+    "subtitle": "Browse and search healthcare equipment shared by your community. Contact donors directly to arrange pickup.",
+    "postCta": "Post a donation",
+    "platformNote": "Care+ only facilitates visibility. Contact donors directly. We are not responsible for transactions or deliveries.",
+    "platformNoteKicker": "Platform Note:",
+    "searchPlaceholder": "Search donations by title, description, or location…",
+    "loading": "Loading posts…",
+    "emptyTitle": "No donations found",
+    "emptySearch": "Try a different search term or clear the filter.",
+    "emptyAll": "Be the first to post a donation!",
+    "emptyCategory": "No items in the \"{category}\" category yet.",
+    "modal": {
+      "kicker": "New donation",
+      "title": "Post a donation",
+      "closeLabel": "Close"
+    }
+  },
+  "categories": {
+    "all": "All",
+    "wheelchairs": "Wheelchairs",
+    "walkers": "Walkers",
+    "beds": "Beds",
+    "equipment": "Equipment",
+    "other": "Other"
+  },
+  "card": {
+    "locationUnknown": "Location not specified",
+    "viewDetails": "View Details",
+    "contactInfo": "Contact Info"
+  },
+  "detail": {
+    "back": "Back to community",
+    "contactDonor": "Contact Donor",
+    "name": "Name:",
+    "email": "Email:",
+    "phone": "Phone:",
+    "noContact": "No contact details provided.",
+    "sendEmail": "Send Email",
+    "call": "Call",
+    "loading": "Loading donation…"
+  },
+  "educationSection": {
+    "kicker": "Learn & Trust",
+    "title": "What families ask before they book",
+    "subtitle": "Short answers, no fluff — just what you need to know to decide whether home care is right for your family.",
+    "kinds": {
+      "why": "Why home care",
+      "faq": "Common questions",
+      "whatToExpect": "What to expect"
+    }
+  }
+}

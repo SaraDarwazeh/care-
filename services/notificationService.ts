@@ -177,6 +177,10 @@ export async function notifyBookingCreated(input: {
   patientName?: string;
 }): Promise<void> {
   const { booking, patientName } = input;
+  // Payload carries every variable the templates substitute. `variant`
+  // disambiguates multi-recipient types so the renderer picks the right
+  // copy (nurse vs admin). Persisted title/body remain English fallbacks
+  // for legacy readers and pre-template rendering paths.
   await Promise.all([
     safe(() =>
       createNotification({
@@ -185,7 +189,12 @@ export async function notifyBookingCreated(input: {
         title: "New booking request",
         body: `${patientName ?? "A patient"} requested ${booking.service} on ${booking.date}.`,
         link: bookingLinkFor("nurse"),
-        payload: { date: booking.date, service: booking.service },
+        payload: {
+          variant: "nurse",
+          patientName: patientName ?? "",
+          service: booking.service,
+          date: booking.date,
+        },
       }),
     ),
     safe(() =>
@@ -194,7 +203,12 @@ export async function notifyBookingCreated(input: {
         title: "New booking",
         body: `New booking request for ${booking.service} on ${booking.date}.`,
         link: bookingLinkFor("admin"),
-        payload: { date: booking.date, service: booking.service },
+        payload: {
+          variant: "admin",
+          patientName: patientName ?? "",
+          service: booking.service,
+          date: booking.date,
+        },
       }),
     ),
   ]);
@@ -262,7 +276,13 @@ export async function notifyBookingStatusChange(input: {
       title: titleMap[type],
       body: bodyForRecipient,
       link: bookingLinkFor(recipientRole),
-      payload: { date: booking.date, service: booking.service, newStatus, actor },
+      payload: {
+        service: booking.service,
+        date: booking.date,
+        newStatus,
+        actor,
+        ...(input.rejectionReason ? { reason: input.rejectionReason } : {}),
+      },
     }),
   );
 }
@@ -274,7 +294,7 @@ export async function notifyOrderCreated(order: Pick<StoreOrder, "id" | "patient
       title: "New store order",
       body: `A new order totaling $${order.total.toFixed(2)} is awaiting review.`,
       link: "/admin/orders",
-      payload: { orderId: order.id },
+      payload: { orderId: order.id, total: order.total },
     }),
   );
 }
@@ -310,7 +330,7 @@ export async function notifyNurseSignup(input: { nurseUserId: string; nurseName:
       title: "New nurse registration",
       body: `${input.nurseName} just signed up and is awaiting approval.`,
       link: "/admin/nurses",
-      payload: { nurseUserId: input.nurseUserId },
+      payload: { nurseUserId: input.nurseUserId, nurseName: input.nurseName },
     }),
   );
 }

@@ -1,52 +1,46 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { LogOut, ShieldCheck, UserCircle, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { logoutUser } from "@/services/authService";
 import { useState } from "react";
 import ProfileMenu from "@/components/common/ProfileMenu";
+import LocaleSwitcher from "@/components/common/LocaleSwitcher";
 
-interface NavLink {
-  label: string;
+interface NavItem {
+  /** Key into messages/{locale}/nav.json. */
+  key: string;
   href: string;
 }
 
 // Public navigation surfaces the four pillars of the platform plus the
-// "join as a nurse" CTA. Every link resolves to a real route — no anchor
-// links that only work on the homepage. "Home" is explicit (not just the
-// logo) so non-technical users always have an obvious way back to /.
-const GUEST_NAV: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Care Packages", href: "/services/packages" },
-  { label: "Find a Nurse", href: "/patient/nurses" },
-  { label: "Community", href: "/community" },
-  { label: "Join as Nurse", href: "/register?role=nurse" },
+// "join as a nurse" CTA. Items carry translation keys, not literal
+// labels — the active locale resolves them in render.
+const GUEST_NAV: NavItem[] = [
+  { key: "home", href: "/" },
+  { key: "services", href: "/services" },
+  { key: "carePackages", href: "/services/packages" },
+  { key: "findANurse", href: "/patient/nurses" },
+  { key: "community", href: "/community" },
+  { key: "joinAsNurse", href: "/register?role=nurse" },
 ];
 
-// Signed-in PATIENT nav mirrors PatientNavbar's main nav: exploration
-// items only (Dashboard / Services / Care Packages / Medical Store /
-// Community). "Home" intentionally not here — in SaaS conventions the
-// dashboard *is* the user's home. The public marketing surface at `/`
-// stays reachable via the "About Care+" entry in the ProfileMenu dropdown.
-const PATIENT_NAV: NavLink[] = [
-  { label: "Dashboard", href: "/patient" },
-  { label: "Services", href: "/services" },
-  { label: "Care Packages", href: "/services/packages" },
-  { label: "Medical Store", href: "/patient/store" },
-  { label: "Community", href: "/community" },
+const PATIENT_NAV: NavItem[] = [
+  { key: "dashboard", href: "/patient" },
+  { key: "services", href: "/services" },
+  { key: "carePackages", href: "/services/packages" },
+  { key: "medicalStore", href: "/patient/store" },
+  { key: "community", href: "/community" },
 ];
 
-// Public-page navigation for signed-in NURSES and ADMINS. They have their
-// own sidebar layouts on the role pages; here we just surface "go to your
-// workspace" plus a couple of public surfaces.
-const STAFF_NAV: NavLink[] = [
-  { label: "Workspace", href: "/" }, // overridden per role below
-  { label: "Services", href: "/services" },
-  { label: "Care Packages", href: "/services/packages" },
-  { label: "Community", href: "/community" },
+const STAFF_NAV: NavItem[] = [
+  { key: "workspace", href: "/" }, // overridden per role below
+  { key: "services", href: "/services" },
+  { key: "carePackages", href: "/services/packages" },
+  { key: "community", href: "/community" },
 ];
 
 function dashboardHref(role?: string): string {
@@ -61,11 +55,11 @@ function profileHref(role?: string): string {
   return "/patient/profile";
 }
 
-function navFor(role?: string): NavLink[] {
+function navFor(role?: string): NavItem[] {
   if (role === "patient") return PATIENT_NAV;
   if (role === "nurse" || role === "admin") {
     const items = [...STAFF_NAV];
-    items[0] = { label: "Workspace", href: dashboardHref(role) };
+    items[0] = { key: "workspace", href: dashboardHref(role) };
     return items;
   }
   return GUEST_NAV;
@@ -74,9 +68,10 @@ function navFor(role?: string): NavLink[] {
 export default function PlatformNavbar() {
   const router = useRouter();
   const { appUser } = useAuth();
+  const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navLinks = navFor(appUser?.role);
+  const navItems = navFor(appUser?.role);
 
   async function onLogout() {
     await logoutUser();
@@ -99,19 +94,20 @@ export default function PlatformNavbar() {
 
         {/* Centered nav — desktop only */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {navLinks.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
         </nav>
 
         {/* Right actions — desktop */}
         <div className="hidden items-center gap-3 lg:flex">
+          <LocaleSwitcher />
           {appUser ? (
             <ProfileMenu variant="dropdown" />
           ) : (
@@ -120,13 +116,13 @@ export default function PlatformNavbar() {
                 href="/login"
                 className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
               >
-                Sign in
+                {t("signIn")}
               </Link>
               <Link
                 href="/register"
                 className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 hover:shadow"
               >
-                Get Started
+                {t("getStarted")}
               </Link>
             </>
           )}
@@ -137,7 +133,7 @@ export default function PlatformNavbar() {
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50 active:bg-slate-100 lg:hidden"
-          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
         >
           {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
@@ -147,18 +143,21 @@ export default function PlatformNavbar() {
       {mobileOpen && (
         <div className="border-t border-slate-100 bg-white px-4 pb-6 pt-4 lg:hidden">
           <nav className="flex flex-col gap-1">
-            {navLinks.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
                 className="rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
           </nav>
           <div className="mt-4 border-t border-slate-100 pt-4">
+            <div className="px-2 pb-2">
+              <LocaleSwitcher variant="menu" />
+            </div>
             {appUser ? (
               <div className="space-y-1">
                 <Link
@@ -166,21 +165,21 @@ export default function PlatformNavbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  <UserCircle className="h-4 w-4 text-slate-400" /> Dashboard
+                  <UserCircle className="h-4 w-4 text-slate-400" /> {t("dashboard")}
                 </Link>
                 <Link
                   href={profileHref(appUser.role)}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  <UserCircle className="h-4 w-4 text-slate-400" /> Profile
+                  <UserCircle className="h-4 w-4 text-slate-400" /> {t("profile")}
                 </Link>
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-start text-sm font-medium text-rose-600 hover:bg-rose-50"
                 >
-                  <LogOut className="h-4 w-4" /> Sign out
+                  <LogOut className="h-4 w-4" /> {t("signOut")}
                 </button>
               </div>
             ) : (
@@ -190,14 +189,14 @@ export default function PlatformNavbar() {
                   onClick={() => setMobileOpen(false)}
                   className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  Sign in
+                  {t("signIn")}
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
                   className="rounded-xl bg-sky-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-sky-700"
                 >
-                  Get Started
+                  {t("getStarted")}
                 </Link>
               </div>
             )}

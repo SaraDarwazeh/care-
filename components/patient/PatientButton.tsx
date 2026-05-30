@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ButtonHTMLAttributes, ReactNode } from "react";
 
 interface PatientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

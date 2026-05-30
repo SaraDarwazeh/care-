@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Filter, MapPin, Sparkles, Truck, Award, Stethoscope, HeartHandshake } from "lucide-react";
 
 // Filter values split medical/professional offerings (services[]) from
@@ -7,17 +8,17 @@ import { Filter, MapPin, Sparkles, Truck, Award, Stethoscope, HeartHandshake } f
 // the patient picks for very different reasons. Languages used to be a
 // chip filter; it's now informational-only on the nurse detail page.
 export interface MarketplaceFilterValues {
-  service: string;              // medical/professional service (single select)
-  additionalServices: string[]; // extras (cooking, transport, etc.) multi-select
-  shift: string;                // "" | "a" | "b" | "c"
-  gender: string;               // "" | "any" | "male" | "female"
-  overnight: string;            // "any" | "yes" | "no"
+  service: string;
+  additionalServices: string[];
+  shift: string;
+  gender: string;
+  overnight: string;
   location: string;
-  minExperience: number;        // 0 = no filter
+  minExperience: number;
   availableToday: boolean;
   transportAvailable: boolean;
-  skills: string[];             // selected skill chips
-  certifications: string[];     // selected certificate chips
+  skills: string[];
+  certifications: string[];
 }
 
 export type SortKey = "rating" | "price_low" | "experience";
@@ -126,6 +127,9 @@ export default function MarketplaceFilters({
   sortBy,
   onSortChange,
 }: MarketplaceFiltersProps) {
+  const t = useTranslations("patient.nurses.filters");
+  const tGender = useTranslations("patient.nurses.gender");
+
   function patch(p: Partial<MarketplaceFilterValues>) {
     onChange({ ...values, ...p });
   }
@@ -141,59 +145,55 @@ export default function MarketplaceFilters({
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-        <Filter className="h-5 w-5 text-sky-600" /> Filters
+        <Filter className="h-5 w-5 text-sky-600" /> {t("title")}
         {activeCount > 0 && (
-          <span className="ml-auto rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-bold text-sky-700">
-            {activeCount} active
+          <span className="ms-auto rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-bold text-sky-700">
+            {t("activeCount", { n: activeCount })}
           </span>
         )}
       </div>
 
       <div className="space-y-5">
-        {/* Location */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Location</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("location")}</label>
           <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <MapPin className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="City or village..."
+              placeholder={t("locationPlaceholder")}
               value={values.location}
               onChange={(e) => patch({ location: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              dir="auto"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
             />
           </div>
         </div>
 
-        {/* Medical & professional services */}
         {availableServices.length > 0 && (
           <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-700">
-              <Stethoscope className="h-3.5 w-3.5" /> Medical &amp; professional services
+              <Stethoscope className="h-3.5 w-3.5" /> {t("medicalServices")}
             </p>
             <select
               value={values.service}
               onChange={(e) => patch({ service: e.target.value })}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
             >
-              <option value="">Any medical service</option>
+              <option value="">{t("anyMedicalService")}</option>
               {availableServices.map((service) => (
                 <option key={service} value={service}>
                   {service}
                 </option>
               ))}
             </select>
-            <p className="mt-2 text-[11px] text-slate-500">
-              Wound care, IV therapy, injections, post-op support, etc.
-            </p>
+            <p className="mt-2 text-[11px] text-slate-500">{t("medicalServicesHelp")}</p>
           </div>
         )}
 
-        {/* Extra services (cooking, transport, companionship…) */}
         {availableAdditionalServices.length > 0 && (
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
-              <HeartHandshake className="h-3.5 w-3.5" /> Extra services
+              <HeartHandshake className="h-3.5 w-3.5" /> {t("extraServices")}
             </p>
             <div className="flex flex-wrap gap-1.5">
               {availableAdditionalServices.map((opt) => {
@@ -214,33 +214,29 @@ export default function MarketplaceFilters({
                 );
               })}
             </div>
-            <p className="mt-2 text-[11px] text-slate-500">
-              Cooking, transportation, cleaning, companionship — non-medical extras a nurse can provide.
-            </p>
+            <p className="mt-2 text-[11px] text-slate-500">{t("extraServicesHelp")}</p>
           </div>
         )}
 
-        {/* Shift */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Shift</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("shift")}</label>
           <select
             value={values.shift || "any"}
             onChange={(e) => patch({ shift: e.target.value === "any" ? "" : e.target.value })}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
           >
-            <option value="any">Any Shift</option>
-            <option value="a">Shift A (07:00 - 14:00)</option>
-            <option value="b">Shift B (14:00 - 20:00)</option>
-            <option value="c">Shift C (20:00 - 07:00)</option>
+            <option value="any">{t("anyShift")}</option>
+            <option value="a">{t("shiftAFull")}</option>
+            <option value="b">{t("shiftBFull")}</option>
+            <option value="c">{t("shiftCFull")}</option>
           </select>
         </div>
 
-        {/* Min experience */}
         <div>
           <label className="mb-1.5 flex items-center justify-between text-sm font-semibold text-slate-700">
-            <span>Minimum Experience</span>
+            <span>{t("minExperience")}</span>
             <span className="text-xs text-slate-500">
-              {values.minExperience === 0 ? "No minimum" : `${values.minExperience}+ yrs`}
+              {values.minExperience === 0 ? t("noMinimum") : t("yearsPlus", { n: values.minExperience })}
             </span>
           </label>
           <input
@@ -254,11 +250,10 @@ export default function MarketplaceFilters({
           />
         </div>
 
-        {/* Quick toggles */}
         <div className="space-y-2">
           <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Sparkles className="h-4 w-4 text-amber-500" /> Available today
+              <Sparkles className="h-4 w-4 text-amber-500" /> {t("availableToday")}
             </span>
             <input
               type="checkbox"
@@ -269,7 +264,7 @@ export default function MarketplaceFilters({
           </label>
           <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
             <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-              <Truck className="h-4 w-4 text-emerald-500" /> Has own transport
+              <Truck className="h-4 w-4 text-emerald-500" /> {t("hasTransport")}
             </span>
             <input
               type="checkbox"
@@ -280,47 +275,45 @@ export default function MarketplaceFilters({
           </label>
         </div>
 
-        {/* Overnight */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Overnight Care</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("overnightCare")}</label>
           <div className="flex rounded-xl bg-slate-50 p-1">
             {[
-              { value: "any", label: "Any" },
-              { value: "yes", label: "Yes" },
-              { value: "no", label: "No" },
+              { value: "any", labelKey: "any" as const },
+              { value: "yes", labelKey: "overnightYes" as const },
+              { value: "no", labelKey: "overnightNo" as const },
             ].map((option) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => patch({ overnight: option.value })}
-                className={`flex-1 rounded-lg py-1.5 text-sm font-medium capitalize transition-colors ${
+                className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
                   values.overnight === option.value
                     ? "bg-white text-sky-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                {option.label}
+                {t(option.labelKey)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Gender */}
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Gender</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("gender")}</label>
           <select
             value={values.gender || "any"}
             onChange={(e) => patch({ gender: e.target.value === "any" ? "" : e.target.value })}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
           >
-            <option value="any">No Preference</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
+            <option value="any">{t("noPreference")}</option>
+            <option value="female">{tGender("female")}</option>
+            <option value="male">{tGender("male")}</option>
           </select>
         </div>
 
         <ChipMultiSelect
-          label="Skills"
+          label={t("skills")}
           icon={Sparkles}
           options={availableSkills}
           selected={values.skills}
@@ -329,7 +322,7 @@ export default function MarketplaceFilters({
         />
 
         <ChipMultiSelect
-          label="Certifications"
+          label={t("certifications")}
           icon={Award}
           options={availableCertifications}
           selected={values.certifications}
@@ -342,19 +335,19 @@ export default function MarketplaceFilters({
           onClick={onClear}
           className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
         >
-          Clear Filters
+          {t("clearFilters")}
         </button>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Sort By</label>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("sortBy")}</label>
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortKey)}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
           >
-            <option value="rating">Highest Rated</option>
-            <option value="price_low">Lowest Price</option>
-            <option value="experience">Most Experienced</option>
+            <option value="rating">{t("sortHighestRated")}</option>
+            <option value="price_low">{t("sortLowestPrice")}</option>
+            <option value="experience">{t("sortMostExperienced")}</option>
           </select>
         </div>
       </div>

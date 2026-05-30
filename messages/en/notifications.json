@@ -1,0 +1,60 @@
+{
+  "booking_created": {
+    "nurse": {
+      "title": "New booking request",
+      "body": "{patientName} requested {service} on {date}."
+    },
+    "admin": {
+      "title": "New booking",
+      "body": "New booking request for {service} on {date}."
+    }
+  },
+  "booking_accepted": {
+    "title": "Booking accepted",
+    "body": "Your nurse confirmed {service} on {date}."
+  },
+  "booking_rejected": {
+    "title": "Booking not accepted",
+    "bodyWithReason": "Your booking for {service} on {date} was not accepted. Reason: {reason}",
+    "bodyNoReason": "Your booking for {service} on {date} was not accepted."
+  },
+  "booking_completed": {
+    "title": "Visit completed",
+    "body": "Your visit ({service} on {date}) is marked as completed."
+  },
+  "booking_cancelled": {
+    "title": "Booking cancelled",
+    "byPatient": "A patient cancelled their booking for {service} on {date}.",
+    "byOther": "Your booking for {service} on {date} was cancelled."
+  },
+  "nurse_signup": {
+    "title": "New nurse registration",
+    "body": "{nurseName} just signed up and is awaiting approval."
+  },
+  "nurse_approved": {
+    "title": "Profile approved",
+    "body": "Your profile has been approved. You can now receive bookings."
+  },
+  "nurse_rejected": {
+    "title": "Profile not approved",
+    "body": "Your profile was not approved at this time. Please contact support for next steps."
+  },
+  "order_created": {
+    "title": "New store order",
+    "body": "A new order totaling {total} is awaiting review."
+  },
+  "order_status_changed": {
+    "title": "Order update",
+    "statusCopy": {
+      "pending": "received",
+      "processing": "being prepared",
+      "shipped": "out for delivery",
+      "delivered": "delivered"
+    },
+    "body": "Your order is {statusCopy}."
+  },
+  "system_alert": {
+    "title": "System alert",
+    "body": "{message}"
+  }
+}

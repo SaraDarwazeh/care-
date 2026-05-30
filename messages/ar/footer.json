@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "care": "الرعاية",
+    "shop": "المتجر",
+    "connect": "تواصل",
+    "account": "الحساب"
+  },
+  "links": {
+    "services": "الخدمات",
+    "carePackages": "باقات الرعاية",
+    "findANurse": "ابحث عن ممرض",
+    "medicalStore": "المتجر الطبي",
+    "community": "المجتمع",
+    "signIn": "تسجيل الدخول",
+    "createAccount": "إنشاء حساب",
+    "joinAsNurse": "انضم كممرض"
+  },
+  "tagline": "رعاية صحية منزلية متميزة للمرضى والممرضين والعائلات.",
+  "copyright": "© {year} Care+. {tagline}",
+  "legal": {
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الاستخدام",
+    "contact": "تواصل معنا"
+  }
+}

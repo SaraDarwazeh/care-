@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -11,15 +12,19 @@ import {
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import type { EducationCard, EducationCardKind } from "@/lib/types";
 import { DEFAULT_EDUCATION_CARDS } from "@/lib/educationSeed";
+import { normalizeLocalizedRequired, type LocalizedInput, type LocalizedString } from "@/lib/i18nContent";
 
 const COLLECTION = "educationCards";
+const SEED_VERSION = 1;
+const SEED_META_DOC = "meta-seed-version";
 
 function mapDoc(id: string, data: Record<string, unknown>): EducationCard {
   return {
     id,
     kind: (data.kind as EducationCardKind) ?? "faq",
-    title: String(data.title ?? ""),
-    body: String(data.body ?? ""),
+    // Tolerant reader: coerces legacy plain-string records to {en: "..."}.
+    title: normalizeLocalizedRequired(data.title as LocalizedInput),
+    body: normalizeLocalizedRequired(data.body as LocalizedInput),
     icon: typeof data.icon === "string" ? data.icon : undefined,
     accent: typeof data.accent === "string" ? (data.accent as EducationCard["accent"]) : undefined,
     order: typeof data.order === "number" ? data.order : 0,
@@ -29,19 +34,37 @@ function mapDoc(id: string, data: Record<string, unknown>): EducationCard {
   };
 }
 
-// Auto-seed the collection the first time anyone reads from it so the
-// homepage isn't empty on a fresh deployment. Same pattern as
-// packageService.seedIfEmpty.
+async function getSeedVersion(): Promise<number | null> {
+  const { db } = ensureClientFirebase();
+  const snap = await getDoc(doc(db, COLLECTION, SEED_META_DOC));
+  if (!snap.exists()) return null;
+  const v = (snap.data() as { version?: unknown }).version;
+  return typeof v === "number" ? v : null;
+}
+
+async function setSeedVersion(version: number): Promise<void> {
+  const { db } = ensureClientFirebase();
+  await setDoc(doc(db, COLLECTION, SEED_META_DOC), { version, setAt: new Date().toISOString() });
+}
+
+// Auto-seed once on a virgin collection. The seed-version meta doc
+// (per plan §Risks #14) prevents re-seeding into a partially-populated
+// or admin-cleared collection.
 async function seedIfEmpty(): Promise<EducationCard[] | null> {
   const { db } = ensureClientFirebase();
   const snap = await getDocs(collection(db, COLLECTION));
-  if (!snap.empty) return null;
+  const realDocs = snap.docs.filter((d) => d.id !== SEED_META_DOC);
+  if (realDocs.length > 0) return null;
+  const existingVersion = await getSeedVersion();
+  if (existingVersion !== null) return null;
+
   const now = new Date().toISOString();
   await Promise.all(
     DEFAULT_EDUCATION_CARDS.map((card) =>
       setDoc(doc(db, COLLECTION, card.id), { ...card, createdAt: now, updatedAt: now }),
     ),
   );
+  await setSeedVersion(SEED_VERSION);
   return DEFAULT_EDUCATION_CARDS.map((card) => ({ ...card, createdAt: now, updatedAt: now }));
 }
 
@@ -56,12 +79,15 @@ function sortCards(cards: EducationCard[]): EducationCard[] {
 export async function getActiveEducationCards(): Promise<EducationCard[]> {
   const { db } = ensureClientFirebase();
   let snap = await getDocs(collection(db, COLLECTION));
-  if (snap.empty) {
+  const realDocs = snap.docs.filter((d) => d.id !== SEED_META_DOC);
+  if (realDocs.length === 0) {
     const seeded = await seedIfEmpty();
     if (seeded) return sortCards(seeded.filter((c) => c.active));
     snap = await getDocs(collection(db, COLLECTION));
   }
-  const all = snap.docs.map((d) => mapDoc(d.id, d.data() as Record<string, unknown>));
+  const all = snap.docs
+    .filter((d) => d.id !== SEED_META_DOC)
+    .map((d) => mapDoc(d.id, d.data() as Record<string, unknown>));
   return sortCards(all.filter((c) => c.active));
 }
 
@@ -69,14 +95,18 @@ export async function getActiveEducationCards(): Promise<EducationCard[]> {
 export async function getAllEducationCardsForAdmin(): Promise<EducationCard[]> {
   const { db } = ensureClientFirebase();
   const snap = await getDocs(collection(db, COLLECTION));
-  return sortCards(snap.docs.map((d) => mapDoc(d.id, d.data() as Record<string, unknown>)));
+  return sortCards(
+    snap.docs
+      .filter((d) => d.id !== SEED_META_DOC)
+      .map((d) => mapDoc(d.id, d.data() as Record<string, unknown>)),
+  );
 }
 
 export interface EducationCardInput {
   id?: string;
   kind: EducationCardKind;
-  title: string;
-  body: string;
+  title: LocalizedString;
+  body: LocalizedString;
   icon?: string;
   accent?: EducationCard["accent"];
   order?: number;
@@ -117,8 +147,8 @@ export async function createEducationCard(input: EducationCardInput): Promise<Ed
 
   const payload = stripUndefined({
     kind: input.kind,
-    title: input.title.trim(),
-    body: input.body.trim(),
+    title: input.title,
+    body: input.body,
     icon: input.icon,
     accent: input.accent,
     order,

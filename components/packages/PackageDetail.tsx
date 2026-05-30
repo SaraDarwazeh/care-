@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import {
   CalendarDays,
   CheckCircle2,
@@ -16,6 +17,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { CarePackage } from "@/lib/types";
+import { tLocalized } from "@/lib/i18nContent";
+import type { Locale } from "@/i18n/config";
+import { fmtCurrency, fmtNumber } from "@/lib/format";
 
 function uniqueImages(pkg: CarePackage): string[] {
   const all: string[] = [];
@@ -27,18 +31,24 @@ function uniqueImages(pkg: CarePackage): string[] {
 }
 
 export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
+  const locale = useLocale() as Locale;
   const images = useMemo(() => uniqueImages(pkg), [pkg]);
   const [activeImage, setActiveImage] = useState(0);
   const heroImage = images[activeImage];
 
-  const bookHref = `/patient/nurses?service=${encodeURIComponent(pkg.title)}&package=${
-    pkg.slug ?? pkg.id
-  }&durationDays=${pkg.durationDays}`;
+  const title = tLocalized(pkg.title, locale);
+  const summary = tLocalized(pkg.summary, locale);
+  const description = pkg.description ? tLocalized(pkg.description, locale) : undefined;
+  const targetAudience = pkg.targetAudience ? tLocalized(pkg.targetAudience, locale) : undefined;
 
-  const currency = pkg.currency ?? "$";
+  // For the booking deep link we always pass the English title so the
+  // patient marketplace's `where("service","==",…)` filter resolves
+  // against a stable canonical value regardless of viewing locale.
+  const bookHref = `/patient/nurses?service=${encodeURIComponent(
+    typeof pkg.title === "string" ? pkg.title : pkg.title.en,
+  )}&package=${pkg.slug ?? pkg.id}&durationDays=${pkg.durationDays}`;
+
   const isFixed = (pkg.pricingMode ?? "dynamic") === "fixed";
-  // Fixed-mode packages lock the duration regardless of any stored
-  // durationOptions, so we never advertise alternatives for them.
   const hasMultipleDurations = !isFixed && (pkg.durationOptions?.length ?? 0) > 1;
 
   return (
@@ -46,36 +56,34 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* MAIN COLUMN */}
         <div className="space-y-6">
-          {/* Hero */}
           <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
             {heroImage ? (
               <div className="relative aspect-[16/9] w-full sm:aspect-[2/1]">
                 <Image
                   src={heroImage}
-                  alt={pkg.title}
+                  alt={title}
                   fill
                   unoptimized
                   className="object-cover"
                   priority
                 />
                 {pkg.featured && (
-                  <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700 shadow">
+                  <span className="absolute start-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700 shadow">
                     <Sparkles className="h-3.5 w-3.5" /> Featured
                   </span>
                 )}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 to-transparent p-6">
                   <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow sm:text-4xl">
-                    {pkg.title}
+                    {title}
                   </h1>
                 </div>
               </div>
             ) : (
               <div className="p-6 sm:p-8">
-                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{pkg.title}</h1>
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{title}</h1>
               </div>
             )}
 
-            {/* Carousel thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto border-b border-slate-100 p-3">
                 {images.map((src, idx) => (
@@ -97,9 +105,9 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
             )}
 
             <div className="p-6 sm:p-8">
-              <p className="text-base leading-relaxed text-slate-600">{pkg.summary}</p>
-              {pkg.description && (
-                <p className="mt-4 text-sm leading-relaxed text-slate-600">{pkg.description}</p>
+              <p className="text-base leading-relaxed text-slate-600">{summary}</p>
+              {description && (
+                <p className="mt-4 text-sm leading-relaxed text-slate-600">{description}</p>
               )}
 
               <div className="mt-6 flex flex-wrap gap-2 text-sm text-slate-600">
@@ -114,29 +122,31 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                     Shifts: <strong className="font-semibold">{pkg.shiftOptions.join(", ")}</strong>
                   </span>
                 )}
-                {pkg.targetAudience && (
+                {targetAudience && (
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
                     <Users className="h-4 w-4 text-sky-600" />
-                    {pkg.targetAudience}
+                    {targetAudience}
                   </span>
                 )}
               </div>
             </div>
           </section>
 
-          {/* What's included + Outcomes */}
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
                 <ListChecks className="h-4 w-4 text-emerald-600" /> Included care
               </h2>
               <ul className="mt-4 space-y-3">
-                {pkg.includedServices.map((s) => (
-                  <li key={s} className="flex items-start gap-2 text-sm text-slate-700">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                    <span>{s}</span>
-                  </li>
-                ))}
+                {pkg.includedServices.map((s, i) => {
+                  const label = tLocalized(s, locale);
+                  return (
+                    <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{label}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
 
@@ -146,75 +156,85 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                   <Target className="h-4 w-4 text-sky-600" /> Expected outcomes
                 </h2>
                 <ul className="mt-4 space-y-3">
-                  {pkg.outcomes.map((o) => (
-                    <li key={o} className="flex items-start gap-2 text-sm text-slate-700">
-                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
-                      <span>{o}</span>
-                    </li>
-                  ))}
+                  {pkg.outcomes.map((o, i) => {
+                    const label = tLocalized(o, locale);
+                    return (
+                      <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
+                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+                        <span>{label}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </section>
             )}
           </div>
 
-          {/* Care timeline */}
           {pkg.careTimeline && pkg.careTimeline.length > 0 && (
             <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
                 <CalendarDays className="h-4 w-4 text-violet-600" /> Care timeline
               </h2>
-              <ol className="mt-5 space-y-5 border-l-2 border-sky-100 pl-6">
-                {pkg.careTimeline.map((step) => (
-                  <li key={`${step.day}-${step.title}`} className="relative">
-                    <span className="absolute -left-[1.85rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-sky-200 bg-white text-[10px] font-bold text-sky-700">
-                      D{step.day}
-                    </span>
-                    <p className="text-base font-bold text-slate-800">{step.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{step.description}</p>
-                  </li>
-                ))}
+              <ol className="mt-5 space-y-5 border-s-2 border-sky-100 ps-6">
+                {pkg.careTimeline.map((step) => {
+                  const stepTitle = tLocalized(step.title, locale);
+                  const stepDesc = tLocalized(step.description, locale);
+                  return (
+                    <li key={`${step.day}-${stepTitle}`} className="relative">
+                      <span className="absolute -start-[1.85rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-sky-200 bg-white text-[10px] font-bold text-sky-700">
+                        D{step.day}
+                      </span>
+                      <p className="text-base font-bold text-slate-800">{stepTitle}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{stepDesc}</p>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
           )}
 
-          {/* Recommended for */}
           {pkg.recommendedFor && pkg.recommendedFor.length > 0 && (
             <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
                 <Users className="h-4 w-4 text-slate-600" /> Recommended for
               </h2>
               <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-                {pkg.recommendedFor.map((r) => (
-                  <li key={r} className="flex items-start gap-2 text-sm text-slate-700">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
-                    <span>{r}</span>
-                  </li>
-                ))}
+                {pkg.recommendedFor.map((r, i) => {
+                  const label = tLocalized(r, locale);
+                  return (
+                    <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                      <span>{label}</span>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
 
-          {/* Highlights pills */}
           {pkg.highlights && pkg.highlights.length > 0 && (
             <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
                 <Tag className="h-4 w-4 text-amber-600" /> Highlights
               </h2>
               <ul className="mt-4 flex flex-wrap gap-2">
-                {pkg.highlights.map((h) => (
-                  <li
-                    key={h}
-                    className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
-                  >
-                    {h}
-                  </li>
-                ))}
+                {pkg.highlights.map((h, i) => {
+                  const label = tLocalized(h, locale);
+                  return (
+                    <li
+                      key={`${label}-${i}`}
+                      className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700"
+                    >
+                      {label}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           )}
         </div>
 
-        {/* PRICING SIDEBAR — sticky on desktop */}
+        {/* PRICING SIDEBAR */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
             {isFixed && pkg.basePricePerDay ? (
@@ -223,12 +243,10 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                   Fixed bundle · {pkg.durationDays} days
                 </p>
                 <p className="mt-1 text-3xl font-extrabold text-slate-900">
-                  {currency}
-                  {(pkg.basePricePerDay * pkg.durationDays).toLocaleString()}
+                  {fmtCurrency(pkg.basePricePerDay * pkg.durationDays, locale, pkg.currency)}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  {currency}
-                  {pkg.basePricePerDay}/day × {pkg.durationDays} days — locked at booking.
+                  {fmtCurrency(pkg.basePricePerDay, locale, pkg.currency)}/day × {pkg.durationDays} days — locked at booking.
                 </p>
                 <p className="mt-2 text-xs text-slate-500">
                   Add-ons and tax are added on top at checkout.
@@ -239,9 +257,8 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                 <p className="text-xs font-bold uppercase tracking-wider text-sky-600">From</p>
                 {pkg.basePricePerDay ? (
                   <p className="mt-1 text-3xl font-extrabold text-slate-900">
-                    {currency}
-                    {pkg.basePricePerDay}
-                    <span className="ml-1 text-base font-medium text-slate-500">/day</span>
+                    {fmtCurrency(pkg.basePricePerDay, locale, pkg.currency)}
+                    <span className="ms-1 text-base font-medium text-slate-500">/day</span>
                   </p>
                 ) : (
                   <p className="mt-1 text-xl font-bold text-slate-900">
@@ -266,18 +283,18 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                       key={opt.days}
                       className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm"
                     >
-                      <span className="font-bold text-slate-700">{opt.label}</span>
+                      <span className="font-bold text-slate-700">{tLocalized(opt.label, locale)}</span>
                       <span className="text-xs text-slate-500">
                         {opt.days} days
                         {opt.priceModifier && opt.priceModifier !== 1 && (
                           <span
-                            className={`ml-2 font-bold ${
+                            className={`ms-2 font-bold ${
                               opt.priceModifier < 1 ? "text-emerald-700" : "text-amber-700"
                             }`}
                           >
                             {opt.priceModifier < 1
-                              ? `−${Math.round((1 - opt.priceModifier) * 100)}%`
-                              : `+${Math.round((opt.priceModifier - 1) * 100)}%`}
+                              ? `−${fmtNumber(Math.round((1 - opt.priceModifier) * 100), locale)}%`
+                              : `+${fmtNumber(Math.round((opt.priceModifier - 1) * 100), locale)}%`}
                           </span>
                         )}
                       </span>

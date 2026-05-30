@@ -1,0 +1,19 @@
+{
+  "home": "Home",
+  "services": "Services",
+  "carePackages": "Care Packages",
+  "findANurse": "Find a Nurse",
+  "community": "Community",
+  "joinAsNurse": "Join as Nurse",
+  "dashboard": "Dashboard",
+  "workspace": "Workspace",
+  "medicalStore": "Medical Store",
+  "profile": "Profile",
+  "notifications": "Notifications",
+  "aboutCarePlus": "About Care+",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "getStarted": "Get Started",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu"
+}

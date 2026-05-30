@@ -2,9 +2,40 @@
 // Quotes any field that contains commas, quotes, or newlines; doubles
 // internal quotes per RFC 4180. Excel handles the resulting file natively.
 
+import type { LocalizedString } from "@/lib/i18nContent";
+
 export interface CsvColumn<T> {
   header: string;
   accessor: (row: T) => string | number | null | undefined;
+}
+
+// Helper for callers exporting LocalizedString fields. Emits two columns
+// per source field (`<Label> (EN)` and `<Label> (AR)`) so admins can edit
+// the spreadsheet in Excel and the round-trip preserves both locales.
+// Pass the result spread into the column list:
+//   columns: [...localizedColumn("Title", r => r.title), ...]
+export function localizedColumn<T>(
+  label: string,
+  pick: (row: T) => LocalizedString | string | null | undefined,
+): CsvColumn<T>[] {
+  return [
+    {
+      header: `${label} (EN)`,
+      accessor: (row) => {
+        const v = pick(row);
+        if (v == null) return "";
+        return typeof v === "string" ? v : v.en ?? "";
+      },
+    },
+    {
+      header: `${label} (AR)`,
+      accessor: (row) => {
+        const v = pick(row);
+        if (v == null) return "";
+        return typeof v === "string" ? "" : v.ar ?? "";
+      },
+    },
+  ];
 }
 
 function escapeCell(value: string | number | null | undefined): string {

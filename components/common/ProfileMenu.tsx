@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import {
   CalendarClock,
   ChevronDown,
@@ -48,6 +49,8 @@ function initialsOf(name?: string): string {
 export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) {
   const router = useRouter();
   const { appUser } = useAuth();
+  const t = useTranslations("patient.profileMenu");
+  const tRoles = useTranslations("patient.roles");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +76,7 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
   const initials = initialsOf(appUser.name);
   const dashHref = dashboardHref(appUser.role);
   const profHref = profileHref(appUser.role);
+  const roleLabel = tRoles(appUser.role);
 
   if (variant === "sidebar") {
     return (
@@ -86,7 +90,7 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{appUser.name}</p>
-            <p className="truncate text-xs font-medium capitalize text-white/60">{appUser.role}</p>
+            <p className="truncate text-xs font-medium text-white/60">{roleLabel}</p>
           </div>
           <UserCircle className="h-4 w-4 shrink-0 text-white/40" />
         </Link>
@@ -95,7 +99,7 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
           onClick={onLogout}
           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300"
         >
-          <LogOut className="h-5 w-5" /> Sign Out
+          <LogOut className="h-5 w-5" /> {t("signOutSidebar")}
         </button>
       </div>
     );
@@ -113,11 +117,11 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-200 text-xs font-bold text-sky-800">
           {initials}
         </div>
-        <div className="hidden text-left sm:block">
+        <div className="hidden text-start sm:block">
           <p className="text-sm font-semibold leading-none text-slate-800">
             {appUser.name.split(" ")[0]}
           </p>
-          <p className="mt-0.5 text-xs font-medium capitalize text-slate-400">{appUser.role}</p>
+          <p className="mt-0.5 text-xs font-medium text-slate-400">{roleLabel}</p>
         </div>
         <ChevronDown
           className={`hidden h-4 w-4 text-slate-400 transition-transform sm:block ${
@@ -128,18 +132,18 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg"
+          className="absolute end-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lg"
         >
           <div className="border-b border-slate-100 px-4 py-3 sm:hidden">
             <p className="text-sm font-semibold text-slate-800">{appUser.name}</p>
-            <p className="mt-0.5 text-xs font-medium capitalize text-slate-400">{appUser.role}</p>
+            <p className="mt-0.5 text-xs font-medium text-slate-400">{roleLabel}</p>
           </div>
           <Link
             href={dashHref}
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
-            <LayoutDashboard className="h-4 w-4 text-slate-400" /> Dashboard
+            <LayoutDashboard className="h-4 w-4 text-slate-400" /> {t("dashboard")}
           </Link>
           {appUser.role === "patient" && (
             <>
@@ -148,21 +152,21 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                <CalendarClock className="h-4 w-4 text-slate-400" /> My Appointments
+                <CalendarClock className="h-4 w-4 text-slate-400" /> {t("myAppointments")}
               </Link>
               <Link
                 href="/patient/orders"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                <ShoppingBag className="h-4 w-4 text-slate-400" /> My Orders
+                <ShoppingBag className="h-4 w-4 text-slate-400" /> {t("myOrders")}
               </Link>
               <Link
                 href="/patient/records"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                <FileText className="h-4 w-4 text-slate-400" /> Health Records
+                <FileText className="h-4 w-4 text-slate-400" /> {t("healthRecords")}
               </Link>
             </>
           )}
@@ -171,26 +175,24 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
-            <UserCircle className="h-4 w-4 text-slate-400" /> Profile &amp; Settings
+            <UserCircle className="h-4 w-4 text-slate-400" /> {t("profileAndSettings")}
           </Link>
           <div className="border-t border-slate-100" />
-          {/* About Care+ — discoverable but out of the main nav. Lets
-              signed-in users visit the public marketing surface on demand
-              without ever showing it in the primary navigation. */}
+          {/* About Care+ — discoverable but out of the main nav. */}
           <Link
             href="/"
             onClick={() => setOpen(false)}
             className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
           >
-            <Info className="h-4 w-4 text-slate-400" /> About Care+
+            <Info className="h-4 w-4 text-slate-400" /> {t("aboutCarePlus")}
           </Link>
           <div className="border-t border-slate-100" />
           <button
             type="button"
             onClick={onLogout}
-            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-rose-600 transition hover:bg-rose-50"
+            className="flex w-full items-center gap-3 px-4 py-3 text-start text-sm font-medium text-rose-600 transition hover:bg-rose-50"
           >
-            <LogOut className="h-4 w-4" /> Sign out
+            <LogOut className="h-4 w-4" /> {t("signOut")}
           </button>
         </div>
       )}

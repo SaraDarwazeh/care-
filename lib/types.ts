@@ -1,3 +1,5 @@
+import type { LocalizedString } from "@/lib/i18nContent";
+
 export type UserRole = "admin" | "nurse" | "patient";
 
 export type UserStatus = "pending" | "approved" | "rejected";
@@ -178,13 +180,23 @@ export interface AppUser {
   status: UserStatus;
   createdAt: string;
   consent?: UserConsent;
+  // Persisted UI language preference. Captured at signup from the
+  // active locale; users can change it from profile/settings and via
+  // the navbar locale switcher. Optional so legacy accounts keep working.
+  language?: "en" | "ar";
 }
 
 export interface StoreItem {
   id: string;
-  name: string;
-  description: string;
+  // Long-form admin-curated copy uses the LocalizedString shape per
+  // Phase 5. Tolerant readers in storeService coerce legacy plain
+  // strings to {en: "..."} so existing Firestore records keep working
+  // until the backfill migration completes.
+  name: LocalizedString;
+  description: LocalizedString;
   price: number;
+  // category stays a flat enum key; display labels come from
+  // patient.store.categories.* in the message catalog.
   category: string;
   image: string;
 }
@@ -203,14 +215,14 @@ export interface StoreOrder {
 // flow depends only on id, slug, title, summary, durationDays, active.
 export interface PackageDurationOption {
   days: number;
-  label: string;
+  label: LocalizedString;
   priceModifier?: number; // multiplicative; 1.0 = base, 0.9 = 10% discount
 }
 
 export interface PackageTimelineStep {
   day: number;
-  title: string;
-  description: string;
+  title: LocalizedString;
+  description: LocalizedString;
 }
 
 // Pricing mode controls whether a package locks duration/pricing or lets
@@ -226,18 +238,24 @@ export type PackagePricingMode = "fixed" | "dynamic";
 
 export interface CarePackage {
   id: string;
+  // slug stays canonical (URL key, queried via where("slug","==",…)).
   slug: string;
-  title: string;
-  summary: string;
-  description?: string;
-  targetAudience?: string;
-  recommendedFor?: string[];
-  includedServices: string[];
-  highlights: string[];
-  outcomes?: string[];
+  // All curated long-form fields go through LocalizedString per Phase 5.
+  // packageService tolerantly normalizes legacy plain-string records
+  // to { en: "..." } on read so the rollout doesn't depend on the
+  // backfill being complete first.
+  title: LocalizedString;
+  summary: LocalizedString;
+  description?: LocalizedString;
+  targetAudience?: LocalizedString;
+  recommendedFor?: LocalizedString[];
+  includedServices: LocalizedString[];
+  highlights: LocalizedString[];
+  outcomes?: LocalizedString[];
   careTimeline?: PackageTimelineStep[];
   durationDays: number;
   durationOptions?: PackageDurationOption[];
+  // shiftOptions / addOns / currency / pricingMode are flat enum keys.
   shiftOptions?: string[];
   basePricePerDay?: number;
   currency?: string;
@@ -378,9 +396,11 @@ export type EducationCardAccent = (typeof EDUCATION_ACCENTS)[number];
 
 export interface EducationCard {
   id: string;
+  // kind stays a flat enum (used by where() in queries).
   kind: EducationCardKind;
-  title: string;
-  body: string;
+  // Card body copy is admin-curated long-form content per Phase 5.
+  title: LocalizedString;
+  body: LocalizedString;
   icon?: string;       // lucide-react icon name; service curates the choices
   accent?: EducationCardAccent;
   order: number;

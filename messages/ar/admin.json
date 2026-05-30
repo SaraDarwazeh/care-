@@ -1,0 +1,267 @@
+{
+  "chrome": {
+    "brand": "Care+ للإدارة",
+    "mobileBrand": "لوحة الإدارة",
+    "navHeading": "الإدارة",
+    "nav": {
+      "dashboard": "اللوحة الرئيسية",
+      "nurses": "الممرضات والممرضون",
+      "patients": "المرضى",
+      "bookings": "الحجوزات",
+      "packages": "إدارة باقات الرعاية",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "records": "السجلات الطبية",
+      "community": "المجتمع",
+      "education": "المحتوى التثقيفي",
+      "notifications": "الإشعارات",
+      "systemStatus": "حالة النظام",
+      "settings": "الإعدادات"
+    }
+  },
+  "dashboard": {
+    "loading": "جارٍ تحميل مؤشّرات اللوحة...",
+    "welcome": "مرحبًا بعودتك يا {name}",
+    "subtitle": "إليك آخر المستجدات عبر منصّة Care+ لهذا اليوم.",
+    "overviewHeading": "نظرة عامّة على المنصّة",
+    "stats": {
+      "totalUsers": "إجمالي المستخدمين",
+      "totalNurses": "إجمالي الممرضات والممرضين",
+      "totalPatients": "إجمالي المرضى",
+      "totalBookings": "إجمالي الحجوزات",
+      "pendingApprovals": "الموافقات قيد المراجعة",
+      "totalRevenue": "إجمالي الإيرادات"
+    },
+    "attention": {
+      "heading": "بحاجة إلى انتباهك",
+      "allClear": "كل شيء على ما يُرام — لا شيء بانتظارك.",
+      "staleBookings": {
+        "label": "حجوزات قيد المراجعة منذ فترة",
+        "description": "حجوزات مضى عليها أكثر من 24 ساعة بانتظار ردّ ممرض/ة.",
+        "cta": "مراجعة الحجوزات"
+      },
+      "pendingNurses": {
+        "label": "موافقات الممرضات والممرضين قيد المراجعة",
+        "description": "ممرضون جدد بانتظار مراجعة وثائقهم.",
+        "cta": "مراجعة الموافقات"
+      },
+      "disputedRecords": {
+        "label": "سجلات طبية متنازع عليها",
+        "description": "أبلغ المرضى عن معلومات غير دقيقة.",
+        "cta": "فتح قائمة الاعتراضات"
+      }
+    },
+    "trends": {
+      "title": "اتجاهات الحجوزات",
+      "subtitle": "نشاط آخر 7 أيام",
+      "pastDays": "أيام سابقة",
+      "today": "اليوم",
+      "days": {
+        "mon": "إثن", "tue": "ثلا", "wed": "أرب", "thu": "خمي", "fri": "جمع", "sat": "سبت", "sun": "أحد"
+      }
+    },
+    "revenue": {
+      "title": "نظرة على الإيرادات",
+      "subtitle": "أرباح الحجوزات المكتملة",
+      "totalEarned": "إجمالي المُحَصَّل",
+      "pending": "إيرادات قيد المراجعة",
+      "thisMonth": "هذا الشهر",
+      "monthShare": "{pct}% من إجمالي الإيرادات المحقّقة"
+    }
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "subtitle": "أحداث المنصّة التي تحتاج انتباهك — ممرضون جدد، حجوزات جديدة، طلبات جديدة.",
+    "loading": "جارٍ تحميل الإشعارات..."
+  },
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "remove": "إزالة",
+    "add": "إضافة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "all": "الكل",
+    "active": "مُفعَّل",
+    "inactive": "غير مفعَّل",
+    "approved": "موافَق عليه",
+    "rejected": "مرفوض",
+    "pending": "قيد المراجعة"
+  },
+  "nurses": {
+    "loading": "جارٍ تحميل قائمة الممرضين...",
+    "title": "إدارة الممرضات والممرضين",
+    "subtitle": "راجع طلبات التسجيل وأدِر صلاحيات الوصول للمنصّة.",
+    "syncing": "جارٍ المزامنة مع قاعدة البيانات...",
+    "loadingProfile": "جارٍ تحميل الملف الكامل...",
+    "allCaughtUp": "كل شيء على ما يُرام!",
+    "noNurses": "لا توجد طلبات للمراجعة حاليًا.",
+    "specialization": "التخصّص",
+    "experience": "الخبرة",
+    "experienceYears": "{years, plural, zero {لا سنوات} one {سنة واحدة} two {سنتان} few {# سنوات} many {# سنة} other {# سنة}}",
+    "professionalBio": "النبذة المهنيّة",
+    "certificates": "الشهادات",
+    "noCertificates": "لم يتمّ رفع أيّ شهادات.",
+    "legacyCert": "(قديمة)",
+    "noProfile": "لم يُكمل هذا/ه الممرض/ة إعداد ملفه/ها بعد.",
+    "approve": "الموافقة على التسجيل",
+    "reject": "رفض",
+    "status": {
+      "approved": "موافَق عليه",
+      "rejected": "مرفوض",
+      "pending": "قيد المراجعة"
+    }
+  },
+  "patients": {
+    "loading": "جارٍ تحميل المرضى...",
+    "title": "دليل المرضى",
+    "subtitle": "جميع المرضى المسجّلين على منصّة Care+.",
+    "searchPlaceholder": "ابحث بالاسم أو البريد أو الهاتف",
+    "noPatients": "لا يوجد مرضى مسجّلون بعد.",
+    "noMatches": "لا يوجد مرضى يطابقون بحثك."
+  },
+  "bookings": {
+    "loading": "جارٍ تحميل الحجوزات...",
+    "title": "جميع الحجوزات",
+    "subtitle": "عرض تشغيليّ لكل حجوزات المنصّة.",
+    "filterAll": "الكل",
+    "filterPending": "قيد المراجعة",
+    "filterConfirmed": "مؤكَّد",
+    "filterCompleted": "مكتمل",
+    "filterCancelled": "مُلغى",
+    "empty": "لا توجد حجوزات تطابق هذه التصفية."
+  },
+  "orders": {
+    "loading": "جارٍ تحميل الطلبات...",
+    "title": "طلبات المتجر",
+    "subtitle": "تتبّع طلبات المتجر الطبّيّ ونفّذها.",
+    "filterAll": "الكل",
+    "filterPending": "قيد المراجعة",
+    "filterShipped": "تمّ الشحن",
+    "filterDelivered": "تمّ التسليم",
+    "filterCancelled": "مُلغى",
+    "empty": "لا توجد طلبات تطابق هذه التصفية.",
+    "exportCsv": "تصدير CSV"
+  },
+  "records": {
+    "loading": "جارٍ تحميل السجلات الطبّيّة...",
+    "title": "السجلات الطبّيّة",
+    "subtitle": "تصفّح كل السجلات الطبّيّة عبر المنصّة.",
+    "filterAll": "الكل",
+    "filterDisputed": "متنازع عليه",
+    "empty": "لا توجد سجلات طبّيّة."
+  },
+  "community": {
+    "loading": "جارٍ تحميل منشورات المجتمع...",
+    "title": "إشراف المجتمع",
+    "subtitle": "راجع وأدِر منشورات التبرّعات.",
+    "empty": "لا توجد منشورات مجتمعيّة بعد."
+  },
+  "products": {
+    "loading": "جارٍ تحميل المنتجات...",
+    "title": "المنتجات",
+    "subtitle": "أدِر كتالوج المتجر الطبّيّ لمنصّة Care+. الإنجليزيّة مطلوبة، والعربيّة موصى بها قبل الإطلاق.",
+    "addProduct": "إضافة منتج",
+    "editProduct": "تعديل المنتج",
+    "addNewProduct": "إضافة منتج جديد",
+    "noProducts": "لا توجد منتجات بعد",
+    "clickToAdd": "اضغط «إضافة منتج» للبدء.",
+    "nameEn": "الاسم (الإنجليزيّة)",
+    "nameAr": "الاسم (العربيّة)",
+    "price": "السعر (USD)",
+    "category": "الفئة (مفتاح)",
+    "image": "الصورة (إيموجي أو رابط)",
+    "descriptionEn": "الوصف (الإنجليزيّة)",
+    "descriptionAr": "الوصف (العربيّة)",
+    "arabicMissing": "النصّ العربيّ ناقص",
+    "confirmDelete": "هل أنت متأكّد من حذف هذا المنتج؟",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "update": "تحديث",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل"
+  },
+  "education": {
+    "loading": "جارٍ تحميل البطاقات التثقيفيّة...",
+    "title": "مكتبة المحتوى التثقيفيّ",
+    "subtitle": "بطاقات تثقيفيّة ثنائيّة اللغة تظهر في الصفحة الرئيسيّة ولوحة المريض.",
+    "addCard": "إضافة بطاقة",
+    "noCards": "لا توجد بطاقات تثقيفيّة بعد.",
+    "arabicIncomplete": "العربيّة غير مكتملة"
+  },
+  "packages": {
+    "loading": "جارٍ تحميل الباقات..."
+  },
+  "systemStatus": {
+    "title": "حالة النظام",
+    "subtitle": "فحص فوريّ لإعداد Admin SDK ومؤشّرات البيانات الأساسيّة.",
+    "probing": "جارٍ فحص النظام...",
+    "refresh": "تحديث",
+    "loadError": "تعذّر تحميل تقرير الحالة",
+    "infrastructure": "البنية التحتيّة",
+    "adminSdkOk": "تم إعداد Admin SDK",
+    "adminSdkMissing": "Admin SDK غير معدّ",
+    "firestoreOk": "قراءات Firestore تعمل",
+    "firestoreFailing": "قراءات Firestore متعطّلة",
+    "probedAt": "تم الفحص عند {time}",
+    "sdkSetupHint": "اضبط متغيّرات FIREBASE_ADMIN_PROJECT_ID و FIREBASE_ADMIN_CLIENT_EMAIL و FIREBASE_ADMIN_PRIVATE_KEY في البيئة لتفعيل الميزات المقيّدة بالإدارة.",
+    "recommendedActions": "إجراءات موصى بها",
+    "platformData": "بيانات المنصّة",
+    "quickLinks": "روابط سريعة",
+    "counts": {
+      "users": "المستخدمون",
+      "nurses": "الممرضات والممرضون",
+      "bookings": "الحجوزات",
+      "orders": "الطلبات",
+      "packages": "الباقات",
+      "notifications": "الإشعارات"
+    },
+    "highlights": {
+      "pending": "قيد المراجعة",
+      "hidden": "مخفيّة",
+      "unread": "غير مقروءة"
+    },
+    "links": {
+      "reviewNurses": "مراجعة طلبات الممرضين",
+      "reviewBookings": "مراجعة الحجوزات",
+      "fulfillOrders": "تنفيذ الطلبات",
+      "editPackages": "تعديل الباقات"
+    }
+  },
+  "settings": {
+    "loading": "جارٍ تحميل الإعدادات...",
+    "title": "الإعدادات",
+    "subtitle": "إعدادات المنصّة وتفضيلات النظام.",
+    "superAdmin": "مدير عام",
+    "sections": {
+      "security": {
+        "title": "الأمان وصلاحيات الوصول",
+        "description": "إدارة أدوار المسؤولين والصلاحيات وإعدادات المصادقة.",
+        "badge": "تم الضبط"
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "description": "ضبط تفضيلات إشعارات البريد الإلكتروني والإشعارات الفوريّة.",
+        "badge": "افتراضي"
+      },
+      "appearance": {
+        "title": "المظهر",
+        "description": "تخصيص شكل لوحة الإدارة وألوان الهويّة.",
+        "badge": "افتراضي"
+      },
+      "database": {
+        "title": "قاعدة البيانات والنسخ الاحتياطيّة",
+        "description": "إدارة قواعد Firestore والنسخ الاحتياطيّة وتصدير البيانات.",
+        "badge": "Firebase"
+      }
+    },
+    "comingSoon": {
+      "title": "إعدادات قيد التطوير",
+      "body": "لوحات الضبط الكاملة لكل قسم قيد البناء. حاليًّا تُدار جميع إعدادات النظام مباشرةً عبر وحدة تحكّم Firebase."
+    }
+  }
+}

@@ -19,6 +19,7 @@ function mapDocToUser(
     id: string;
   },
 ): AppUser {
+  const lang = userDoc.language;
   return {
     id: userDoc.id,
     name: String(userDoc.name ?? ""),
@@ -26,7 +27,19 @@ function mapDocToUser(
     role: userDoc.role as UserRole,
     status: (userDoc.status as UserStatus) ?? "approved",
     createdAt: String(userDoc.createdAt ?? ""),
+    language: lang === "en" || lang === "ar" ? lang : undefined,
   };
+}
+
+// Persisted via LocaleSwitcher when the user toggles. Best-effort:
+// failure is swallowed at the call site because the cookie alone is
+// sufficient for the next request on the current device.
+export async function updateUserLanguage(
+  id: string,
+  language: "en" | "ar",
+): Promise<void> {
+  const { db } = ensureClientFirebase();
+  await updateDoc(doc(db, "users", id), { language });
 }
 
 export async function createUserProfile(input: {

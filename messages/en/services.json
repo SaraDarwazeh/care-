@@ -1,0 +1,87 @@
+{
+  "overview": {
+    "badge": "Services",
+    "title": "Choose the right care path before you book.",
+    "description": "Care+ groups the main services into one-time visits, shift coverage, and care packages so families can move into the right booking flow faster.",
+    "browseNurses": "Browse nurses",
+    "backToHome": "Back to home"
+  },
+  "categories": {
+    "one-time": {
+      "eyebrow": "Fast, single-visit care",
+      "title": "One-Time Services",
+      "description": "Book an individual healthcare task without setting up a long care plan.",
+      "highlights": ["IV Injection", "Wound Care", "Post-op Care"],
+      "ctaLabel": "Explore one-time care",
+      "imageAlt": "Nurse preparing supplies for a one-time visit",
+      "bookingLinks": [
+        { "label": "IV Injection", "description": "Quick medication support for one-time visits." },
+        { "label": "Wound Care", "description": "Dressing changes and recovery support." },
+        { "label": "Post-op Care", "description": "Short-term support after surgery." }
+      ]
+    },
+    "shifts": {
+      "eyebrow": "Flexible schedule coverage",
+      "title": "Shift-Based Care",
+      "description": "Choose the right shift and arrange a nurse around your daily routine.",
+      "highlights": ["Shift A", "Shift B", "Shift C"],
+      "ctaLabel": "Browse shifts",
+      "imageAlt": "Nurse on shift assisting a patient",
+      "bookingLinks": [
+        { "label": "Shift A", "description": "Morning coverage for early-day support." },
+        { "label": "Shift B", "description": "Afternoon care for daytime routines." },
+        { "label": "Shift C", "description": "Night coverage for overnight support." }
+      ]
+    },
+    "packages": {
+      "eyebrow": "Bundled care plans",
+      "title": "Care Packages",
+      "description": "Bundle recurring needs into a clearer plan for elderly, post-op, or wound care.",
+      "highlights": ["Elderly Package", "Post-op Recovery", "Wound Care Package"],
+      "ctaLabel": "See packages",
+      "imageAlt": "Family meeting with a care planning nurse",
+      "bookingLinks": [
+        { "label": "Elderly Package", "description": "Matched to elderly care nurses and family support." },
+        { "label": "Post-op Recovery", "description": "Ideal for recovery support after surgery." },
+        { "label": "Wound Care Package", "description": "Bundled support for wound dressing and healing." }
+      ]
+    }
+  },
+  "card": {
+    "nextStep": "Next step"
+  },
+  "booking": {
+    "breadcrumb": "Services",
+    "bookingPaths": "Booking paths",
+    "startBooking": "Start booking",
+    "openBookingFlow": "Open booking flow",
+    "browseAllNurses": "Browse all nurses",
+    "pickServiceIntro": "Pick the service that fits your need, then move into the patient booking flow with the right filter already applied.",
+    "packageStructureKicker": "Package structure",
+    "packageStructureTitle": "How the care package is organized",
+    "packageStructureIntro": "Packages are grouped by the kind of support families usually need most. Each one still routes into the same secure booking flow, but the starting point is easier to understand.",
+    "bundles": [
+      { "title": "Elderly care bundle",   "summary": "Ongoing help for daily support, reminders, and family check-ins.",     "cadence": "Best for recurring visits" },
+      { "title": "Post-op recovery bundle", "summary": "Short-term care after surgery with wound support and monitoring.",     "cadence": "Best for short recovery periods" },
+      { "title": "Wound care bundle",      "summary": "Focused dressing changes and healing support across multiple visits.", "cadence": "Best for continuity of care" }
+    ],
+    "startWithBundle": "Start with this bundle"
+  },
+  "packagesList": {
+    "title": "Care Packages",
+    "subtitle": "Browse our care packages to find the right plan for recovery, elderly support, or long-term care.",
+    "loadError": "Unable to load packages right now.",
+    "empty": "No active care packages yet. Check back soon."
+  },
+  "packageCard": {
+    "featured": "Featured",
+    "from": "From",
+    "pricing": "Pricing",
+    "perDay": "/day",
+    "nurseRateTimesDays": "Nurse rate × days",
+    "durationDays": "{n} days",
+    "flexible": "flexible",
+    "view": "View",
+    "highlightsMore": "+{n} more"
+  }
+}

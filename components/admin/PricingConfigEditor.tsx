@@ -172,7 +172,7 @@ export default function PricingConfigEditor() {
               Overnight surcharge (nurse accepts)
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
               <input
                 type="number"
                 min="0"
@@ -181,7 +181,7 @@ export default function PricingConfigEditor() {
                 onChange={(e) =>
                   setConfig({ ...config, overnightSurchargeAccepted: Number(e.target.value) || 0 })
                 }
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 pl-7 text-sm"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 ps-7 text-sm"
               />
             </div>
             <p className="mt-1 text-xs text-slate-500">Charged on shift C when nurse opts in.</p>
@@ -191,7 +191,7 @@ export default function PricingConfigEditor() {
               Overnight surcharge (default)
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
               <input
                 type="number"
                 min="0"
@@ -200,7 +200,7 @@ export default function PricingConfigEditor() {
                 onChange={(e) =>
                   setConfig({ ...config, overnightSurchargeRegular: Number(e.target.value) || 0 })
                 }
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 pl-7 text-sm"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 ps-7 text-sm"
               />
             </div>
             <p className="mt-1 text-xs text-slate-500">Charged on shift C otherwise.</p>
@@ -215,9 +215,9 @@ export default function PricingConfigEditor() {
                 step="0.01"
                 value={config.taxRate}
                 onChange={(e) => setConfig({ ...config, taxRate: Number(e.target.value) || 0 })}
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 pr-12 text-sm"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 pe-12 text-sm"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+              <span className="absolute end-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
                 {Math.round(config.taxRate * 100)}%
               </span>
             </div>

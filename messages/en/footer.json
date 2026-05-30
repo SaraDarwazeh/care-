@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "care": "Care",
+    "shop": "Shop",
+    "connect": "Connect",
+    "account": "Account"
+  },
+  "links": {
+    "services": "Services",
+    "carePackages": "Care Packages",
+    "findANurse": "Find a Nurse",
+    "medicalStore": "Medical Store",
+    "community": "Community",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "joinAsNurse": "Join as nurse"
+  },
+  "tagline": "Premium home healthcare across patients, nurses, and families.",
+  "copyright": "© {year} Care+. {tagline}",
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us"
+  }
+}

@@ -13,7 +13,9 @@ import {
   where,
 } from "firebase/firestore";
 import { STORE_ITEMS } from "../lib/data/store";
+import type { StoreItem } from "../lib/types";
 
+type StoreItemSeed = StoreItem;
 type SeedRole = "admin" | "nurse" | "patient";
 type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 type ShiftCode = "A" | "B" | "C";
@@ -188,7 +190,7 @@ interface Seeder {
   ensureMedicalRecord: (input: MedicalRecordSeedInput) => Promise<void>;
   ensureNotification: (input: NotificationSeedInput) => Promise<void>;
   ensureOrder: (input: OrderSeedInput) => Promise<void>;
-  ensureProduct: (item: { id: string; name: string; description: string; price: number; category: string; image: string }) => Promise<void>;
+  ensureProduct: (item: StoreItemSeed) => Promise<void>;
   ensureCommunityPost: (input: CommunityPostSeedInput) => Promise<void>;
   setNurseAggregate: (nurseId: string, rating: number, reviewCount: number) => Promise<void>;
 }
@@ -1126,7 +1128,7 @@ async function createAdminSeeder(): Promise<Seeder> {
     await ref.set(input, { merge: true });
   }
 
-  async function ensureProduct(item: { id: string; name: string; description: string; price: number; category: string; image: string }) {
+  async function ensureProduct(item: StoreItemSeed) {
     const ref = db.collection("products").doc(item.id);
     await ref.set(item, { merge: true });
   }
@@ -1318,7 +1320,7 @@ async function createClientSeeder(): Promise<Seeder> {
     await setDoc(ref, input, { merge: true });
   }
 
-  async function ensureProduct(item: { id: string; name: string; description: string; price: number; category: string; image: string }) {
+  async function ensureProduct(item: StoreItemSeed) {
     const ref = doc(db, "products", item.id);
     await setDoc(ref, item, { merge: true });
   }

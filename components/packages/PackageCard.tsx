@@ -1,12 +1,21 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
 import type { CarePackage } from "@/lib/types";
+import { fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
+import { tLocalized } from "@/lib/i18nContent";
 
 export default function PackageCard({ pkg }: { pkg: CarePackage }) {
+  const t = useTranslations("services.packageCard");
+  const locale = useLocale() as Locale;
   const heroImage = pkg.image ?? pkg.images?.[0];
-  const currency = pkg.currency ?? "$";
   const hasMultipleDurations = (pkg.durationOptions?.length ?? 0) > 1;
+  const title = tLocalized(pkg.title, locale);
+  const summary = tLocalized(pkg.summary, locale);
 
   return (
     <Link
@@ -17,7 +26,7 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
         {heroImage ? (
           <Image
             src={heroImage}
-            alt={pkg.title}
+            alt={title}
             fill
             unoptimized
             className="object-cover transition duration-500 group-hover:scale-105"
@@ -28,33 +37,36 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
           </div>
         )}
         {pkg.featured && (
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 shadow">
-            <Sparkles className="h-3 w-3" /> Featured
+          <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-amber-50/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 shadow">
+            <Sparkles className="h-3 w-3" /> {t("featured")}
           </span>
         )}
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-slate-900/70 to-transparent p-4">
           <h3 className="text-lg font-extrabold leading-tight text-white drop-shadow">
-            {pkg.title}
+            {title}
           </h3>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <p className="line-clamp-3 text-sm leading-relaxed text-slate-600">{pkg.summary}</p>
+        <p className="line-clamp-3 text-sm leading-relaxed text-slate-600">{summary}</p>
 
         {pkg.highlights && pkg.highlights.length > 0 && (
           <ul className="mt-3 flex flex-wrap gap-1.5">
-            {pkg.highlights.slice(0, 3).map((h) => (
-              <li
-                key={h}
-                className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700"
-              >
-                {h}
-              </li>
-            ))}
+            {pkg.highlights.slice(0, 3).map((h, i) => {
+              const label = tLocalized(h, locale);
+              return (
+                <li
+                  key={`${label}-${i}`}
+                  className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700"
+                >
+                  {label}
+                </li>
+              );
+            })}
             {pkg.highlights.length > 3 && (
               <li className="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-500">
-                +{pkg.highlights.length - 3} more
+                {t("highlightsMore", { n: pkg.highlights.length - 3 })}
               </li>
             )}
           </ul>
@@ -63,23 +75,23 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              {pkg.basePricePerDay ? "From" : "Pricing"}
+              {pkg.basePricePerDay ? t("from") : t("pricing")}
             </p>
             {pkg.basePricePerDay ? (
               <p className="text-xl font-extrabold text-slate-900">
-                {currency}
-                {pkg.basePricePerDay}
-                <span className="ml-1 text-xs font-medium text-slate-500">/day</span>
+                {fmtCurrency(pkg.basePricePerDay, locale, pkg.currency)}
+                <span className="ms-1 text-xs font-medium text-slate-500">{t("perDay")}</span>
               </p>
             ) : (
-              <p className="text-sm font-bold text-slate-700">Nurse rate × days</p>
+              <p className="text-sm font-bold text-slate-700">{t("nurseRateTimesDays")}</p>
             )}
             <p className="mt-1 text-xs text-slate-500">
-              {pkg.durationDays} days{hasMultipleDurations && " · flexible"}
+              {t("durationDays", { n: pkg.durationDays })}
+              {hasMultipleDurations && ` · ${t("flexible")}`}
             </p>
           </div>
           <span className="inline-flex items-center gap-1 rounded-xl bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition group-hover:bg-sky-700">
-            View
+            {t("view")}
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>

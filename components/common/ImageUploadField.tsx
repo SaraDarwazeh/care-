@@ -120,7 +120,7 @@ export default function ImageUploadField(props: ImageUploadFieldProps) {
           <button
             type="button"
             onClick={() => removeAt(0)}
-            className="absolute right-1 top-1 rounded-full bg-white/95 p-1 text-slate-500 shadow-sm hover:bg-rose-50 hover:text-rose-600"
+            className="absolute end-1 top-1 rounded-full bg-white/95 p-1 text-slate-500 shadow-sm hover:bg-rose-50 hover:text-rose-600"
             aria-label="Remove image"
           >
             <X className="h-4 w-4" />
@@ -139,7 +139,7 @@ export default function ImageUploadField(props: ImageUploadFieldProps) {
               <button
                 type="button"
                 onClick={() => removeAt(i)}
-                className="absolute right-1 top-1 rounded-full bg-white/95 p-1 text-slate-500 shadow-sm hover:bg-rose-50 hover:text-rose-600"
+                className="absolute end-1 top-1 rounded-full bg-white/95 p-1 text-slate-500 shadow-sm hover:bg-rose-50 hover:text-rose-600"
                 aria-label="Remove image"
               >
                 <Trash2 className="h-3.5 w-3.5" />

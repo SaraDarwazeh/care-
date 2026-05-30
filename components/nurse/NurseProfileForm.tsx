@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   ChevronRight,
   FileText,
@@ -16,7 +17,7 @@ import {
   Loader2,
   Upload,
 } from "lucide-react";
-import {
+import type {
   NurseCertificate,
   NurseDay,
   NurseProfile,
@@ -25,21 +26,37 @@ import {
 import { getNurseProfileByUserId, saveNurseProfile } from "@/services/nurseService";
 import { uploadFile } from "@/services/storageService";
 import ImageUploadField from "@/components/common/ImageUploadField";
-
-const DAYS: NurseDay[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import { weekOrderFor } from "@/i18n/week";
+import { useLocale } from "next-intl";
+import type { Locale } from "@/i18n/config";
 
 type SectionId = "identity" | "services" | "additional" | "availability" | "credentials";
 
-const SECTIONS: { id: SectionId; label: string; icon: typeof UserCircle }[] = [
-  { id: "identity", label: "Identity & Bio", icon: UserCircle },
-  { id: "services", label: "Services & Pricing", icon: Stethoscope },
-  { id: "additional", label: "Additional Services", icon: PlusCircle },
-  { id: "availability", label: "Availability & Leave", icon: CalendarDays },
-  { id: "credentials", label: "Credentials & Gallery", icon: BookOpen },
+// Canonical specialization keys. Stored as the localized label the nurse
+// picks; the datalist surfaces the controlled vocabulary while still
+// accepting free-text entries for backward compatibility with existing
+// profiles (per Phase 4 decision).
+const SPEC_KEYS = [
+  "icu",
+  "elderlyCare",
+  "pediatric",
+  "postOp",
+  "woundCare",
+  "palliative",
+  "homeHealth",
+  "midwifery",
+  "rehabilitation",
+  "general",
+] as const;
+
+const SECTIONS: { id: SectionId; icon: typeof UserCircle }[] = [
+  { id: "identity",     icon: UserCircle },
+  { id: "services",     icon: Stethoscope },
+  { id: "additional",   icon: PlusCircle },
+  { id: "availability", icon: CalendarDays },
+  { id: "credentials",  icon: BookOpen },
 ];
 
-// Backward compatibility: older nurse profiles may still have
-// additionalServices stored as string[]. Coerce into NurseServiceItem[].
 function normalizeAdditional(raw: unknown): NurseServiceItem[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -66,6 +83,18 @@ export default function NurseProfileForm({
   fullName: string;
   onSaved?: () => void;
 }) {
+  const t = useTranslations("nurse.profileForm");
+  const tSection = useTranslations("nurse.profileForm.sections");
+  const tIdentity = useTranslations("nurse.profileForm.identity");
+  const tServices = useTranslations("nurse.profileForm.services");
+  const tAdditional = useTranslations("nurse.profileForm.additional");
+  const tAvail = useTranslations("nurse.profileForm.availability");
+  const tCreds = useTranslations("nurse.profileForm.credentials");
+  const tDays = useTranslations("nurse.days");
+  const tShifts = useTranslations("nurse.shifts");
+  const tSpec = useTranslations("nurse.specializations");
+  const tErr = useTranslations("nurse.errors");
+  const locale = useLocale() as Locale;
   const [activeSection, setActiveSection] = useState<SectionId>("identity");
 
   // Identity & Bio
@@ -86,6 +115,7 @@ export default function NurseProfileForm({
   const [additionalServices, setAdditionalServices] = useState<NurseServiceItem[]>([]);
 
   // Availability & Leave
+  const orderedDays = weekOrderFor(locale);
   const [availableDays, setAvailableDays] = useState<NurseDay[]>(["Mon", "Tue", "Wed", "Thu", "Fri"]);
   const [availableShifts, setAvailableShifts] = useState<string[]>([]);
   const [acceptsOvernight, setAcceptsOvernight] = useState(false);
@@ -194,7 +224,7 @@ export default function NurseProfileForm({
       setCertificates([...certificates, ...uploaded]);
     } catch (err) {
       console.error("[NurseProfileForm] certificate upload failed", err);
-      setCertError(err instanceof Error ? err.message : "Upload failed");
+      setCertError(err instanceof Error ? err.message : tErr("uploadFailed"));
     } finally {
       setUploadingCert(false);
       if (certInputRef.current) certInputRef.current.value = "";
@@ -206,13 +236,13 @@ export default function NurseProfileForm({
     services:
       specialization.trim().length > 0 &&
       services.some((s) => s.name.trim().length > 0 && s.price >= 0),
-    // Additional services and credentials/gallery are optional — count as complete by default
     additional: true,
     availability: availableDays.length > 0 && availableShifts.length > 0,
     credentials: true,
   };
 
   const allComplete = Object.values(sectionComplete).every(Boolean);
+  const incompleteCount = Object.values(sectionComplete).filter((v) => !v).length;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -235,7 +265,7 @@ export default function NurseProfileForm({
       additionalServices: additionalServices.filter((item) => item.name.trim().length > 0),
       availableDays,
       availableShifts,
-      availableHours: { from: "00:00", to: "23:59" }, // Schema-compat; shifts drive scheduling.
+      availableHours: { from: "00:00", to: "23:59" },
       acceptsOvernight,
       onLeave,
       leaveStartDate: onLeave && leaveStartDate ? leaveStartDate : undefined,
@@ -253,19 +283,27 @@ export default function NurseProfileForm({
   }
 
   if (loading) {
-    return <div className="p-8 text-center text-slate-500">Loading your data...</div>;
+    return <div className="p-8 text-center text-slate-500">{t("savingButton")}</div>;
   }
 
   const currentIndex = SECTIONS.findIndex((s) => s.id === activeSection);
   const nextSection = SECTIONS[currentIndex + 1];
 
+  const shiftOptions = [
+    { id: "A", labelKey: "morningShort" as const },
+    { id: "B", labelKey: "afternoonShort" as const },
+    { id: "C", labelKey: "nightShort" as const },
+  ];
+
   return (
     <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm sm:p-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-800">Profile hub</h2>
+          <h2 className="text-2xl font-extrabold text-slate-800">{t("hubTitle")}</h2>
           <p className="text-sm text-slate-500">
-            Each section saves together when you click <span className="font-semibold">Save</span> below.
+            {t.rich("hubSubtitle", {
+              bold: (chunks) => <span className="font-semibold">{chunks}</span>,
+            })}
           </p>
         </div>
         <div
@@ -277,12 +315,12 @@ export default function NurseProfileForm({
         >
           {allComplete ? (
             <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> All required sections complete
+              <CheckCircle2 className="h-4 w-4" /> {t("allComplete")}
             </span>
           ) : (
             <span className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />
-              {Object.values(sectionComplete).filter((v) => !v).length} section(s) incomplete
+              {t("sectionsIncomplete", { n: incompleteCount })}
             </span>
           )}
         </div>
@@ -306,7 +344,7 @@ export default function NurseProfileForm({
               }`}
             >
               <Icon className="h-4 w-4" />
-              <span>{section.label}</span>
+              <span>{tSection(section.id)}</span>
               <span className={`h-2 w-2 rounded-full ${complete ? "bg-emerald-500" : "bg-amber-400"}`} />
             </button>
           );
@@ -317,62 +355,65 @@ export default function NurseProfileForm({
         <div className="min-h-[420px]">
           {/* IDENTITY & BIO */}
           {activeSection === "identity" && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">Full Name</label>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("fullName")}</label>
                   <input value={fullName} readOnly className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500" />
                 </div>
                 <ImageUploadField
                   scope="nurse-profile"
-                  label="Profile photo"
+                  label={tIdentity("profilePhoto")}
                   value={profileImage}
                   onChange={setProfileImage}
-                  helperText="Square images work best. Patients see this on every listing."
+                  helperText={tIdentity("photoHelper")}
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">Location (City/Area)</label>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("locationLabel")}</label>
                   <input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     required
-                    placeholder="e.g. Downtown, Springfield"
+                    placeholder={tIdentity("locationPlaceholder")}
+                    dir="auto"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">Gender</label>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("genderLabel")}</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as "male" | "female" | "other" | "")}
                     required
                     className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   >
-                    <option value="" disabled>Select gender</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="other">Other</option>
+                    <option value="" disabled>{tIdentity("selectGender")}</option>
+                    <option value="female">{tIdentity("female")}</option>
+                    <option value="male">{tIdentity("male")}</option>
+                    <option value="other">{tIdentity("other")}</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-semibold text-slate-700">Professional Bio</label>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("bioLabel")}</label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   required
+                  dir="auto"
                   className="min-h-[120px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                  placeholder="Tell patients about your background, compassion, and approach to care..."
+                  placeholder={tIdentity("bioPlaceholder")}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-semibold text-slate-700">Languages (comma separated)</label>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("languagesLabel")}</label>
                 <input
                   value={languages}
                   onChange={(e) => setLanguages(e.target.value)}
-                  placeholder="e.g. Arabic, English, French"
+                  placeholder={tIdentity("languagesPlaceholder")}
+                  dir="auto"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
@@ -381,20 +422,29 @@ export default function NurseProfileForm({
 
           {/* SERVICES & PRICING */}
           {activeSection === "services" && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">Specialization</label>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">{tServices("specializationLabel")}</label>
                   <input
+                    list="nurse-spec-suggestions"
                     value={specialization}
                     onChange={(e) => setSpecialization(e.target.value)}
                     required
-                    placeholder="e.g. ICU Nurse, Elderly Care Specialist"
+                    placeholder={tServices("specializationPlaceholder")}
+                    dir="auto"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                   />
+                  {/* Localized suggestion vocabulary — free-text entries still accepted */}
+                  <datalist id="nurse-spec-suggestions">
+                    {SPEC_KEYS.map((key) => (
+                      <option key={key} value={tSpec(key)} />
+                    ))}
+                  </datalist>
+                  <p className="mt-1 text-[11px] text-slate-400">{tServices("specializationListLabel")}</p>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">Years of Experience</label>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">{tServices("experienceLabel")}</label>
                   <input
                     type="number"
                     value={experienceYears}
@@ -407,28 +457,26 @@ export default function NurseProfileForm({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-semibold text-slate-700">
-                  Hourly rate (used when no per-service price set)
-                </label>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">{tServices("hourlyRateLabel")}</label>
                 <input
                   type="number"
                   value={pricePerHour ?? ""}
                   onChange={(e) => setPricePerHour(e.target.value ? Number(e.target.value) : undefined)}
                   min="0"
-                  placeholder="e.g. 25"
+                  placeholder={tServices("hourlyRatePlaceholder")}
                   className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="font-semibold text-slate-700">Services Offered</span>
+                  <span className="font-semibold text-slate-700">{tServices("servicesOffered")}</span>
                   <button
                     type="button"
                     onClick={() => setServices([...services, { name: "", price: 0 }])}
                     className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700"
                   >
-                    <Plus className="h-4 w-4" /> Add service
+                    <Plus className="h-4 w-4" /> {tServices("addService")}
                   </button>
                 </div>
                 <div className="space-y-2">
@@ -437,21 +485,22 @@ export default function NurseProfileForm({
                       <input
                         value={item.name}
                         onChange={(e) => updateService(index, "name", e.target.value)}
-                        placeholder="Service name"
+                        placeholder={tServices("serviceNamePlaceholder")}
+                        dir="auto"
                         className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                       />
                       <input
                         type="number"
                         value={item.price}
                         onChange={(e) => updateService(index, "price", e.target.value)}
-                        placeholder="Price $"
+                        placeholder={tServices("pricePlaceholder")}
                         className="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => setServices(services.filter((_, i) => i !== index))}
                         className="rounded-lg bg-red-50 px-3 text-red-600 hover:bg-red-100 text-sm font-bold"
-                        aria-label="Remove service"
+                        aria-label={tServices("removeServiceLabel")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -461,11 +510,12 @@ export default function NurseProfileForm({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-semibold text-slate-700">Skills (comma separated)</label>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">{tServices("skillsLabel")}</label>
                 <input
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
-                  placeholder="e.g. IV placement, wound dressing, CPR"
+                  placeholder={tServices("skillsPlaceholder")}
+                  dir="auto"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
@@ -474,31 +524,25 @@ export default function NurseProfileForm({
 
           {/* ADDITIONAL SERVICES */}
           {activeSection === "additional" && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 text-sm text-slate-700">
-                <p className="font-bold text-slate-800">Add-on offerings</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                  These optional extras appear at booking time stacked on top of your main services
-                  — e.g. extra wound care, transport assistance, extended companion hours. Patients see
-                  these instead of the platform&rsquo;s generic add-ons.
-                </p>
+                <p className="font-bold text-slate-800">{tAdditional("intro.title")}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">{tAdditional("intro.body")}</p>
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="font-semibold text-slate-700">Your add-ons</span>
+                  <span className="font-semibold text-slate-700">{tAdditional("yourAddons")}</span>
                   <button
                     type="button"
                     onClick={() => setAdditionalServices([...additionalServices, { name: "", price: 0 }])}
                     className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700"
                   >
-                    <Plus className="h-4 w-4" /> Add add-on
+                    <Plus className="h-4 w-4" /> {tAdditional("addAddon")}
                   </button>
                 </div>
                 {additionalServices.length === 0 ? (
-                  <p className="text-sm italic text-slate-500">
-                    No custom add-ons configured — the platform default catalog will be used.
-                  </p>
+                  <p className="text-sm italic text-slate-500">{tAdditional("noAddons")}</p>
                 ) : (
                   <div className="space-y-2">
                     {additionalServices.map((item, index) => (
@@ -506,21 +550,22 @@ export default function NurseProfileForm({
                         <input
                           value={item.name}
                           onChange={(e) => updateAdditional(index, "name", e.target.value)}
-                          placeholder="Add-on name (e.g. Extra wound care)"
+                          placeholder={tAdditional("addonNamePlaceholder")}
+                          dir="auto"
                           className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                         />
                         <input
                           type="number"
                           value={item.price}
                           onChange={(e) => updateAdditional(index, "price", e.target.value)}
-                          placeholder="Price $"
+                          placeholder={tServices("pricePlaceholder")}
                           className="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                         />
                         <button
                           type="button"
                           onClick={() => setAdditionalServices(additionalServices.filter((_, i) => i !== index))}
                           className="rounded-lg bg-red-50 px-3 text-red-600 hover:bg-red-100 text-sm font-bold"
-                          aria-label="Remove add-on"
+                          aria-label={tAdditional("removeAddonLabel")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -534,15 +579,11 @@ export default function NurseProfileForm({
 
           {/* AVAILABILITY & LEAVE */}
           {activeSection === "availability" && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">Shift Availability</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">{tAvail("shiftAvailability")}</label>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  {[
-                    { id: "A", label: "Morning (07-14)" },
-                    { id: "B", label: "Afternoon (14-20)" },
-                    { id: "C", label: "Night (20-07)" },
-                  ].map((s) => (
+                  {shiftOptions.map((s) => (
                     <label
                       key={s.id}
                       className={`flex cursor-pointer items-center justify-center rounded-xl border p-3 text-sm font-semibold transition-all ${
@@ -557,16 +598,16 @@ export default function NurseProfileForm({
                         onChange={() => toggleShift(s.id)}
                         className="sr-only"
                       />
-                      {s.label}
+                      {tShifts(s.labelKey)}
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">Days Available</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">{tAvail("daysAvailable")}</label>
                 <div className="flex flex-wrap gap-2">
-                  {DAYS.map((day) => (
+                  {orderedDays.map((day) => (
                     <button
                       key={day}
                       type="button"
@@ -575,7 +616,7 @@ export default function NurseProfileForm({
                         availableDays.includes(day) ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
-                      {day}
+                      {tDays(day)}
                     </button>
                   ))}
                 </div>
@@ -588,7 +629,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setAcceptsOvernight(e.target.checked)}
                   className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600"
                 />
-                <span className="font-semibold text-slate-700">I accept overnight care requests</span>
+                <span className="font-semibold text-slate-700">{tAvail("acceptOvernight")}</span>
               </label>
 
               <div className="rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
@@ -599,14 +640,12 @@ export default function NurseProfileForm({
                     onChange={(e) => setOnLeave(e.target.checked)}
                     className="h-5 w-5 rounded border-slate-300 text-amber-600 focus:ring-amber-600"
                   />
-                  <span className="font-semibold text-amber-800">
-                    I&rsquo;m on leave — block new bookings in this window
-                  </span>
+                  <span className="font-semibold text-amber-800">{tAvail("onLeaveLabel")}</span>
                 </label>
                 {onLeave && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-amber-700">Leave starts</label>
+                      <label className="mb-1 block text-xs font-semibold text-amber-700">{tAvail("leaveStarts")}</label>
                       <input
                         type="date"
                         value={leaveStartDate}
@@ -615,7 +654,7 @@ export default function NurseProfileForm({
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-amber-700">Leave ends</label>
+                      <label className="mb-1 block text-xs font-semibold text-amber-700">{tAvail("leaveEnds")}</label>
                       <input
                         type="date"
                         value={leaveEndDate}
@@ -623,10 +662,7 @@ export default function NurseProfileForm({
                         className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                       />
                     </div>
-                    <p className="text-xs text-amber-700 sm:col-span-2">
-                      Bookings that overlap this window are blocked at validation time. Leave either bound
-                      empty to make the window open-ended.
-                    </p>
+                    <p className="text-xs text-amber-700 sm:col-span-2">{tAvail("leaveHelper")}</p>
                   </div>
                 )}
               </div>
@@ -635,16 +671,13 @@ export default function NurseProfileForm({
 
           {/* CREDENTIALS & GALLERY */}
           {activeSection === "credentials" && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-2">
-              {/* Certificate uploader */}
+            <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 p-6">
                 <div className="mb-3 flex items-center gap-2">
                   <FileText className="h-5 w-5 text-sky-600" />
-                  <p className="text-sm font-bold text-sky-800">Certificates & credentials</p>
+                  <p className="text-sm font-bold text-sky-800">{tCreds("title")}</p>
                 </div>
-                <p className="mb-3 text-xs text-sky-700/80">
-                  Upload PDFs or images of your nursing license, certifications, and other credentials. Admins review these before approving your profile.
-                </p>
+                <p className="mb-3 text-xs text-sky-700/80">{tCreds("intro")}</p>
                 <button
                   type="button"
                   onClick={() => certInputRef.current?.click()}
@@ -653,11 +686,11 @@ export default function NurseProfileForm({
                 >
                   {uploadingCert ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                      <Loader2 className="h-4 w-4 animate-spin" /> {tCreds("uploadingButton")}
                     </>
                   ) : (
                     <>
-                      <Upload className="h-4 w-4" /> Upload certificate
+                      <Upload className="h-4 w-4" /> {tCreds("uploadButton")}
                     </>
                   )}
                 </button>
@@ -677,11 +710,9 @@ export default function NurseProfileForm({
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-slate-700">
-                  Uploaded documents ({certificates.length})
-                </h3>
+                <h3 className="text-sm font-bold text-slate-700">{tCreds("uploadedHeader", { n: certificates.length })}</h3>
                 {certificates.length === 0 ? (
-                  <p className="text-sm italic text-slate-500">No certificates uploaded yet.</p>
+                  <p className="text-sm italic text-slate-500">{tCreds("noCerts")}</p>
                 ) : (
                   certificates.map((cert, i) => (
                     <div key={cert.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
@@ -696,12 +727,10 @@ export default function NurseProfileForm({
                               rel="noreferrer noopener"
                               className="text-xs font-semibold text-sky-600 hover:underline"
                             >
-                              View file
+                              {tCreds("viewFile")}
                             </a>
                           ) : (
-                            <p className="text-xs italic text-amber-700">
-                              Legacy entry — please re-upload the document
-                            </p>
+                            <p className="text-xs italic text-amber-700">{tCreds("legacyEntry")}</p>
                           )}
                         </div>
                       </div>
@@ -710,7 +739,7 @@ export default function NurseProfileForm({
                         onClick={() => setCertificates(certificates.filter((_, idx) => idx !== i))}
                         className="text-sm font-semibold text-red-500 hover:underline"
                       >
-                        Remove
+                        {tCreds("removeLabel")}
                       </button>
                     </div>
                   ))
@@ -718,11 +747,12 @@ export default function NurseProfileForm({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-semibold text-slate-700">Care Philosophy (optional)</label>
+                <label className="mb-1 block text-sm font-semibold text-slate-700">{tCreds("carePhilosophyLabel")}</label>
                 <textarea
                   value={carePhilosophy}
                   onChange={(e) => setCarePhilosophy(e.target.value)}
-                  placeholder="Your approach to patient care, what families can expect from you..."
+                  placeholder={tCreds("carePhilosophyPlaceholder")}
+                  dir="auto"
                   className="min-h-[100px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
@@ -730,10 +760,10 @@ export default function NurseProfileForm({
               <ImageUploadField
                 mode="multi"
                 scope="nurse-gallery"
-                label="Gallery (optional)"
+                label={tCreds("galleryLabel")}
                 value={gallery}
                 onChange={setGallery}
-                helperText="Photos from your work — care environments, equipment, settings. Patients see these on your profile."
+                helperText={tCreds("galleryHelper")}
                 maxFiles={8}
               />
             </div>
@@ -743,7 +773,7 @@ export default function NurseProfileForm({
         {/* Footer actions */}
         <div className="mt-8 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-            <span className="font-semibold">Section status:</span>
+            <span className="font-semibold">{t("sectionStatus")}</span>
             {SECTIONS.map((s) => (
               <span
                 key={s.id}
@@ -752,7 +782,7 @@ export default function NurseProfileForm({
                 }`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${sectionComplete[s.id] ? "bg-emerald-500" : "bg-amber-400"}`} />
-                {s.label}
+                {tSection(s.id)}
               </span>
             ))}
           </div>
@@ -764,7 +794,7 @@ export default function NurseProfileForm({
                 onClick={() => setActiveSection(nextSection.id)}
                 className="flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
               >
-                Continue to {nextSection.label}
+                {t("continueTo", { section: tSection(nextSection.id) })}
                 <ChevronRight className="h-4 w-4" />
               </button>
             )}
@@ -773,12 +803,12 @@ export default function NurseProfileForm({
               disabled={saving}
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
             >
-              {saving ? "Saving..." : savedFlash ? (
+              {saving ? t("savingButton") : savedFlash ? (
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" /> Saved
+                  <CheckCircle2 className="h-4 w-4" /> {t("savedButton")}
                 </span>
               ) : (
-                "Save profile"
+                t("saveButton")
               )}
             </button>
           </div>

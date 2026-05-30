@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { createReview } from "@/services/reviewService";
 import type { NurseReview } from "@/lib/types";
@@ -20,6 +21,8 @@ export default function ReviewForm({
   onSubmitted,
   onCancel,
 }: ReviewFormProps) {
+  const t = useTranslations("patient.reviews.form");
+  const tCommon = useTranslations("patient.reviews");
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
@@ -29,11 +32,11 @@ export default function ReviewForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (rating < 1) {
-      setError("Please select a star rating.");
+      setError(t("errorRating"));
       return;
     }
     if (comment.trim().length < 5) {
-      setError("Please write a short comment (at least 5 characters).");
+      setError(t("errorComment"));
       return;
     }
     setSubmitting(true);
@@ -49,7 +52,7 @@ export default function ReviewForm({
       onSubmitted(review);
     } catch (err) {
       console.error("[ReviewForm] save failed", err);
-      setError(err instanceof Error ? err.message : "Failed to submit review.");
+      setError(err instanceof Error ? err.message : t("errorSubmit"));
     } finally {
       setSubmitting(false);
     }
@@ -63,10 +66,8 @@ export default function ReviewForm({
       className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm space-y-4"
     >
       <div>
-        <p className="text-sm font-bold text-slate-700">Rate your visit</p>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Honest feedback helps other families choose the right nurse.
-        </p>
+        <p className="text-sm font-bold text-slate-700">{t("title")}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{t("subtitle")}</p>
       </div>
 
       <div className="flex items-center gap-1">
@@ -78,7 +79,7 @@ export default function ReviewForm({
             onMouseLeave={() => setHover(0)}
             onClick={() => setRating(star)}
             className="rounded-full p-1 transition hover:bg-amber-50"
-            aria-label={`${star} star${star === 1 ? "" : "s"}`}
+            aria-label={t("starsAria", { n: star })}
           >
             <Star
               className={`h-7 w-7 ${
@@ -88,18 +89,19 @@ export default function ReviewForm({
           </button>
         ))}
         {rating > 0 && (
-          <span className="ml-2 text-sm font-bold text-slate-700">{rating}/5</span>
+          <span className="ms-2 text-sm font-bold text-slate-700" dir="ltr">{rating}/5</span>
         )}
       </div>
 
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-          Your experience
+          {t("experienceLabel")}
         </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="What stood out about this nurse? Punctuality, care, communication…"
+          placeholder={t("commentPlaceholder")}
+          dir="auto"
           className="min-h-[110px] w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
         />
       </div>
@@ -118,7 +120,7 @@ export default function ReviewForm({
             disabled={submitting}
             className="rounded-xl px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 transition disabled:opacity-50"
           >
-            Cancel
+            {t("cancel")}
           </button>
         )}
         <button
@@ -126,7 +128,7 @@ export default function ReviewForm({
           disabled={submitting}
           className="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-amber-600 transition disabled:opacity-60"
         >
-          {submitting ? "Submitting…" : "Submit review"}
+          {submitting ? tCommon("submitting") : tCommon("submit")}
         </button>
       </div>
     </form>

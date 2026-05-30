@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Bell,
   BellOff,
@@ -19,6 +20,9 @@ import {
   markAllAsRead,
   markAsRead,
 } from "@/services/notificationService";
+import type { Locale } from "@/i18n/config";
+import { fmtDate } from "@/lib/format";
+import { renderNotification } from "@/lib/notificationRenderer";
 
 const TYPE_ICON: Record<NotificationType, typeof Bell> = {
   booking_created: CalendarClock,
@@ -48,23 +52,32 @@ const TYPE_ACCENT: Record<NotificationType, string> = {
   system_alert: "bg-amber-50 text-amber-600 border-amber-100",
 };
 
-function relativeTime(iso: string): string {
+// Relative time formatter — module-scope so the React-Compiler purity
+// rule doesn't fire on the embedded Date.now() call. Locale-aware
+// fallback for entries older than a week.
+function formatRelative(
+  iso: string,
+  t: ReturnType<typeof useTranslations>,
+  locale: Locale,
+): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("justNow");
+  if (minutes < 60) return t("minutesAgo", { m: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("hoursAgo", { h: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (days < 7) return t("daysAgo", { d: days });
+  return fmtDate(iso, locale, { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function NotificationList({ userId }: { userId: string }) {
+  const t = useTranslations("patient.notifications");
+  // Root-scope translator for the notifications namespace — used to render
+  // template-based notifications at view time. Scoped t() above can't reach
+  // outside `patient.notifications`.
+  const tRoot = useTranslations();
+  const locale = useLocale() as Locale;
   const [items, setItems] = useState<Notification[] | null>(null);
   const [bulking, setBulking] = useState(false);
 
@@ -129,10 +142,8 @@ export default function NotificationList({ userId }: { userId: string }) {
     return (
       <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-16">
         <BellOff className="mb-3 h-10 w-10 text-slate-300" />
-        <p className="font-bold text-slate-700">No notifications yet</p>
-        <p className="mt-1 text-sm text-slate-500">
-          You&apos;ll see booking updates, order status, and system alerts here.
-        </p>
+        <p className="font-bold text-slate-700">{t("emptyTitle")}</p>
+        <p className="mt-1 text-sm text-slate-500">{t("emptyBody")}</p>
       </div>
     );
   }
@@ -144,15 +155,15 @@ export default function NotificationList({ userId }: { userId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">
           {unreadCount > 0
-            ? `${unreadCount} unread of ${items.length}`
-            : `${items.length} notification${items.length === 1 ? "" : "s"}`}
+            ? t("unreadOfTotal", { unread: unreadCount, total: items.length })
+            : t("totalCount", { n: items.length })}
         </p>
         <button
           onClick={handleMarkAll}
           disabled={bulking || unreadCount === 0}
           className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {bulking ? "Marking…" : "Mark all read"}
+          {bulking ? t("marking") : t("markAllRead")}
         </button>
       </div>
 
@@ -160,6 +171,10 @@ export default function NotificationList({ userId }: { userId: string }) {
         {items.map((n) => {
           const Icon = TYPE_ICON[n.type] ?? Bell;
           const accent = TYPE_ACCENT[n.type] ?? "bg-slate-50 text-slate-600 border-slate-100";
+          // Render at view time: payload-bearing notifications relocalize
+          // when the user switches language; legacy items fall back to
+          // their persisted title/body.
+          const rendered = renderNotification(n, tRoot, locale);
           const body = (
             <div className="flex gap-4">
               <div
@@ -169,12 +184,12 @@ export default function NotificationList({ userId }: { userId: string }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-bold text-slate-800 text-sm leading-snug">{n.title}</p>
+                  <p className="font-bold text-slate-800 text-sm leading-snug">{rendered.title}</p>
                   <span className="text-[10px] font-semibold text-slate-400 whitespace-nowrap pt-0.5">
-                    {relativeTime(n.createdAt)}
+                    {formatRelative(n.createdAt, t, locale)}
                   </span>
                 </div>
-                <p className="mt-0.5 text-sm text-slate-600 leading-relaxed">{n.body}</p>
+                <p className="mt-0.5 text-sm text-slate-600 leading-relaxed">{rendered.body}</p>
               </div>
             </div>
           );
@@ -208,7 +223,7 @@ export default function NotificationList({ userId }: { userId: string }) {
                 onClick={() => {
                   if (!n.read) void handleMarkRead(n.id);
                 }}
-                className={`w-full text-left ${baseClasses}`}
+                className={`w-full text-start ${baseClasses}`}
               >
                 {body}
               </button>

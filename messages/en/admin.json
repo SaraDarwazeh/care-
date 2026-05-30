@@ -1,0 +1,267 @@
+{
+  "chrome": {
+    "brand": "Care+ Admin",
+    "mobileBrand": "Admin Panel",
+    "navHeading": "Management",
+    "nav": {
+      "dashboard": "Dashboard",
+      "nurses": "Nurses",
+      "patients": "Patients",
+      "bookings": "Bookings",
+      "packages": "Manage Packages",
+      "products": "Products",
+      "orders": "Orders",
+      "records": "Medical Records",
+      "community": "Community",
+      "education": "Education",
+      "notifications": "Notifications",
+      "systemStatus": "System Status",
+      "settings": "Settings"
+    }
+  },
+  "dashboard": {
+    "loading": "Loading dashboard metrics...",
+    "welcome": "Welcome back, {name}!",
+    "subtitle": "Here are the latest updates across the Care+ platform today.",
+    "overviewHeading": "Platform Overview",
+    "stats": {
+      "totalUsers": "Total Users",
+      "totalNurses": "Total Nurses",
+      "totalPatients": "Total Patients",
+      "totalBookings": "Total Bookings",
+      "pendingApprovals": "Pending Approvals",
+      "totalRevenue": "Total Revenue"
+    },
+    "attention": {
+      "heading": "Needs attention",
+      "allClear": "All clear — nothing waiting on you.",
+      "staleBookings": {
+        "label": "Stale pending bookings",
+        "description": "Bookings older than 24h waiting on a nurse response.",
+        "cta": "Review bookings"
+      },
+      "pendingNurses": {
+        "label": "Pending nurse approvals",
+        "description": "New nurses awaiting credential review.",
+        "cta": "Review approvals"
+      },
+      "disputedRecords": {
+        "label": "Disputed medical records",
+        "description": "Patients have flagged something inaccurate.",
+        "cta": "Open disputed queue"
+      }
+    },
+    "trends": {
+      "title": "Booking Trends",
+      "subtitle": "Last 7 days activity",
+      "pastDays": "Past days",
+      "today": "Today",
+      "days": {
+        "mon": "Mon", "tue": "Tue", "wed": "Wed", "thu": "Thu", "fri": "Fri", "sat": "Sat", "sun": "Sun"
+      }
+    },
+    "revenue": {
+      "title": "Revenue Overview",
+      "subtitle": "Completed booking earnings",
+      "totalEarned": "Total Earned",
+      "pending": "Pending Revenue",
+      "thisMonth": "This Month",
+      "monthShare": "{pct}% of total earned revenue"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Platform events that need your attention — new nurses, new bookings, new orders.",
+    "loading": "Loading notifications..."
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "pending": "Pending"
+  },
+  "nurses": {
+    "loading": "Loading nurses...",
+    "title": "Nurse Management",
+    "subtitle": "Review registrations and manage platform access.",
+    "syncing": "Syncing with database...",
+    "loadingProfile": "Loading full profile...",
+    "allCaughtUp": "All caught up!",
+    "noNurses": "No nurses available for review.",
+    "specialization": "Specialization",
+    "experience": "Experience",
+    "experienceYears": "{years, plural, one {# year} other {# years}}",
+    "professionalBio": "Professional Bio",
+    "certificates": "Certificates",
+    "noCertificates": "No certificates uploaded.",
+    "legacyCert": "(legacy)",
+    "noProfile": "This nurse has not completed their setup yet.",
+    "approve": "Approve Registration",
+    "reject": "Reject",
+    "status": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "pending": "Pending"
+    }
+  },
+  "patients": {
+    "loading": "Loading patients...",
+    "title": "Patient Directory",
+    "subtitle": "All patients registered on the Care+ platform.",
+    "searchPlaceholder": "Search by name, email, or phone",
+    "noPatients": "No patients yet.",
+    "noMatches": "No patients match your search."
+  },
+  "bookings": {
+    "loading": "Loading bookings...",
+    "title": "All Bookings",
+    "subtitle": "Operational view of every booking on the platform.",
+    "filterAll": "All",
+    "filterPending": "Pending",
+    "filterConfirmed": "Confirmed",
+    "filterCompleted": "Completed",
+    "filterCancelled": "Cancelled",
+    "empty": "No bookings match this filter."
+  },
+  "orders": {
+    "loading": "Loading orders...",
+    "title": "Store Orders",
+    "subtitle": "Track and fulfill medical store orders.",
+    "filterAll": "All",
+    "filterPending": "Pending",
+    "filterShipped": "Shipped",
+    "filterDelivered": "Delivered",
+    "filterCancelled": "Cancelled",
+    "empty": "No orders match this filter.",
+    "exportCsv": "Export CSV"
+  },
+  "records": {
+    "loading": "Loading medical records...",
+    "title": "Medical Records",
+    "subtitle": "Browse every medical record across the platform.",
+    "filterAll": "All",
+    "filterDisputed": "Disputed",
+    "empty": "No medical records found."
+  },
+  "community": {
+    "loading": "Loading community posts...",
+    "title": "Community Moderation",
+    "subtitle": "Review and moderate donation posts.",
+    "empty": "No community posts yet."
+  },
+  "products": {
+    "loading": "Loading products...",
+    "title": "Products",
+    "subtitle": "Manage the Care+ medical store catalog. English copy is required; Arabic optional but recommended for launch.",
+    "addProduct": "Add Product",
+    "editProduct": "Edit Product",
+    "addNewProduct": "Add New Product",
+    "noProducts": "No products yet",
+    "clickToAdd": "Click Add Product to get started.",
+    "nameEn": "Name (English)",
+    "nameAr": "Name (Arabic)",
+    "price": "Price (USD)",
+    "category": "Category (key)",
+    "image": "Image (emoji or URL)",
+    "descriptionEn": "Description (English)",
+    "descriptionAr": "Description (Arabic)",
+    "arabicMissing": "Arabic missing",
+    "confirmDelete": "Are you sure you want to delete this product?",
+    "save": "Save",
+    "saving": "Saving...",
+    "update": "Update",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "education": {
+    "loading": "Loading education cards...",
+    "title": "Education Library",
+    "subtitle": "Bilingual education cards shown on the homepage and patient hub.",
+    "addCard": "Add Card",
+    "noCards": "No education cards yet.",
+    "arabicIncomplete": "AR incomplete"
+  },
+  "packages": {
+    "loading": "Loading packages..."
+  },
+  "systemStatus": {
+    "title": "System Status",
+    "subtitle": "Live probe of admin SDK configuration and key data counts.",
+    "probing": "Probing system...",
+    "refresh": "Refresh",
+    "loadError": "Failed to load health report",
+    "infrastructure": "Infrastructure",
+    "adminSdkOk": "Admin SDK configured",
+    "adminSdkMissing": "Admin SDK missing",
+    "firestoreOk": "Firestore reads OK",
+    "firestoreFailing": "Firestore reads failing",
+    "probedAt": "Probed {time}",
+    "sdkSetupHint": "Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY in your environment to enable admin-restricted features.",
+    "recommendedActions": "Recommended actions",
+    "platformData": "Platform data",
+    "quickLinks": "Quick links",
+    "counts": {
+      "users": "Users",
+      "nurses": "Nurses",
+      "bookings": "Bookings",
+      "orders": "Orders",
+      "packages": "Packages",
+      "notifications": "Notifications"
+    },
+    "highlights": {
+      "pending": "pending",
+      "hidden": "hidden",
+      "unread": "unread"
+    },
+    "links": {
+      "reviewNurses": "Review nurse signups",
+      "reviewBookings": "Review bookings",
+      "fulfillOrders": "Fulfill orders",
+      "editPackages": "Edit packages"
+    }
+  },
+  "settings": {
+    "loading": "Loading settings...",
+    "title": "Settings",
+    "subtitle": "Platform configuration and system preferences.",
+    "superAdmin": "Super Admin",
+    "sections": {
+      "security": {
+        "title": "Security & Access",
+        "description": "Manage admin roles, permissions, and authentication settings.",
+        "badge": "Configured"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Configure system email and push notification preferences.",
+        "badge": "Default"
+      },
+      "appearance": {
+        "title": "Appearance",
+        "description": "Customize the admin panel look and brand colors.",
+        "badge": "Default"
+      },
+      "database": {
+        "title": "Database & Backups",
+        "description": "Manage Firestore rules, backups, and data exports.",
+        "badge": "Firebase"
+      }
+    },
+    "comingSoon": {
+      "title": "Settings Coming Soon",
+      "body": "Full configuration panels for each setting section are being built. For now, all system settings are managed directly through Firebase Console."
+    }
+  }
+}

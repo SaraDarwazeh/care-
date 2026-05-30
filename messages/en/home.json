@@ -1,0 +1,93 @@
+{
+  "hero": {
+    "badge": "Every nurse verified by Care+",
+    "headlineA": "Home healthcare",
+    "headlineB": "that visits you.",
+    "subhead": "Trusted nurses for recovery, elderly support, post-op care, and everyday help — booked in minutes, delivered to your door.",
+    "ctaFindNurse": "Find a Nurse",
+    "ctaJoinNurse": "Join as Nurse",
+    "verified": {
+      "kicker": "Approved",
+      "subtitle": "Reviewed by the Care+ team"
+    },
+    "trust": {
+      "verifiedNurses": "Verified nurses",
+      "familiesServed": "Families served",
+      "visitsCompleted": "Visits completed"
+    },
+    "imageAlt": "A nurse providing compassionate home care"
+  },
+  "pillars": {
+    "kicker": "What Care+ offers",
+    "title": "Four ways we support your family",
+    "explore": "Explore",
+    "findNurse": {
+      "title": "Find a Nurse",
+      "body": "One-time visits or shift care — book a verified nurse for what you need."
+    },
+    "carePackages": {
+      "title": "Care Packages",
+      "body": "Multi-day plans for recovery, elderly support, palliative, and more."
+    },
+    "medicalStore": {
+      "title": "Medical Store",
+      "body": "Equipment, supplies, and home-care essentials delivered to your door."
+    },
+    "community": {
+      "title": "Community",
+      "body": "Donate or receive medical equipment from families nearby."
+    }
+  },
+  "why": {
+    "kicker": "Who we're here for",
+    "title": "Care when your family needs it most",
+    "parent": {
+      "situation": "When a parent needs daily support",
+      "description": "Elderly care shouldn't mean a care home. Nurses bring routine support — medication, mobility, companionship — directly home."
+    },
+    "recovery": {
+      "situation": "When recovery is harder than expected",
+      "description": "Post-surgery care is critical and exhausting. A trained nurse handles wound care and monitoring so recovery happens properly."
+    },
+    "absent": {
+      "situation": "When you can't always be there",
+      "description": "Life doesn't stop when someone needs care. Families trust Care+ to be present when they can't — with verified, compassionate professionals."
+    }
+  },
+  "how": {
+    "kicker": "The process",
+    "title": "Simple from start to care",
+    "patients": {
+      "title": "For Patients & Families",
+      "subtitle": "Get care at home in 3 steps",
+      "step1Title": "Browse verified nurses",
+      "step1Desc": "Filter by specialization, shift, location.",
+      "step2Title": "Book in minutes",
+      "step2Desc": "Choose date and care type. Confirm. No paperwork.",
+      "step3Title": "Receive care at home",
+      "step3Desc": "A verified nurse arrives ready to help.",
+      "cta": "Browse nurses"
+    },
+    "nurses": {
+      "title": "For Healthcare Professionals",
+      "subtitle": "Earn on your own schedule",
+      "step1Title": "Build your profile",
+      "step1Desc": "Specialization, certifications, services, availability.",
+      "step2Title": "Get approved",
+      "step2Desc": "Our team reviews your credentials and activates your profile.",
+      "step3Title": "Accept bookings",
+      "step3Desc": "Manage your schedule and get paid per completed session.",
+      "cta": "Join as a nurse"
+    }
+  },
+  "packages": {
+    "kicker": "Care Packages",
+    "title": "Structured care for specific situations",
+    "browseAll": "Browse all"
+  },
+  "store": {
+    "kicker": "Medical Store",
+    "title": "Supplies, delivered",
+    "browseAll": "Browse store →"
+  }
+}

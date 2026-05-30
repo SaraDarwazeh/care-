@@ -1,11 +1,16 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { CheckCircle2, X, Activity, Pill, AlertTriangle, Plus } from "lucide-react";
 import type { BookingWithParticipants, Vitals } from "@/lib/types";
 import { addObservation, ensureRecordForBooking } from "@/services/medicalService";
 import { updateBookingStatus } from "@/services/bookingService";
+import { fmtDate } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
+import { useAuth } from "@/hooks/useAuth";
+import { getNurseProfileByUserId } from "@/services/nurseService";
 
 interface VisitCompletionModalProps {
   booking: BookingWithParticipants;
@@ -19,6 +24,12 @@ const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100";
 const labelClass = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1";
 
+function doneTitleKey(gender?: string): "doneTitleFemale" | "doneTitleMale" | "doneTitleNeutral" {
+  if (gender === "female") return "doneTitleFemale";
+  if (gender === "male") return "doneTitleMale";
+  return "doneTitleNeutral";
+}
+
 export default function VisitCompletionModal({
   booking,
   nurseId,
@@ -26,6 +37,11 @@ export default function VisitCompletionModal({
   onClose,
   onCompleted,
 }: VisitCompletionModalProps) {
+  const t = useTranslations("nurse.visitCompletion");
+  const tVitals = useTranslations("nurse.visitCompletion.vitals");
+  const tErr = useTranslations("nurse.errors");
+  const locale = useLocale() as Locale;
+  const { appUser } = useAuth();
   const [summary, setSummary] = useState("");
   const [note, setNote] = useState("");
   const [bp, setBp] = useState("");
@@ -39,22 +55,31 @@ export default function VisitCompletionModal({
   const [step, setStep] = useState<"form" | "saving" | "done">("form");
   const [error, setError] = useState<string | null>(null);
   const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
+  const [nurseGender, setNurseGender] = useState<string | undefined>(undefined);
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
-  // Initial focus on the summary input.
   useEffect(() => {
     firstFieldRef.current?.focus();
   }, []);
 
-  // Escape closes (only when not actively saving).
+  // Load nurse gender once for the gender-aware "done" title. Optional —
+  // a missing profile just falls back to the neutral form.
+  useEffect(() => {
+    if (!appUser || appUser.role !== "nurse") return;
+    let active = true;
+    void getNurseProfileByUserId(appUser.id).then((p) => {
+      if (active) setNurseGender(p?.gender);
+    });
+    return () => { active = false; };
+  }, [appUser]);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape" && step !== "saving") {
         onClose();
       }
-      // Trap Tab within the dialog.
       if (e.key === "Tab" && dialogRef.current) {
         const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
           'a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])',
@@ -111,6 +136,7 @@ export default function VisitCompletionModal({
         await addObservation(record.id, {
           nurseId,
           nurseName,
+          // Per Phase 4 rule: user-generated content stored as entered.
           note: note.trim() || "Visit completed.",
           vitals: hasVitals ? vitals : undefined,
           medicationNote: medicationNote.trim() || undefined,
@@ -118,9 +144,6 @@ export default function VisitCompletionModal({
         });
       }
 
-      // Status change last — once it flips, the patient gets a notification.
-      // We want the record + observation in place first so the patient
-      // can immediately view notes when they tap through.
       await updateBookingStatus(booking.id, "completed");
 
       setSavedRecordId(record.id);
@@ -128,10 +151,15 @@ export default function VisitCompletionModal({
       onCompleted();
     } catch (err) {
       console.error("[VisitCompletionModal] save failed", err);
-      setError(err instanceof Error ? err.message : "Failed to complete visit.");
+      setError(err instanceof Error ? err.message : tErr("completeFailed"));
       setStep("form");
     }
   }
+
+  const formattedDate = fmtDate(booking.date, locale, { weekday: "short", month: "short", day: "numeric" });
+  const dateLine = booking.time
+    ? t("atTime", { date: formattedDate, time: booking.time })
+    : t("dateOnly", { date: formattedDate });
 
   return (
     <div
@@ -147,8 +175,8 @@ export default function VisitCompletionModal({
         <button
           onClick={onClose}
           disabled={step === "saving"}
-          className="absolute right-4 top-4 rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50"
-          aria-label="Close"
+          className="absolute end-4 top-4 rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50"
+          aria-label={t("closeAria")}
         >
           <X className="h-5 w-5" />
         </button>
@@ -156,91 +184,86 @@ export default function VisitCompletionModal({
         {step === "done" ? (
           <div className="p-8 text-center">
             <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-500 mb-4" />
-            <h2 className="text-xl font-extrabold text-slate-800">Visit completed</h2>
-            <p className="mt-2 text-slate-600">
-              The visit record has been saved and the patient has been notified.
-            </p>
+            <h2 className="text-xl font-extrabold text-slate-800">{t(doneTitleKey(nurseGender))}</h2>
+            <p className="mt-2 text-slate-600">{t("doneBody")}</p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
               {savedRecordId && (
                 <Link
                   href={`/patient/records/${savedRecordId}`}
                   className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition"
                 >
-                  Open record
+                  {t("openRecord")}
                 </Link>
               )}
               <button
                 onClick={onClose}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:border-slate-300 transition"
               >
-                Done
+                {t("done")}
               </button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 sm:p-8">
             <div className="mb-6">
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">Complete Visit</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">{t("kicker")}</p>
               <h2
                 id="visit-completion-heading"
                 className="mt-1 text-xl font-extrabold text-slate-800"
               >
-                {booking.service} · {booking.patientName}
+                {t("headingSeparator", { service: booking.service, patient: booking.patientName })}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                {booking.date}
-                {booking.time ? ` at ${booking.time}` : ""}
-              </p>
+              <p className="mt-1 text-sm text-slate-500">{dateLine}</p>
             </div>
 
             <div className="space-y-5">
               <div>
-                <label className={labelClass}>Visit Summary</label>
+                <label className={labelClass}>{t("summaryLabel")}</label>
                 <input
                   ref={firstFieldRef}
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
-                  placeholder="One-line summary, e.g. 'Wound dressing change — healing well'"
+                  placeholder={t("summaryPlaceholder")}
+                  dir="auto"
                   className={inputClass}
                 />
-                <p className="mt-1 text-xs text-slate-400">
-                  Shown to the patient on their records page.
-                </p>
+                <p className="mt-1 text-xs text-slate-400">{t("summaryHelper")}</p>
               </div>
 
               <div>
-                <label className={labelClass}>Observation Notes</label>
+                <label className={labelClass}>{t("observationLabel")}</label>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Patient's condition, care provided, recommendations…"
+                  placeholder={t("observationPlaceholder")}
+                  dir="auto"
                   className={`${inputClass} min-h-[100px] resize-none`}
                 />
               </div>
 
               <div>
                 <p className={`${labelClass} flex items-center gap-1.5`}>
-                  <Activity className="h-3.5 w-3.5" /> Vitals (optional)
+                  <Activity className="h-3.5 w-3.5" /> {t("vitalsLabel")}
                 </p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Blood Pressure</label>
-                    <input placeholder="120/80" value={bp} onChange={(e) => setBp(e.target.value)} className={inputClass} />
+                    <label className="text-xs text-slate-400 mb-1 block">{tVitals("bloodPressure")}</label>
+                    <input placeholder="120/80" value={bp} onChange={(e) => setBp(e.target.value)} dir="ltr" className={inputClass} />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Heart Rate</label>
+                    <label className="text-xs text-slate-400 mb-1 block">{tVitals("heartRate")}</label>
                     <input type="number" min="0" placeholder="72" value={hr} onChange={(e) => setHr(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Temp. (°C)</label>
+                    <label className="text-xs text-slate-400 mb-1 block">{tVitals("temperature")}</label>
                     <input type="number" step="0.1" placeholder="36.6" value={temp} onChange={(e) => setTemp(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">Resp. Rate</label>
+                    <label className="text-xs text-slate-400 mb-1 block">{tVitals("respiratoryRate")}</label>
                     <input type="number" min="0" placeholder="16" value={rr} onChange={(e) => setRr(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-400 mb-1 block">O₂ Sat. (%)</label>
+                    <label className="text-xs text-slate-400 mb-1 block">{tVitals("oxygenSaturation")}</label>
                     <input type="number" min="0" max="100" placeholder="98" value={spo2} onChange={(e) => setSpo2(e.target.value)} className={inputClass} />
                   </div>
                 </div>
@@ -248,19 +271,20 @@ export default function VisitCompletionModal({
 
               <div>
                 <label className={`${labelClass} flex items-center gap-1.5`}>
-                  <Pill className="h-3.5 w-3.5" /> Medication Note (optional)
+                  <Pill className="h-3.5 w-3.5" /> {t("medicationLabel")}
                 </label>
                 <input
                   value={medicationNote}
                   onChange={(e) => setMedicationNote(e.target.value)}
-                  placeholder="e.g. Administered 500mg Metformin at 14:30"
+                  placeholder={t("medicationPlaceholder")}
+                  dir="auto"
                   className={inputClass}
                 />
               </div>
 
               <div>
                 <label className={`${labelClass} flex items-center gap-1.5`}>
-                  <AlertTriangle className="h-3.5 w-3.5" /> Alerts (optional)
+                  <AlertTriangle className="h-3.5 w-3.5" /> {t("alertsLabel")}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -272,7 +296,8 @@ export default function VisitCompletionModal({
                         addAlert();
                       }
                     }}
-                    placeholder="e.g. Mild fever onset"
+                    placeholder={t("alertsPlaceholder")}
+                    dir="auto"
                     className={inputClass}
                   />
                   <button
@@ -280,7 +305,7 @@ export default function VisitCompletionModal({
                     onClick={addAlert}
                     className="flex items-center gap-1 rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-600 hover:bg-slate-200 transition"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Add
+                    <Plus className="h-3.5 w-3.5" /> {t("addAlert")}
                   </button>
                 </div>
                 {alerts.length > 0 && (
@@ -295,7 +320,7 @@ export default function VisitCompletionModal({
                           type="button"
                           onClick={() => setAlerts((prev) => prev.filter((a) => a !== alert))}
                           className="rounded-full p-0.5 hover:bg-white/60"
-                          aria-label={`Remove ${alert}`}
+                          aria-label={t("removeAlertAria", { value: alert })}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -319,7 +344,7 @@ export default function VisitCompletionModal({
                 disabled={step === "saving"}
                 className="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition disabled:opacity-50"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 type="submit"
@@ -327,7 +352,7 @@ export default function VisitCompletionModal({
                 className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition disabled:opacity-60"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                {step === "saving" ? "Completing…" : "Complete Visit"}
+                {step === "saving" ? t("completingButton") : t("completeButton")}
               </button>
             </div>
           </form>

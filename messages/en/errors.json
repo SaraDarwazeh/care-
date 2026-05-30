@@ -1,0 +1,23 @@
+{
+  "generic": "Something went wrong. Please try again.",
+  "auth": {
+    "invalid-email": "That email address looks invalid.",
+    "user-disabled": "This account has been disabled. Contact support if you think this is a mistake.",
+    "user-not-found": "No account matches that email.",
+    "wrong-password": "Wrong password. Please try again.",
+    "invalid-credential": "Email or password is incorrect.",
+    "invalid-login-credentials": "Email or password is incorrect.",
+    "email-already-in-use": "An account with this email already exists.",
+    "weak-password": "Your password is too weak. Use at least 6 characters with a mix of letters and numbers.",
+    "operation-not-allowed": "This sign-in method isn't enabled. Contact support.",
+    "too-many-requests": "Too many attempts. Please wait a few minutes before trying again.",
+    "network-request-failed": "Network error. Check your connection and try again.",
+    "popup-closed-by-user": "Sign-in popup closed before completion.",
+    "requires-recent-login": "Please sign in again to continue this action.",
+    "expired-action-code": "This password reset link has expired. Request a new one.",
+    "invalid-action-code": "This reset link is no longer valid. Request a new one.",
+    "missing-password": "Please enter your password.",
+    "missing-email": "Please enter your email address.",
+    "internal-error": "An unexpected error occurred. Please try again."
+  }
+}

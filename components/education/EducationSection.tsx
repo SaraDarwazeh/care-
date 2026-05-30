@@ -22,8 +22,11 @@ import {
   Info,
   Lightbulb,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import type { EducationCard, EducationCardKind } from "@/lib/types";
 import { getActiveEducationCards } from "@/services/educationService";
+import { tLocalized } from "@/lib/i18nContent";
+import type { Locale } from "@/i18n/config";
 
 // Curated lucide icon set — same map the admin form uses, so admins can
 // only pick from icons we know how to render here. Falls back to
@@ -60,15 +63,20 @@ const ACCENT_CLASSES: Record<string, { tile: string; iconBg: string; iconText: s
   rose:    { tile: "border-rose-100 hover:border-rose-200",       iconBg: "bg-rose-100",    iconText: "text-rose-700" },
 };
 
-const KIND_LABELS: Record<EducationCardKind, string> = {
-  why: "Why home care",
-  faq: "Common questions",
-  "what-to-expect": "What to expect",
+// Kind → message-key mapping. The JSON nests under educationSection.kinds
+// using a camelCase variant of the "what-to-expect" kind so it's a valid
+// JS property in any callsite.
+const KIND_TO_KEY: Record<EducationCardKind, "why" | "faq" | "whatToExpect"> = {
+  why: "why",
+  faq: "faq",
+  "what-to-expect": "whatToExpect",
 };
 
 const KIND_ORDER: EducationCardKind[] = ["why", "what-to-expect", "faq"];
 
 export default function EducationSection() {
+  const t = useTranslations("community.educationSection");
+  const locale = useLocale() as Locale;
   const [cards, setCards] = useState<EducationCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeKind, setActiveKind] = useState<EducationCardKind>("why");
@@ -129,15 +137,9 @@ export default function EducationSection() {
   return (
     <section id="learn" className="scroll-mt-20">
       <div className="mb-8 max-w-2xl">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">
-          Learn & Trust
-        </p>
-        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-          What families ask before they book
-        </h2>
-        <p className="mt-3 text-base leading-relaxed text-slate-500">
-          Short answers, no fluff — just what you need to know to decide whether home care is right for your family.
-        </p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">{t("kicker")}</p>
+        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{t("title")}</h2>
+        <p className="mt-3 text-base leading-relaxed text-slate-500">{t("subtitle")}</p>
       </div>
 
       {/* Kind tabs */}
@@ -155,9 +157,9 @@ export default function EducationSection() {
                   : "border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-slate-700"
               }`}
             >
-              {KIND_LABELS[kind]}
+              {t(`kinds.${KIND_TO_KEY[kind]}`)}
               <span
-                className={`ml-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                className={`ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                   active ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
                 }`}
               >
@@ -181,8 +183,8 @@ export default function EducationSection() {
               <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${accent.iconBg}`}>
                 <Icon className={`h-5 w-5 ${accent.iconText}`} />
               </div>
-              <h3 className="font-bold text-slate-800 leading-snug">{card.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.body}</p>
+              <h3 className="font-bold text-slate-800 leading-snug">{tLocalized(card.title, locale)}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{tLocalized(card.body, locale)}</p>
             </div>
           );
         })}

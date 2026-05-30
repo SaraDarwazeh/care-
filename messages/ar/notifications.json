@@ -1,0 +1,60 @@
+{
+  "booking_created": {
+    "nurse": {
+      "title": "طلب حجز جديد",
+      "body": "طلب/ت {patientName} خدمة {service} يوم {date}."
+    },
+    "admin": {
+      "title": "حجز جديد",
+      "body": "طلب حجز جديد لخدمة {service} يوم {date}."
+    }
+  },
+  "booking_accepted": {
+    "title": "تمّ قبول الحجز",
+    "body": "أكّد/ت الممرض/ة موعد {service} يوم {date}."
+  },
+  "booking_rejected": {
+    "title": "لم يُقبَل الحجز",
+    "bodyWithReason": "لم يتمّ قبول حجزك لخدمة {service} يوم {date}. السبب: {reason}",
+    "bodyNoReason": "لم يتمّ قبول حجزك لخدمة {service} يوم {date}."
+  },
+  "booking_completed": {
+    "title": "اكتملت الزيارة",
+    "body": "تمّ تسجيل زيارتك ({service} يوم {date}) كمكتملة."
+  },
+  "booking_cancelled": {
+    "title": "تمّ إلغاء الحجز",
+    "byPatient": "ألغى أحد المرضى حجزه لخدمة {service} يوم {date}.",
+    "byOther": "تمّ إلغاء حجزك لخدمة {service} يوم {date}."
+  },
+  "nurse_signup": {
+    "title": "تسجيل ممرض/ة جديد/ة",
+    "body": "سجّل/ت {nurseName} للتوّ، وينتظر الموافقة."
+  },
+  "nurse_approved": {
+    "title": "تمّت الموافقة على ملفّك",
+    "body": "تمّت الموافقة على ملفّك. أصبح بإمكانك استقبال الحجوزات الآن."
+  },
+  "nurse_rejected": {
+    "title": "لم تتمّ الموافقة على الملفّ",
+    "body": "لم تتمّ الموافقة على ملفّك حاليًّا. يُرجى التواصل مع الدعم لمعرفة الخطوات التالية."
+  },
+  "order_created": {
+    "title": "طلب جديد من المتجر",
+    "body": "طلب جديد بإجمالي {total} بانتظار المراجعة."
+  },
+  "order_status_changed": {
+    "title": "تحديث الطلب",
+    "statusCopy": {
+      "pending": "تمّ استلامه",
+      "processing": "قيد التحضير",
+      "shipped": "في طريقه إليك",
+      "delivered": "تمّ التسليم"
+    },
+    "body": "طلبك {statusCopy}."
+  },
+  "system_alert": {
+    "title": "تنبيه من النظام",
+    "body": "{message}"
+  }
+}

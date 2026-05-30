@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
-import type { ServiceCategory } from "@/lib/serviceCatalog";
+import { serviceIconForSlug, type ServiceCategory } from "@/lib/serviceCatalog";
 
 export default function ServiceCategoryCard({
   category,
@@ -10,7 +13,12 @@ export default function ServiceCategoryCard({
   category: ServiceCategory;
   dark?: boolean;
 }) {
-  const Icon = category.icon;
+  // Icon resolved from slug — see serviceCatalog.ts for why it isn't on
+  // the data row (RSC serialization boundary).
+  const Icon = serviceIconForSlug(category.slug);
+  const tCat = useTranslations(`services.categories.${category.slug}`);
+  const tCard = useTranslations("services.card");
+  const highlights = tCat.raw("highlights") as string[];
 
   return (
     <Link
@@ -24,7 +32,7 @@ export default function ServiceCategoryCard({
       <div className="relative h-36 w-full overflow-hidden">
         <Image
           src={category.image}
-          alt={category.title}
+          alt={tCat("imageAlt")}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
           unoptimized
@@ -36,20 +44,22 @@ export default function ServiceCategoryCard({
               : "bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent"
           }`}
         />
-        <div className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-md backdrop-blur">
+        <div className="absolute start-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-md backdrop-blur">
           <Icon className="h-5 w-5" />
         </div>
-        <div className="absolute bottom-4 left-4 right-4">
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200/90">{category.eyebrow}</p>
-          <h3 className="mt-2 text-xl font-extrabold tracking-tight text-white">{category.title}</h3>
+        <div className="absolute bottom-4 start-4 end-4">
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200/90">{tCat("eyebrow")}</p>
+          <h3 className="mt-2 text-xl font-extrabold tracking-tight text-white">{tCat("title")}</h3>
         </div>
       </div>
 
       <div className={`space-y-4 p-5 ${dark ? "bg-transparent" : "bg-white"}`}>
-        <p className={`text-sm leading-relaxed ${dark ? "text-slate-200" : "text-slate-600"}`}>{category.description}</p>
+        <p className={`text-sm leading-relaxed ${dark ? "text-slate-200" : "text-slate-600"}`}>
+          {tCat("description")}
+        </p>
 
         <div className="flex flex-wrap gap-2">
-          {category.highlights.map((item) => (
+          {highlights.map((item) => (
             <span
               key={item}
               className={`rounded-full px-3 py-1 text-xs font-bold ${
@@ -68,9 +78,9 @@ export default function ServiceCategoryCard({
         >
           <div>
             <p className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-sky-200" : "text-slate-400"}`}>
-              Next step
+              {tCard("nextStep")}
             </p>
-            <p className={`text-sm font-semibold ${dark ? "text-white" : "text-slate-800"}`}>{category.ctaLabel}</p>
+            <p className={`text-sm font-semibold ${dark ? "text-white" : "text-slate-800"}`}>{tCat("ctaLabel")}</p>
           </div>
           <span className={`flex h-10 w-10 items-center justify-center rounded-full ${dark ? "bg-white text-sky-700" : "bg-sky-600 text-white"}`}>
             <ArrowRight className="h-4 w-4" />

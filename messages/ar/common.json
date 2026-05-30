@@ -1,0 +1,29 @@
+{
+  "appName": "Care+",
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "submit": "إرسال",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "close": "إغلاق",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "getStarted": "ابدأ الآن"
+  },
+  "locale": {
+    "switchTo": "English",
+    "current": "العربية",
+    "english": "English",
+    "arabic": "العربية",
+    "mismatchBanner": "تفضّل الإنجليزية؟ بدّل إلى English.",
+    "mismatchAction": "تبديل",
+    "mismatchDismiss": "إغلاق"
+  },
+  "status": {
+    "loading": "جارٍ التحميل…",
+    "empty": "لا يوجد محتوى بعد."
+  }
+}

@@ -49,13 +49,15 @@ export default function AdminProductsPage() {
     setProducts(data);
   }
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     getProducts().then((data) => {
       if (active) { setProducts(data); setLoading(false); }
     });
     return () => { active = false; };
-  }, []);
+  }, [appUser]);
 
   function openAdd() {
     setEditingId(null);

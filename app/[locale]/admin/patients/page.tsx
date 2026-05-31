@@ -249,7 +249,9 @@ export default function AdminPatientsPage() {
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     const { db } = ensureClientFirebase();
     getDocs(query(collection(db, "users"), where("role", "==", "patient")))
@@ -272,7 +274,7 @@ export default function AdminPatientsPage() {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [appUser]);
 
   async function loadProfile(id: string) {
     if (profiles[id] !== undefined) return;

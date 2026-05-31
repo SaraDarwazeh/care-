@@ -76,7 +76,14 @@ export default function AdminDashboardPage() {
   });
   const [loading, setLoading] = useState(true);
 
+  // Gate the data fetch on appUser so we don't query Firestore before
+  // Firebase Auth has restored the client-side session — otherwise the
+  // rule-guarded reads fire while `auth.currentUser` is still null and
+  // either bounce with permission-denied or trip
+  // `services/adminService.ts` → "You must be signed in to perform this
+  // action." See the protected-route hook for why appUser implies auth.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     async function loadStats() {
       try {
@@ -94,7 +101,7 @@ export default function AdminDashboardPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appUser]);
 
   if (authLoading || !appUser || loading) {
     return <LoadingScreen text={t("loading")} />;

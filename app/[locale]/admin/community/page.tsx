@@ -41,7 +41,9 @@ export default function AdminCommunityPage() {
     }
   }
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     getAllDonationPostsForAdmin()
       .then((data) => {
@@ -57,7 +59,7 @@ export default function AdminCommunityPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appUser]);
 
   async function changeStatus(post: DonationPost, status: DonationPostStatus) {
     setBusyId(post.id);

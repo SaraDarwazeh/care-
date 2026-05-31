@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
-import { serviceIconForSlug, type ServiceCategory } from "@/lib/serviceCatalog";
+import type { ServiceCategory } from "@/lib/serviceCatalog";
+import ServiceIcon from "@/components/services/ServiceIcon";
 
 export default function ServiceCategoryCard({
   category,
@@ -13,9 +14,6 @@ export default function ServiceCategoryCard({
   category: ServiceCategory;
   dark?: boolean;
 }) {
-  // Icon resolved from slug — see serviceCatalog.ts for why it isn't on
-  // the data row (RSC serialization boundary).
-  const Icon = serviceIconForSlug(category.slug);
   const tCat = useTranslations(`services.categories.${category.slug}`);
   const tCard = useTranslations("services.card");
   const highlights = tCat.raw("highlights") as string[];
@@ -45,7 +43,7 @@ export default function ServiceCategoryCard({
           }`}
         />
         <div className="absolute start-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-md backdrop-blur">
-          <Icon className="h-5 w-5" />
+          <ServiceIcon slug={category.slug} className="h-5 w-5" />
         </div>
         <div className="absolute bottom-4 start-4 end-4">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200/90">{tCat("eyebrow")}</p>

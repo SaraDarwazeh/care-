@@ -319,13 +319,16 @@ export default function AdminPackagesPage() {
   const [error, setError] = useState<string | null>(null);
   const [addonCatalog, setAddonCatalog] = useState<AddOn[]>(AVAILABLE_ADDONS as AddOn[]);
 
+  // Both effects gated on appUser so Firestore reads don't fire before
+  // auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     getPricingConfig()
       .then((cfg) => { if (active) setAddonCatalog(cfg.addons); })
       .catch((err) => console.error("[AdminPackagesPage] failed to load pricing config", err));
     return () => { active = false; };
-  }, []);
+  }, [appUser]);
 
   async function reload() {
     const data = await listPackages(true);
@@ -333,6 +336,7 @@ export default function AdminPackagesPage() {
   }
 
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     listPackages(true)
       .then((data) => { if (active) setPackages(data); })
@@ -342,7 +346,7 @@ export default function AdminPackagesPage() {
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [appUser]);
 
   function openAdd() { setEditingId(null); setForm(EMPTY_FORM); setShowForm(true); }
   function openEdit(pkg: CarePackage) { setEditingId(pkg.id); setForm(packageToForm(pkg)); setShowForm(true); }

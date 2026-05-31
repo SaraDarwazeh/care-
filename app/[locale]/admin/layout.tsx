@@ -59,10 +59,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar — the slide-off transforms are scoped to max-lg: so they
+          only apply below the lg breakpoint (mobile drawer behaviour).
+          Without the max-lg: scope, `rtl:translate-x-full` would also
+          fire on desktop RTL and translate the sidebar off-screen even
+          with `lg:static lg:translate-x-0` present (Tailwind v4 user
+          variant source order doesn't reliably let lg: win over rtl:). */}
       <aside className={`
         fixed inset-y-0 start-0 z-50 w-72 flex flex-col bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}
+        ${sidebarOpen ? "translate-x-0" : "max-lg:-translate-x-full max-lg:rtl:translate-x-full"}
       `}>
         <div className="flex h-20 items-center px-8 bg-slate-950/50 border-b border-slate-800">
           <Link href="/admin" className="flex items-center gap-2">

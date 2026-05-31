@@ -316,7 +316,9 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StoreOrder["status"] | "all">("all");
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     const { db } = ensureClientFirebase();
 
@@ -339,7 +341,7 @@ export default function AdminOrdersPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appUser]);
 
   function handleStatusChange(id: string, status: StoreOrder["status"]) {
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));

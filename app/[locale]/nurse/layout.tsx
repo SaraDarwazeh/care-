@@ -39,7 +39,10 @@ export default function NurseLayout({ children }: { children: React.ReactNode })
     <div className="flex h-screen bg-slate-50">
       {open && <div className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden" onClick={() => setOpen(false)} />}
 
-      <aside className={`fixed inset-y-0 start-0 z-50 w-72 flex flex-col bg-gradient-to-b from-emerald-900 to-slate-900 text-slate-300 transition-transform duration-300 lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}>
+      {/* Slide-off transforms scoped to max-lg: so the rtl variant doesn't
+          push the sidebar off-screen on desktop RTL. See admin layout
+          for the full reasoning. */}
+      <aside className={`fixed inset-y-0 start-0 z-50 w-72 flex flex-col bg-gradient-to-b from-emerald-900 to-slate-900 text-slate-300 transition-transform duration-300 lg:static lg:translate-x-0 ${open ? "translate-x-0" : "max-lg:-translate-x-full max-lg:rtl:translate-x-full"}`}>
         <div className="flex h-20 items-center gap-3 px-8 border-b border-white/10">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
             <Stethoscope className="h-6 w-6" />

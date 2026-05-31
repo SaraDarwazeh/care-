@@ -121,7 +121,9 @@ export default function AdminEducationPage() {
     }
   }
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     getAllEducationCardsForAdmin()
       .then((data) => {
@@ -137,7 +139,7 @@ export default function AdminEducationPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appUser]);
 
   function openAdd() {
     setEditingId(null);

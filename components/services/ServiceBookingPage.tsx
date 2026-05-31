@@ -5,10 +5,10 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowRight, ChevronLeft, CheckCircle2 } from "lucide-react";
 import Card from "@/components/ui/Card";
-import { serviceIconForSlug, type ServiceCategory } from "@/lib/serviceCatalog";
+import type { ServiceCategory } from "@/lib/serviceCatalog";
+import ServiceIcon from "@/components/services/ServiceIcon";
 
 export default function ServiceBookingPage({ category }: { category: ServiceCategory }) {
-  const Icon = serviceIconForSlug(category.slug);
   const tCat = useTranslations(`services.categories.${category.slug}`);
   const tBook = useTranslations("services.booking");
   const isPackageCategory = category.slug === "packages";
@@ -33,7 +33,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/65 via-slate-950/20 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 text-white">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
-                <Icon className="h-7 w-7" />
+                <ServiceIcon slug={category.slug} className="h-7 w-7" />
               </div>
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200">{tCat("eyebrow")}</p>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl">{tCat("title")}</h1>

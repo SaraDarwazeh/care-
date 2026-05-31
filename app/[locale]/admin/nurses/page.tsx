@@ -156,7 +156,12 @@ export default function AdminNursesPage() {
     }
   }
 
+  // Gated on appUser — fetchNurses() requires a Firebase ID token, and
+  // `auth.currentUser` is still null on first render. Without this gate
+  // the request fires before token restore and adminService throws
+  // "You must be signed in to perform this action."
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     async function initNurses() {
       try {
@@ -170,7 +175,7 @@ export default function AdminNursesPage() {
     }
     void initNurses();
     return () => { active = false; };
-  }, []);
+  }, [appUser]);
 
   async function onChangeStatus(id: string, status: "approved" | "rejected") {
     setActionLoadingId(id + status);

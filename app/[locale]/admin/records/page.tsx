@@ -86,7 +86,9 @@ function AdminRecordsPageInner() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
 
+  // Gated on appUser so Firestore reads don't fire before auth restores.
   useEffect(() => {
+    if (!appUser) return;
     let active = true;
     (async () => {
       try {
@@ -111,7 +113,7 @@ function AdminRecordsPageInner() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [appUser]);
 
   const filtered = useMemo(() => {
     return records.filter((r) => {

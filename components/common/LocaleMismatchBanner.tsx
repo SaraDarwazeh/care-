@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { LOCALES, type Locale } from "@/i18n/config";
+import { type Locale } from "@/i18n/config";
 
 const DISMISS_COOKIE = "NEXT_LOCALE_BANNER_DISMISSED";
 
@@ -44,9 +44,11 @@ export default function LocaleMismatchBanner() {
   function accept() {
     document.cookie = `NEXT_LOCALE=${other}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     document.cookie = `${DISMISS_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-    const stripped = stripLocalePrefix(pathname);
+    // `pathname` is already unprefixed by next-intl's hook; pass it with
+    // the target locale option so the wrapper builds the localized URL.
+    // Manual concatenation would cause next-intl to double-prefix.
     startTransition(() => {
-      router.replace(`/${other}${stripped}`);
+      router.replace(pathname, { locale: other });
     });
   }
 
@@ -89,12 +91,4 @@ function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
-}
-
-function stripLocalePrefix(pathname: string): string {
-  for (const l of LOCALES) {
-    if (pathname === `/${l}`) return "/";
-    if (pathname.startsWith(`/${l}/`)) return pathname.slice(`/${l}`.length);
-  }
-  return pathname;
 }

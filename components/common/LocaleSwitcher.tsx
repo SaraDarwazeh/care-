@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { LOCALES, type Locale } from "@/i18n/config";
+import { type Locale } from "@/i18n/config";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUserLanguage } from "@/services/userService";
 
@@ -26,12 +26,18 @@ export default function LocaleSwitcher({ variant = "pill" }: Props) {
   const other: Locale = locale === "en" ? "ar" : "en";
 
   function switchLocale() {
-    const stripped = stripLocalePrefix(pathname);
-    const nextPath = `/${other}${stripped}`;
+    // `pathname` from next-intl is already unprefixed (e.g. "/admin/nurses"
+    // for "/ar/admin/nurses"). Hand it to next-intl's router with the
+    // target locale; the wrapper builds the localized URL via getPathname
+    // and emits "/en/admin/nurses". Do NOT manually concatenate the
+    // prefix here — next-intl's router would then prepend the *current*
+    // locale on top, yielding "/ar/en/admin/nurses".
     // 1-year cookie so the choice persists across browsers / sessions.
+    // (Our config doesn't set `localeCookie`, so next-intl's
+    // syncLocaleCookie is a no-op — we write the cookie ourselves.)
     document.cookie = `NEXT_LOCALE=${other}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     startTransition(() => {
-      router.replace(nextPath);
+      router.replace(pathname, { locale: other });
     });
     // Best-effort profile write — failure is silent because the cookie
     // already covers the next request on this device.
@@ -65,12 +71,4 @@ export default function LocaleSwitcher({ variant = "pill" }: Props) {
       {t("switchTo")}
     </button>
   );
-}
-
-function stripLocalePrefix(pathname: string): string {
-  for (const l of LOCALES) {
-    if (pathname === `/${l}`) return "/";
-    if (pathname.startsWith(`/${l}/`)) return pathname.slice(`/${l}`.length);
-  }
-  return pathname;
 }

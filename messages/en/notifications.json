@@ -56,5 +56,28 @@
   "system_alert": {
     "title": "System alert",
     "body": "{message}"
+  },
+  "patient_id_verified": {
+    "title": "Identity verified",
+    "body": "Your identity document was approved. You can now book a nurse."
+  },
+  "patient_id_rejected": {
+    "title": "Identity verification needs attention",
+    "body": "Your identity document was not approved. Please upload a different document.",
+    "bodyWithNote": "Your identity document was not approved: {note}"
+  },
+  "points_earned": {
+    "title": "+{amount} points",
+    "body": {
+      "booking_completed": "You earned {amount} points on a completed booking.",
+      "order_delivered": "You earned {amount} points on a delivered order.",
+      "review_submitted": "You earned {amount} bonus points for leaving a review.",
+      "admin_adjust": "An admin credited {amount} points to your account.",
+      "default": "You earned {amount} loyalty points."
+    }
+  },
+  "points_redeemed": {
+    "title": "{amount} points redeemed",
+    "body": "You redeemed {amount} points on your order."
   }
 }

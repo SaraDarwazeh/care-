@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 import { ShieldCheck, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
-import { loginWithEmail } from "@/services/authService";
+import { loginWithEmail, signInWithGoogle } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
 
@@ -18,6 +18,50 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  function routeAfterSignIn(profile: Awaited<ReturnType<typeof getUserProfile>>) {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+    document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+    if (!profile) {
+      router.replace(redirect || "/");
+    } else if (profile.role === "admin") {
+      router.replace(redirect || "/admin");
+    } else if (profile.role === "nurse") {
+      router.replace(profile.status === "approved" ? (redirect || "/nurse") : "/pending-approval");
+    } else {
+      router.replace(redirect || "/patient");
+    }
+  }
+
+  async function handleGoogle() {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      if ("collision" in result && result.collision) {
+        // Email already belongs to a password-based account. Don't route
+        // the user to the role picker (which would leave the wrong
+        // session active) — surface a friendly error so they sign in
+        // with their original method.
+        setError(tRoot("errors.auth.account-exists-with-different-credential"));
+        return;
+      }
+      if ("needsRole" in result && result.needsRole) {
+        router.replace("/auth/google-role");
+      } else {
+        const { auth } = await import("@/lib/firebase/config").then((m) => m.ensureClientFirebase());
+        const profile = auth.currentUser ? await getUserProfile(auth.currentUser.uid) : null;
+        routeAfterSignIn(profile);
+      }
+    } catch (err) {
+      console.error("[login] google sign-in failed", err);
+      setError(getLocalizedErrorMessage(err, tRoot));
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,25 +71,7 @@ export default function LoginPage() {
     try {
       const user = await loginWithEmail(email, password);
       const profile = await getUserProfile(user.uid);
-
-      document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-
-      const params = new URLSearchParams(window.location.search);
-      const redirect = params.get("redirect");
-
-      if (!profile) {
-        router.replace(redirect || "/");
-      } else if (profile.role === "admin") {
-        router.replace(redirect || "/admin");
-      } else if (profile.role === "nurse") {
-        if (profile.status === "approved") {
-          router.replace(redirect || "/nurse");
-        } else {
-          router.replace("/pending-approval");
-        }
-      } else {
-        router.replace(redirect || "/patient");
-      }
+      routeAfterSignIn(profile);
     } catch (submitError) {
       console.error("[login] login failed", submitError);
       setError(getLocalizedErrorMessage(submitError, tRoot));
@@ -87,6 +113,31 @@ export default function LoginPage() {
           <div className="mb-10">
             <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{t("welcomeBack")}</h2>
             <p className="mt-2 text-slate-500 font-medium">{t("subtitle")}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading || loading}
+            className="mb-5 flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+          >
+            {googleLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <svg className="h-4 w-4" viewBox="0 0 18 18" aria-hidden>
+                <path d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.49h4.84a4.14 4.14 0 0 1-1.79 2.72v2.26h2.9c1.7-1.57 2.68-3.88 2.68-6.63z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.47-.8 5.96-2.17l-2.9-2.26c-.81.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H1.05v2.33A8.99 8.99 0 0 0 9 18z" fill="#34A853"/>
+                <path d="M3.95 10.71A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.17.29-1.71V4.96H1.05A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.99-2.33z" fill="#FBBC05"/>
+                <path d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 8.99 8.99 0 0 0 1.05 4.96l2.99 2.33C4.66 5.16 6.65 3.58 9 3.58z" fill="#EA4335"/>
+              </svg>
+            )}
+            {t("continueWithGoogle")}
+          </button>
+
+          <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            {t("or")}
+            <span className="h-px flex-1 bg-slate-200" />
           </div>
 
           <form onSubmit={onSubmit} className="space-y-5">

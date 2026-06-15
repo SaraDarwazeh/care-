@@ -1,4 +1,5 @@
-import { S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 // Server-only S3 client. Lazily initialized so missing env vars at build
 // time don't crash the module — instead, callers get a clear error at the
@@ -54,4 +55,17 @@ export function getPublicBaseUrl(): string {
 
 export function buildPublicUrl(key: string): string {
   return `${getPublicBaseUrl()}/${key}`;
+}
+
+// Short-lived signed read URL for objects in private prefixes (e.g.
+// patients/ids/*). Default TTL is 5 minutes — long enough for the admin
+// UI or patient editor to load the image; short enough that a leaked
+// URL stops working quickly.
+export async function getSignedReadUrl(
+  key: string,
+  expiresInSeconds = 300,
+): Promise<string> {
+  const client = getS3Client();
+  const command = new GetObjectCommand({ Bucket: getS3Bucket(), Key: key });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 }

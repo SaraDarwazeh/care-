@@ -27,12 +27,9 @@ export const SHIFT_LABELS: Record<string, string> = {
 // Approximate hours billed per shift block (used to compute base price).
 export const SHIFT_BILLED_HOURS = 8;
 
-// Overnight surcharges (USD) applied when shift is "C".
+// Overnight surcharges applied when shift is "C".
 export const OVERNIGHT_SURCHARGE_ACCEPTED = 20;
 export const OVERNIGHT_SURCHARGE_REGULAR = 40;
-
-// Tax rate applied to (base + addons + surcharges).
-export const TAX_RATE = 0.05;
 
 export function findAddOn(id: string): AddOn | undefined {
   return AVAILABLE_ADDONS.find((a) => a.id === id);

@@ -102,6 +102,15 @@ npm install
 npm run dev
 ```
 
+### CI / release-build sanity
+
+Stale type artifacts in `.next/dev/types/` can short-circuit `tsc` and silently mask real type errors. Always run via the wrapper scripts in CI:
+
+```bash
+npm run check    # clean .next + tsc + eslint
+npm run typecheck  # clean .next/dev/types + tsc
+```
+
 ---
 
 ## 🔐 Environment Variables

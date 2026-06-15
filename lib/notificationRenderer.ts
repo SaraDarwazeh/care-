@@ -145,7 +145,45 @@ function renderByType(
         body: t("notifications.system_alert.body", { message: String(p.message) }),
       };
     }
-    default:
+    case "patient_id_verified": {
+      return {
+        title: t("notifications.patient_id_verified.title"),
+        body: t("notifications.patient_id_verified.body"),
+      };
+    }
+    case "patient_id_rejected": {
+      const note = p.note ? String(p.note) : "";
+      return {
+        title: t("notifications.patient_id_rejected.title"),
+        body: note
+          ? t("notifications.patient_id_rejected.bodyWithNote", { note })
+          : t("notifications.patient_id_rejected.body"),
+      };
+    }
+    case "points_earned": {
+      if (p.amount === undefined) return null;
+      const sourceKey = p.source ? String(p.source) : "default";
+      return {
+        title: t("notifications.points_earned.title", { amount: Number(p.amount) }),
+        body: t(`notifications.points_earned.body.${sourceKey}`, {
+          amount: Number(p.amount),
+        }),
+      };
+    }
+    case "points_redeemed": {
+      if (p.amount === undefined) return null;
+      return {
+        title: t("notifications.points_redeemed.title", { amount: Number(p.amount) }),
+        body: t("notifications.points_redeemed.body", { amount: Number(p.amount) }),
+      };
+    }
+    default: {
+      // Defensive: surface unknown types in dev so we don't silently
+      // ship notifications that fall back to the persisted English strings.
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[notificationRenderer] no case for type", type);
+      }
       return null;
+    }
   }
 }

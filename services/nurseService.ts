@@ -5,6 +5,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
@@ -14,6 +15,8 @@ import {
   NurseMarketplaceProfile,
   NurseProfile,
 } from "@/lib/types";
+import { notifyNurseProfileResubmit } from "@/services/notificationService";
+import { significantProfileSnapshot, sha256Hex } from "@/lib/nurseApprovalSnapshot";
 
 // Legacy certificate entries were typed filenames (string[]). Coerce them
 // into the new NurseCertificate shape so the UI can treat both uniformly.
@@ -50,6 +53,10 @@ function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): Nur
     services: Array.isArray(nurseData.services) ? (nurseData.services as NurseProfile["services"]) : [],
     pricePerHour:
       typeof nurseData.pricePerHour === "number" ? nurseData.pricePerHour : undefined,
+    pricePerShift:
+      nurseData.pricePerShift && typeof nurseData.pricePerShift === "object"
+        ? (nurseData.pricePerShift as NurseProfile["pricePerShift"])
+        : undefined,
     // rating defaults to 0 when no reviews exist; UI hides the rating pill
     // for nurses with rating === 0 so we don't fake a star count.
     rating: typeof nurseData.rating === "number" ? nurseData.rating : 0,
@@ -95,11 +102,42 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
 // Accepts everything EXCEPT the aggregate fields that reviewService owns.
 // Without this Omit, a profile save would overwrite the cached rating /
 // reviewCount that reviewService recomputes after every new review.
+//
+// Re-approval: if the nurse is currently "approved" and any significant
+// field changed vs. the last-approved snapshot, flips users/{uid}.status
+// back to "pending" and notifies admin. First-time setup (no approval
+// yet) doesn't trigger this branch.
 export async function saveNurseProfile(input: Omit<NurseProfile, "rating" | "reviewCount">) {
   const { db } = ensureClientFirebase();
   const cleaned = stripUndefined(input as unknown as Record<string, unknown>);
   await setDoc(doc(db, "nurseProfiles", input.userId), cleaned, { merge: true });
+
+  // Re-approval check is best-effort: if it fails we don't want to block
+  // the profile save itself. The next admin sweep will catch any drift.
+  try {
+    const userRef = doc(db, "users", input.userId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+    const userData = userSnap.data() as Record<string, unknown>;
+    if (userData.status !== "approved") return;
+
+    const newHash = await sha256Hex(significantProfileSnapshot(input));
+    const lastHash =
+      typeof userData.lastApprovedProfileHash === "string"
+        ? userData.lastApprovedProfileHash
+        : "";
+    if (lastHash && lastHash === newHash) return;
+
+    await updateDoc(userRef, { status: "pending" });
+    await notifyNurseProfileResubmit({
+      nurseUserId: input.userId,
+      nurseName: input.fullName,
+    });
+  } catch (err) {
+    console.warn("[nurseService] re-approval check failed (non-fatal)", err);
+  }
 }
+
 
 export async function getNurseProfileByUserId(userId: string) {
   const { db } = ensureClientFirebase();

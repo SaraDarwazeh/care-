@@ -43,6 +43,16 @@ function normalizeValue(value: string) {
   return value.trim().toLowerCase();
 }
 
+// Normalize for diacritic-insensitive search. Strips combining marks so
+// "Sára", "sara", and "سارة" with/without tashkīl all match the same key.
+function normalizeForSearch(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function shiftLabel(value: string, t: ReturnType<typeof useTranslations>): string {
   if (value === "a" || value === "b" || value === "c") return t(`shiftLabel.${value}`);
   return value;
@@ -55,6 +65,7 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
 
   return {
     filters: {
+      query: params.get("q") ?? "",
       service: params.get("service") ?? "",
       additionalServices: (params.get("extras") ?? "")
         .split(",")
@@ -68,7 +79,6 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
       availableToday: params.get("availableToday") === "1",
       transportAvailable: params.get("transport") === "1",
       skills: (params.get("skills") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
-      certifications: (params.get("certs") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     },
     sortBy,
   };
@@ -76,6 +86,7 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
 
 function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey): URLSearchParams {
   const p = new URLSearchParams();
+  if (values.query.trim()) p.set("q", values.query.trim());
   if (values.service) p.set("service", values.service);
   if (values.additionalServices.length) p.set("extras", values.additionalServices.join(","));
   if (values.shift) p.set("shift", values.shift);
@@ -86,7 +97,6 @@ function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey):
   if (values.availableToday) p.set("availableToday", "1");
   if (values.transportAvailable) p.set("transport", "1");
   if (values.skills.length) p.set("skills", values.skills.join(","));
-  if (values.certifications.length) p.set("certs", values.certifications.join(","));
   if (sortBy !== "rating") p.set("sort", sortBy);
   return p;
 }
@@ -165,12 +175,6 @@ function PatientNursesPageInner() {
     return Array.from(set).sort();
   }, [nurses]);
 
-  const availableCertifications = useMemo(() => {
-    const set = new Set<string>();
-    nurses.forEach((n) => (n.certificates ?? []).forEach((c) => set.add(c.name)));
-    return Array.from(set).sort();
-  }, [nurses]);
-
   // Extra services come from each nurse's additionalServices[] (cooking,
   // transport, companionship, etc.). Same chip-collection pattern as
   // medical services, but feeds the new Extra services filter section.
@@ -187,7 +191,14 @@ function PatientNursesPageInner() {
   const filteredNurses = useMemo(() => {
     const today = todayLocalDay();
 
+    const q = normalizeForSearch(filters.query);
+
     return nurses.filter((nurse) => {
+      if (q) {
+        const name = normalizeForSearch(nurse.fullName ?? "");
+        if (!name.includes(q)) return false;
+      }
+
       if (
         filters.service &&
         !nurse.services.some(
@@ -236,12 +247,6 @@ function PatientNursesPageInner() {
         if (!wanted.every((w) => nurseSkills.includes(w))) return false;
       }
 
-      if (filters.certifications.length > 0) {
-        const certs = (nurse.certificates ?? []).map((c) => c.name.toLowerCase());
-        const wanted = filters.certifications.map((c) => c.toLowerCase());
-        if (!wanted.every((w) => certs.includes(w))) return false;
-      }
-
       if (filters.additionalServices.length > 0) {
         const extras = (nurse.additionalServices ?? []).map((s) => s.name.toLowerCase());
         const wanted = filters.additionalServices.map((s) => s.toLowerCase());
@@ -256,9 +261,15 @@ function PatientNursesPageInner() {
     return [...filteredNurses].sort((a, b) => {
       if (sortBy === "rating") return (b.rating ?? 0) - (a.rating ?? 0);
       if (sortBy === "price_low") {
-        const aMin = a.services.length > 0 ? Math.min(...a.services.map((s) => s.price)) : Infinity;
-        const bMin = b.services.length > 0 ? Math.min(...b.services.map((s) => s.price)) : Infinity;
-        return aMin - bMin;
+        const minPrice = (nurse: NurseMarketplaceProfile): number => {
+          const shifts = Object.values(nurse.pricePerShift ?? {}).filter(
+            (n): n is number => typeof n === "number" && n > 0,
+          );
+          if (shifts.length > 0) return Math.min(...shifts);
+          if (nurse.services.length > 0) return Math.min(...nurse.services.map((s) => s.price));
+          return nurse.pricePerHour && nurse.pricePerHour > 0 ? nurse.pricePerHour : Infinity;
+        };
+        return minPrice(a) - minPrice(b);
       }
       if (sortBy === "experience") return (b.experienceYears ?? 0) - (a.experienceYears ?? 0);
       return 0;
@@ -348,7 +359,6 @@ function PatientNursesPageInner() {
               availableServices={availableServices}
               availableAdditionalServices={availableAdditionalServices}
               availableSkills={availableSkills}
-              availableCertifications={availableCertifications}
               sortBy={sortBy}
               onSortChange={setSortBy}
             />

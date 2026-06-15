@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { uploadFile } from "@/services/storageService";
 import { createDonationPost } from "@/services/communityService";
 import { DonationPost } from "@/lib/types";
+import ImageUploadField from "@/components/common/ImageUploadField";
 
 export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) => void }) {
   const [title, setTitle] = useState("");
@@ -11,21 +11,16 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
   const [category, setCategory] = useState("Equipment");
   const [location, setLocation] = useState("");
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      const images: string[] = [];
-
-      if (imageFile) {
-        const { url } = await uploadFile(imageFile, { scope: "community" });
-        images.push(url);
-      }
-
       const postInput: Omit<DonationPost, "id" | "createdAt"> = {
         title,
         description,
@@ -37,10 +32,13 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
       };
 
       const created = await createDonationPost(postInput);
-      setTitle(""); setDescription(""); setCategory("Equipment"); setLocation(""); setContact({ name: "", email: "", phone: "" }); setImageFile(null);
+      setTitle(""); setDescription(""); setCategory("Equipment"); setLocation("");
+      setContact({ name: "", email: "", phone: "" });
+      setImages([]);
       onCreated?.(created);
     } catch (err) {
       console.error("Failed to create donation post", err);
+      setError(err instanceof Error ? err.message : "Failed to post donation");
     } finally {
       setLoading(false);
     }
@@ -97,10 +95,19 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
           </div>
         </div>
 
-        <div>
-          <label className={labelClass}>Photo (optional)</label>
-          <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} className="text-sm text-slate-600 file:me-3 file:rounded-lg file:border-0 file:bg-sky-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-sky-700 hover:file:bg-sky-100" />
-        </div>
+        <ImageUploadField
+          mode="multi"
+          scope="community"
+          label="Photos (optional)"
+          value={images}
+          onChange={setImages}
+          helperText="Add up to 4 photos. They appear on the donation card and detail page."
+          maxFiles={4}
+        />
+
+        {error && (
+          <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error}</p>
+        )}
 
         <button type="submit" disabled={loading} className="w-full rounded-xl bg-sky-600 py-3 text-sm font-bold text-white hover:bg-sky-700 disabled:opacity-60 transition">
           {loading ? "Posting..." : "Post Donation"}

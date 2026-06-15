@@ -8,6 +8,7 @@ import { useState } from "react";
 import NotificationBell from "@/components/common/NotificationBell";
 import ProfileMenu from "@/components/common/ProfileMenu";
 import LocaleSwitcher from "@/components/common/LocaleSwitcher";
+import PointsBalancePill from "@/components/patient/PointsBalancePill";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/components/patient/CartContext";
 
@@ -66,6 +67,9 @@ export default function PatientNavbar() {
           </nav>
 
           <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden sm:block">
+              <PointsBalancePill />
+            </div>
             <NotificationBell href="/patient/notifications" />
             <Link
               href="/patient/cart"

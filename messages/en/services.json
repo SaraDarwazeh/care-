@@ -34,6 +34,7 @@
       ]
     },
     "packages": {
+      "backToList": "Back to packages",
       "eyebrow": "Bundled care plans",
       "title": "Care Packages",
       "description": "Bundle recurring needs into a clearer plan for elderly, post-op, or wound care.",

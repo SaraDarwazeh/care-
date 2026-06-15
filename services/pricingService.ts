@@ -10,7 +10,6 @@ export interface PricingResult {
   transport: number;
   overnight: number;
   subtotal: number;
-  tax: number;
   total: number;
 }
 
@@ -45,7 +44,23 @@ export async function computePricing(input: PricingInput): Promise<PricingResult
 
   let base = 0;
   if (input.bookingType === "shift") {
-    base = servicePrice * config.shiftBilledHours;
+    // Per-shift model: read the flat price the nurse set for this shift.
+    // Legacy fallback (× SHIFT_BILLED_HOURS) only when a nurse hasn't yet
+    // migrated. The fallback fires a console warning so we can spot
+    // un-migrated nurses during the rollout.
+    const shiftKey = String(input.shift ?? "").toUpperCase() as "A" | "B" | "C";
+    const perShift =
+      nurse && typeof nurse.pricePerShift === "object" && nurse.pricePerShift
+        ? (nurse.pricePerShift as Record<string, unknown>)[shiftKey]
+        : undefined;
+    if (typeof perShift === "number" && perShift > 0) {
+      base = perShift;
+    } else {
+      base = servicePrice * config.shiftBilledHours;
+      console.warn(
+        `[pricing] using fallback hourly×${config.shiftBilledHours} for nurse ${input.nurseId} shift ${shiftKey} — set pricePerShift to migrate`,
+      );
+    }
   } else if (input.bookingType === "package") {
     let perDay = servicePrice * config.shiftBilledHours;
     let modifier = 1;
@@ -126,19 +141,16 @@ export async function computePricing(input: PricingInput): Promise<PricingResult
   // `addons`. Kept on the result for compatibility with existing consumers.
   const transport = 0;
 
-  let overnight = 0;
-  if (input.shift === "C") {
-    overnight = nurse?.acceptsOvernight
-      ? config.overnightSurchargeAccepted
-      : config.overnightSurchargeRegular;
-  }
+  // Per-shift pricing fully encodes the overnight premium on shift C, so
+  // there's no separate surcharge anymore. Field kept on the result for
+  // backwards compatibility with old breakdown consumers.
+  const overnight = 0;
 
   const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
   const subtotal = round2(base + addonsTotal + transport + overnight);
-  const tax = round2(subtotal * config.taxRate);
-  const total = round2(subtotal + tax);
+  const total = subtotal;
 
-  return { base, addons, transport, overnight, subtotal, tax, total };
+  return { base, addons, transport, overnight, subtotal, total };
 }
 
 const pricingService = { computePricing };

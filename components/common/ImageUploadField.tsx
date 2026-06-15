@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ImagePlus, Loader2, Trash2, Upload, X } from "lucide-react";
 import { uploadFile, type UploadScope } from "@/services/storageService";
 
@@ -10,9 +11,6 @@ interface BaseProps {
   accept?: string;
   label?: string;
   helperText?: string;
-  // Allow callers to also accept a pasted URL (e.g. existing seed data
-  // that was already a remote URL). Defaults to true.
-  allowUrlPaste?: boolean;
   maxFiles?: number;
 }
 
@@ -30,23 +28,22 @@ interface MultiProps extends BaseProps {
 
 export type ImageUploadFieldProps = SingleProps | MultiProps;
 
-// Generic uploader. Hidden file input + drop zone preview. Optional
-// "or paste a URL" fallback for cases where the admin already has a
-// remote URL they want to use (e.g. Unsplash for package heroes).
+// Generic uploader. Hidden file input + drop zone preview. File-only —
+// users upload directly; we never accept a manually-pasted URL.
 export default function ImageUploadField(props: ImageUploadFieldProps) {
   const {
     scope,
     accept = "image/*",
     label,
     helperText,
-    allowUrlPaste = true,
     maxFiles,
   } = props;
   const mode = props.mode ?? "single";
+  const t = useTranslations("common.actions");
+  const tField = useTranslations("common.imageUpload");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [urlDraft, setUrlDraft] = useState("");
 
   const values = mode === "multi" ? (props as MultiProps).value : ([] as string[]);
   const singleValue = mode === "single" ? (props as SingleProps).value : "";
@@ -71,23 +68,11 @@ export default function ImageUploadField(props: ImageUploadFieldProps) {
       }
     } catch (err) {
       console.error("[ImageUploadField] upload failed", err);
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error && err.message ? err.message : tField("uploadError"));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }
-
-  function addUrl() {
-    const trimmed = urlDraft.trim();
-    if (!trimmed) return;
-    if (mode === "single") {
-      (props as SingleProps).onChange(trimmed);
-    } else {
-      if (typeof maxFiles === "number" && values.length >= maxFiles) return;
-      (props as MultiProps).onChange([...values, trimmed]);
-    }
-    setUrlDraft("");
   }
 
   function removeAt(index: number) {
@@ -160,12 +145,12 @@ export default function ImageUploadField(props: ImageUploadFieldProps) {
           >
             {uploading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                <Loader2 className="h-4 w-4 animate-spin" /> {t("uploading")}
               </>
             ) : (
               <>
                 {mode === "multi" ? <ImagePlus className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
-                {mode === "multi" ? "Add image" : "Upload image"}
+                {mode === "multi" ? tField("addImage") : tField("uploadImage")}
               </>
             )}
           </button>
@@ -177,25 +162,6 @@ export default function ImageUploadField(props: ImageUploadFieldProps) {
             className="sr-only"
             onChange={(e) => void handleFiles(e.target.files)}
           />
-          {allowUrlPaste && (
-            <div className="mt-3 flex gap-2">
-              <input
-                type="url"
-                value={urlDraft}
-                onChange={(e) => setUrlDraft(e.target.value)}
-                placeholder="or paste an image URL…"
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={addUrl}
-                disabled={!urlDraft.trim()}
-                className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-              >
-                Use URL
-              </button>
-            </div>
-          )}
           {helperText && (
             <p className="mt-2 text-xs text-slate-500">{helperText}</p>
           )}

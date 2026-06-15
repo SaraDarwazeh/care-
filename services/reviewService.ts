@@ -149,6 +149,39 @@ export async function createReview(input: {
   };
   const ref = await addDoc(collection(db, COLLECTION), payload);
   await refreshNurseAggregate(input.nurseId);
+
+  // First-review bonus: if this is the patient's first review for this
+  // specific booking, grant the bonus. We query AFTER the write so the
+  // new doc is included in the count; idempotency keyed on the review
+  // doc id stops re-runs from double-paying.
+  if (input.bookingId) {
+    try {
+      const reviewsForBooking = await getDocs(
+        query(collection(db, COLLECTION), where("bookingId", "==", input.bookingId)),
+      );
+      const isFirst = reviewsForBooking.size === 1;
+      if (isFirst) {
+        const { earnPoints } = await import("@/services/pointsService");
+        const { POINTS_REVIEW_BONUS } = await import("@/lib/pointsConstants");
+        const { notifyPointsEarned } = await import("@/services/notificationService");
+        await earnPoints({
+          patientId: input.patientId,
+          source: "review_submitted",
+          amount: POINTS_REVIEW_BONUS,
+          sourceId: ref.id,
+        });
+        await notifyPointsEarned({
+          userId: input.patientId,
+          amount: POINTS_REVIEW_BONUS,
+          source: "review_submitted",
+          sourceId: ref.id,
+        });
+      }
+    } catch (err) {
+      console.warn("[reviewService] first-review bonus failed (non-fatal)", err);
+    }
+  }
+
   return { id: ref.id, ...payload };
 }
 

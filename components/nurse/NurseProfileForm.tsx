@@ -108,6 +108,11 @@ export default function NurseProfileForm({
   const [specialization, setSpecialization] = useState("");
   const [services, setServices] = useState<NurseServiceItem[]>([{ name: "", price: 0 }]);
   const [pricePerHour, setPricePerHour] = useState<number | undefined>(undefined);
+  // Per-shift prices: flat charge for picking a single shift. Each is optional;
+  // a nurse who doesn't offer overnights leaves shift C empty.
+  const [pricePerShiftA, setPricePerShiftA] = useState<number | undefined>(undefined);
+  const [pricePerShiftB, setPricePerShiftB] = useState<number | undefined>(undefined);
+  const [pricePerShiftC, setPricePerShiftC] = useState<number | undefined>(undefined);
   const [experienceYears, setExperienceYears] = useState(0);
   const [skills, setSkills] = useState("");
 
@@ -153,6 +158,9 @@ export default function NurseProfileForm({
       setSpecialization(profile.specialization ?? "");
       setServices(profile.services?.length ? profile.services : [{ name: "", price: 0 }]);
       setPricePerHour(profile.pricePerHour);
+      setPricePerShiftA(profile.pricePerShift?.A);
+      setPricePerShiftB(profile.pricePerShift?.B);
+      setPricePerShiftC(profile.pricePerShift?.C);
       setExperienceYears(profile.experienceYears ?? 0);
       setSkills((profile.skills ?? []).join(", "));
 
@@ -259,6 +267,13 @@ export default function NurseProfileForm({
       specialization,
       services: services.filter((item) => item.name.trim().length > 0),
       pricePerHour: pricePerHour || undefined,
+      pricePerShift: ((): NurseProfile["pricePerShift"] => {
+        const obj: { A?: number; B?: number; C?: number } = {};
+        if (pricePerShiftA && pricePerShiftA > 0) obj.A = pricePerShiftA;
+        if (pricePerShiftB && pricePerShiftB > 0) obj.B = pricePerShiftB;
+        if (pricePerShiftC && pricePerShiftC > 0) obj.C = pricePerShiftC;
+        return Object.keys(obj).length > 0 ? obj : undefined;
+      })(),
       experienceYears,
       skills: skills.split(",").map((item) => item.trim()).filter(Boolean),
       languages: languages.split(",").map((item) => item.trim()).filter(Boolean),
@@ -466,6 +481,30 @@ export default function NurseProfileForm({
                   placeholder={tServices("hourlyRatePlaceholder")}
                   className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                 />
+              </div>
+
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4">
+                <p className="mb-1 text-sm font-bold text-emerald-800">{tServices("perShiftTitle")}</p>
+                <p className="mb-3 text-xs text-emerald-700">{tServices("perShiftHelp")}</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {([
+                    { key: "A" as const, value: pricePerShiftA, setter: setPricePerShiftA, labelKey: "perShiftALabel" as const },
+                    { key: "B" as const, value: pricePerShiftB, setter: setPricePerShiftB, labelKey: "perShiftBLabel" as const },
+                    { key: "C" as const, value: pricePerShiftC, setter: setPricePerShiftC, labelKey: "perShiftCLabel" as const },
+                  ]).map(({ key, value, setter, labelKey }) => (
+                    <div key={key}>
+                      <label className="mb-1 block text-xs font-semibold text-slate-700">{tServices(labelKey)}</label>
+                      <input
+                        type="number"
+                        value={value ?? ""}
+                        onChange={(e) => setter(e.target.value ? Number(e.target.value) : undefined)}
+                        min="0"
+                        placeholder={tServices("perShiftPlaceholder")}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">

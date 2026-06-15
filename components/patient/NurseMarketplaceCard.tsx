@@ -8,15 +8,24 @@ import type { NurseMarketplaceProfile } from "@/lib/types";
 import { fmtCurrency, fmtNumber } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 
-function getStartingPrice(nurse: NurseMarketplaceProfile) {
-  const servicePrices = nurse.services.map((service) => service.price);
-  const lowestServicePrice = servicePrices.length ? Math.min(...servicePrices) : undefined;
-
-  if (lowestServicePrice) {
-    return lowestServicePrice;
+// "Starting at" picks the cheapest priced shift if the nurse has migrated
+// to per-shift pricing; otherwise the cheapest service; otherwise the
+// hourly rate. Returns { value, unit } so the card can render "/shift"
+// vs "/service" with one source of truth.
+function getStartingPrice(nurse: NurseMarketplaceProfile): { value: number; unit: "shift" | "service" | "hour" } {
+  const shiftPrices = Object.values(nurse.pricePerShift ?? {}).filter(
+    (n): n is number => typeof n === "number" && n > 0,
+  );
+  if (shiftPrices.length > 0) {
+    return { value: Math.min(...shiftPrices), unit: "shift" };
   }
 
-  return nurse.pricePerHour ?? 0;
+  const servicePrices = nurse.services.map((service) => service.price).filter((n) => n > 0);
+  if (servicePrices.length > 0) {
+    return { value: Math.min(...servicePrices), unit: "service" };
+  }
+
+  return { value: nurse.pricePerHour ?? 0, unit: "hour" };
 }
 
 export default function NurseMarketplaceCard({
@@ -29,6 +38,8 @@ export default function NurseMarketplaceCard({
   const t = useTranslations("patient.nurses.card");
   const locale = useLocale() as Locale;
   const startingPrice = getStartingPrice(nurse);
+  const unitKey: "perShift" | "perService" | "perHour" =
+    startingPrice.unit === "shift" ? "perShift" : startingPrice.unit === "service" ? "perService" : "perHour";
   const hasRealHours = Boolean(nurse.availableHours?.from && nurse.availableHours?.to);
   const hasRating = typeof nurse.rating === "number" && nurse.rating > 0;
   const hasCertifications = (nurse.certificates?.length ?? 0) > 0;
@@ -128,8 +139,8 @@ export default function NurseMarketplaceCard({
             <div>
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-0.5">{t("startingAt")}</p>
               <p className="text-xl font-extrabold text-slate-800">
-                {fmtCurrency(startingPrice, locale)}
-                <span className="text-sm font-medium text-slate-500">{t("perHour")}</span>
+                {fmtCurrency(startingPrice.value, locale)}
+                <span className="text-sm font-medium text-slate-500">{t(unitKey)}</span>
               </p>
             </div>
             <div className="flex items-center justify-center h-10 w-10 rounded-full bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-500 group-hover:text-white">

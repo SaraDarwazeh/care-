@@ -1,0 +1,23 @@
+{
+  "pts": "نقطة",
+  "pillTooltip": "رصيد نقاط الولاء",
+  "sectionTitle": "مكافآت Care+",
+  "sectionSubtitle": "اكسب نقاطًا على الحجوزات وطلبات المتجر والمراجعات، واستبدلها عند الدفع.",
+  "balanceLabel": "الرصيد الحالي",
+  "worth": "تساوي {amount} عند الدفع",
+  "recentActivity": "النشاط الأخير",
+  "noActivity": "لا يوجد نشاط بعد. أكمل حجزًا أو طلبًا لتبدأ بكسب النقاط.",
+  "useRewards": "استخدم المكافآت عند الدفع",
+  "balanceWithCap": "لديك {balance} نقطة. يمكنك استخدام حتى {cap} في هذا الطلب.",
+  "useMax": "استخدم الحدّ الأقصى",
+  "appliedDiscount": "تمّ تطبيق خصم {amount}",
+  "minBlocked": "الحدّ الأدنى للاستبدال {min} نقطة",
+  "notEnoughYet": "اكسب {required} نقطة للبدء بالاستبدال (لديك {have}).",
+  "sources": {
+    "booking_completed": "حجز مكتمل",
+    "order_delivered": "طلب تمّ تسليمه",
+    "review_submitted": "مراجعة مُقدَّمة",
+    "redemption": "استبدال عند الدفع",
+    "admin_adjust": "تعديل يدوي"
+  }
+}

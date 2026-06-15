@@ -35,6 +35,10 @@ const TYPE_ICON: Record<NotificationType, typeof Bell> = {
   nurse_rejected: AlertCircle,
   order_created: Package,
   order_status_changed: Package,
+  patient_id_verified: ShieldCheck,
+  patient_id_rejected: AlertCircle,
+  points_earned: Sparkles,
+  points_redeemed: Sparkles,
   system_alert: Bell,
 };
 
@@ -49,6 +53,10 @@ const TYPE_ACCENT: Record<NotificationType, string> = {
   nurse_rejected: "bg-rose-50 text-rose-600 border-rose-100",
   order_created: "bg-violet-50 text-violet-600 border-violet-100",
   order_status_changed: "bg-sky-50 text-sky-600 border-sky-100",
+  patient_id_verified: "bg-emerald-50 text-emerald-600 border-emerald-100",
+  patient_id_rejected: "bg-rose-50 text-rose-600 border-rose-100",
+  points_earned: "bg-amber-50 text-amber-600 border-amber-100",
+  points_redeemed: "bg-amber-50 text-amber-600 border-amber-100",
   system_alert: "bg-amber-50 text-amber-600 border-amber-100",
 };
 

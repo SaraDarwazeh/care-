@@ -6,7 +6,6 @@ import {
   OVERNIGHT_SURCHARGE_ACCEPTED,
   OVERNIGHT_SURCHARGE_REGULAR,
   SHIFT_BILLED_HOURS,
-  TAX_RATE,
 } from "@/lib/pricingConstants";
 
 const CONFIG_COLLECTION = "appConfig";
@@ -16,7 +15,6 @@ export interface PricingConfig {
   addons: AddOn[];
   overnightSurchargeAccepted: number;
   overnightSurchargeRegular: number;
-  taxRate: number;
   shiftBilledHours: number;
 }
 
@@ -26,7 +24,6 @@ export const DEFAULT_PRICING_CONFIG: PricingConfig = {
   addons: [...AVAILABLE_ADDONS],
   overnightSurchargeAccepted: OVERNIGHT_SURCHARGE_ACCEPTED,
   overnightSurchargeRegular: OVERNIGHT_SURCHARGE_REGULAR,
-  taxRate: TAX_RATE,
   shiftBilledHours: SHIFT_BILLED_HOURS,
 };
 
@@ -50,7 +47,6 @@ function mergeWithDefaults(raw: Record<string, unknown>): PricingConfig {
       typeof raw.overnightSurchargeRegular === "number"
         ? raw.overnightSurchargeRegular
         : DEFAULT_PRICING_CONFIG.overnightSurchargeRegular,
-    taxRate: typeof raw.taxRate === "number" ? raw.taxRate : DEFAULT_PRICING_CONFIG.taxRate,
     shiftBilledHours:
       typeof raw.shiftBilledHours === "number"
         ? raw.shiftBilledHours

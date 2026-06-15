@@ -1,7 +1,7 @@
 // Single source of truth for region/currency. Switching the currency
 // is one constant change; every Intl-based formatter reads from here.
 
-export const CURRENCY = "USD";
+export const CURRENCY = "ILS";
 
 // Where dates/times default to when no IANA timezone is supplied to a
 // formatter. Healthcare records lean on a single consistent zone for the

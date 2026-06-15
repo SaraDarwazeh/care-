@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { authErrorResponse, requireRole } from "@/lib/auth/verifyRequest";
+import { significantProfileSnapshot, sha256Hex } from "@/lib/nurseApprovalSnapshot";
+import type { NurseProfile } from "@/lib/types";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -42,7 +44,21 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    await userRef.update({ status: body.status });
+    // On approval, stamp approvedAt + a hash of the current nurse-profile
+    // snapshot. Subsequent edits compare against this hash so we only flip
+    // back to pending when the *approved* version actually drifts.
+    const updates: Record<string, unknown> = { status: body.status };
+    if (body.status === "approved") {
+      const profileSnap = await db.collection("nurseProfiles").doc(body.id).get();
+      if (profileSnap.exists) {
+        const profile = profileSnap.data() as Partial<NurseProfile>;
+        const hash = await sha256Hex(significantProfileSnapshot(profile));
+        updates.approvedAt = new Date().toISOString();
+        updates.lastApprovedProfileHash = hash;
+      }
+    }
+
+    await userRef.update(updates);
 
     console.log("[api/nurses/status] nurse status updated", {
       id: body.id,

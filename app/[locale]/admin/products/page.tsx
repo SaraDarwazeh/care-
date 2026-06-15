@@ -8,6 +8,8 @@ import type { StoreItem } from "@/lib/types";
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/services/storeService";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { buildLocalized, tLocalized } from "@/lib/i18nContent";
+import ImageUploadField from "@/components/common/ImageUploadField";
+import StoreItemImage from "@/components/common/StoreItemImage";
 
 // Editor state mirrors the bilingual schema: every LocalizedString
 // field gets a `*En` + `*Ar` text input. Submit normalizes back to
@@ -161,7 +163,7 @@ export default function AdminProductsPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("price")} *</label>
                 <input required type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -172,12 +174,27 @@ export default function AdminProductsPage() {
                 <input required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
                   className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="Equipment" />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("image")}</label>
-                <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="🩺" />
-              </div>
             </div>
+            <ImageUploadField
+              scope="product"
+              label={t("image")}
+              value={form.image}
+              onChange={(image) => setForm({ ...form, image })}
+              helperText="Upload a product photo, or enter a single emoji as a placeholder below."
+            />
+            {/* Emoji escape-hatch for the seed-data convention (single-char glyph). */}
+            {!form.image && (
+              <p className="text-xs text-slate-500">
+                Or use an emoji glyph instead:{" "}
+                <input
+                  value={form.image}
+                  onChange={(e) => setForm({ ...form, image: e.target.value })}
+                  className="ms-1 w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm"
+                  placeholder="🩺"
+                  maxLength={4}
+                />
+              </p>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -214,8 +231,12 @@ export default function AdminProductsPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p) => (
             <div key={p.id} className="rounded-3xl bg-white border border-slate-200 shadow-sm overflow-hidden hover:border-sky-200 transition-all group">
-              <div className="h-36 flex items-center justify-center bg-slate-50 text-6xl border-b border-slate-100 group-hover:bg-sky-50 transition-colors">
-                {p.image}
+              <div className="relative h-36 flex items-center justify-center overflow-hidden bg-slate-50 border-b border-slate-100 group-hover:bg-sky-50 transition-colors">
+                <StoreItemImage
+                  src={p.image}
+                  alt={tLocalized(p.name, "en")}
+                  glyphSize="text-6xl"
+                />
               </div>
               <div className="p-5">
                 <div className="flex items-start justify-between gap-2 mb-1">

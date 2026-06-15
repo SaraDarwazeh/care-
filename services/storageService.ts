@@ -6,16 +6,20 @@ export type UploadScope =
   | "nurse-gallery"
   | "nurse-certificate"
   | "package"
-  | "product";
+  | "product"
+  | "patient-id";
 
 export interface UploadResult {
+  // Empty for private scopes (patient-id) — callers should store `key`
+  // and fetch a signed read URL on demand.
   url: string;
   key: string;
 }
 
 interface PresignResponse {
   uploadUrl: string;
-  publicUrl: string;
+  // Undefined for private scopes.
+  publicUrl?: string;
   key: string;
   expiresIn: number;
 }
@@ -75,7 +79,25 @@ export async function uploadFile(
     throw new Error(`Upload failed (HTTP ${putRes.status})`);
   }
 
-  return { url: publicUrl, key };
+  return { url: publicUrl ?? "", key };
+}
+
+// Fetch a short-lived signed read URL for objects in private prefixes
+// (patient IDs). Public prefixes never need this — read them directly.
+export async function fetchSignedReadUrl(key: string): Promise<string> {
+  const token = await getCurrentIdToken();
+  if (!token) {
+    throw new Error("You must be signed in to view this document.");
+  }
+  const res = await fetch(`/api/uploads/read?key=${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const payload = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(payload.error ?? `Failed to fetch document (HTTP ${res.status})`);
+  }
+  const data = (await res.json()) as { url: string; expiresIn: number };
+  return data.url;
 }
 
 // Convenience helper for components that accept either a File or an

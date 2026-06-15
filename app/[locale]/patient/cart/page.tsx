@@ -19,6 +19,9 @@ import { useState, useEffect } from "react";
 import { fmtCurrency } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
+import StoreItemImage from "@/components/common/StoreItemImage";
+import RedeemPointsField from "@/components/patient/RedeemPointsField";
+import { pointsToCurrency } from "@/lib/pointsConstants";
 
 export default function CartPage() {
   const { cart, removeFromCart, addToCart, removeItemCompletely, clearCart, totalItems } = useCart();
@@ -54,7 +57,9 @@ export default function CartPage() {
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const total = subtotal;
+  const [redeemPoints, setRedeemPoints] = useState(0);
+  const pointsDiscount = pointsToCurrency(redeemPoints);
+  const total = Math.max(0, subtotal - pointsDiscount);
 
   const handleCheckout = async () => {
     setCheckingOut(true);
@@ -72,13 +77,18 @@ export default function CartPage() {
       const order = await createOrder({
         patientId,
         items: orderItems,
+        subtotal,
+        pointsRedeemed: redeemPoints || undefined,
+        pointsDiscount: redeemPoints ? pointsDiscount : undefined,
         total,
         status: "pending",
         createdAt: new Date().toISOString(),
+        redeemPointsAmount: redeemPoints || undefined,
       });
 
       setOrderId(order.id);
       clearCart();
+      setRedeemPoints(0);
       setSuccess(true);
     } catch (err) {
       console.error("Checkout failed:", err);
@@ -155,8 +165,12 @@ export default function CartPage() {
                 key={item.id}
                 className="flex flex-col sm:flex-row gap-4 items-center rounded-3xl border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-300 transition"
               >
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-slate-50 border border-slate-100 text-4xl">
-                  {item.image}
+                <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 border border-slate-100">
+                  <StoreItemImage
+                    src={item.image}
+                    alt={tLocalized(item.name, locale)}
+                    glyphSize="text-4xl"
+                  />
                 </div>
 
                 <div className="flex-1 min-w-0 text-center sm:text-start">
@@ -218,10 +232,20 @@ export default function CartPage() {
                     {t("shippingNote")}
                   </span>
                 </div>
+                {redeemPoints > 0 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span>− {fmtCurrency(pointsDiscount, locale)}</span>
+                    <span className="font-semibold">{fmtCurrency(-pointsDiscount, locale)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-slate-100 pt-3 text-base">
                   <span className="font-bold text-slate-800">{t("total")}</span>
                   <span className="font-extrabold text-xl text-sky-600">{fmtCurrency(total, locale)}</span>
                 </div>
+              </div>
+
+              <div className="mb-4">
+                <RedeemPointsField subtotal={subtotal} value={redeemPoints} onChange={setRedeemPoints} />
               </div>
 
               <PatientButton

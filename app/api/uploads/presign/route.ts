@@ -13,6 +13,7 @@ const UPLOAD_SCOPES = [
   "nurse-certificate",
   "package",
   "product",
+  "patient-id",
 ] as const;
 
 type UploadScope = (typeof UPLOAD_SCOPES)[number];
@@ -24,7 +25,15 @@ const SCOPE_PREFIXES: Record<UploadScope, string> = {
   "nurse-certificate": "nurses/certificates",
   package: "packages",
   product: "products",
+  // patients/ids/{patientUid}/{uuid}.ext — the uid in the key lets the
+  // read proxy decide authz from the key alone, no extra lookups.
+  "patient-id": "patients/ids",
 };
+
+// Scopes whose objects must never be served via a public URL — the
+// presign route returns only { uploadUrl, key } for these; clients fetch
+// reads via /api/uploads/read which mints short-lived signed GET URLs.
+const PRIVATE_SCOPES = new Set<UploadScope>(["patient-id"]);
 
 // Maximum file size enforced server-side. We bake it into the presigned
 // URL via Content-Length-Range on the upload — keeps abuse cheap.
@@ -106,6 +115,12 @@ export async function POST(request: NextRequest) {
       if (caller.role !== "admin") {
         throw new AuthError(403, "Only admins may upload to this scope");
       }
+    } else if (scope === "patient-id") {
+      // Patients upload their own ID; admins can upload on behalf for
+      // support / backfill flows. Nurses never touch this scope.
+      if (caller.role !== "patient" && caller.role !== "admin") {
+        throw new AuthError(403, "Only patients may upload identity documents");
+      }
     }
   } catch (error) {
     return authErrorResponse(error);
@@ -127,7 +142,11 @@ export async function POST(request: NextRequest) {
   }
 
   const prefix = SCOPE_PREFIXES[scope];
-  const key = `${prefix}/${randomKey()}${safeExtension(filename)}`;
+  // For patient-id, scope the key under the caller's uid so the read
+  // proxy can authorize from the key alone (no Firestore lookup needed).
+  const key = scope === "patient-id"
+    ? `${prefix}/${caller.uid}/${randomKey()}${safeExtension(filename)}`
+    : `${prefix}/${randomKey()}${safeExtension(filename)}`;
 
   try {
     const command = new PutObjectCommand({
@@ -141,7 +160,9 @@ export async function POST(request: NextRequest) {
     });
 
     const uploadUrl = await getSignedUrl(client, command, { expiresIn: PRESIGN_TTL_SECONDS });
-    const publicUrl = buildPublicUrl(key);
+    // Private scopes never expose a public URL — callers MUST read via
+    // /api/uploads/read so we can enforce per-request authz.
+    const publicUrl = PRIVATE_SCOPES.has(scope) ? undefined : buildPublicUrl(key);
 
     return NextResponse.json({
       uploadUrl,

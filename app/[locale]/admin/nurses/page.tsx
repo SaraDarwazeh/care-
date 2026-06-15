@@ -50,7 +50,12 @@ function NurseRow({
             <p className="text-sm text-slate-500">{nurse.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          {nurse.status === "pending" && nurse.approvedAt && (
+            <span className="rounded-xl bg-violet-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-violet-700">
+              {t("resubmittedBadge")}
+            </span>
+          )}
           <span className={`px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wide ${
             nurse.status === 'approved' ? 'bg-emerald-100 text-emerald-700' :
             nurse.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
@@ -84,6 +89,28 @@ function NurseRow({
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                 <p className="font-semibold text-slate-400 uppercase tracking-wider text-xs mb-2">{t("professionalBio")}</p>
                 <p className="text-slate-600 leading-relaxed">{profile.bio}</p>
+              </div>
+
+              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                <p className="font-semibold text-slate-400 uppercase tracking-wider text-xs mb-2">{t("perShiftPricing")}</p>
+                {profile.pricePerShift && Object.values(profile.pricePerShift).some((n) => typeof n === "number" && n > 0) ? (
+                  <ul className="flex flex-wrap gap-2 text-xs">
+                    {(["A", "B", "C"] as const).map((shift) => {
+                      const v = profile.pricePerShift?.[shift];
+                      if (typeof v !== "number" || v <= 0) return null;
+                      return (
+                        <li
+                          key={shift}
+                          className="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-1 font-bold text-emerald-700"
+                        >
+                          {shift}: {v}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-xs font-bold text-amber-700">⚠ {t("perShiftPricingMissing")}</p>
+                )}
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">

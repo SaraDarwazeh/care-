@@ -19,8 +19,17 @@ import type {
   NotificationType,
   StoreOrder,
 } from "@/lib/types";
+import { CURRENCY } from "@/lib/config";
 
 const log = createLogger("notificationService");
+
+// Notification bodies are written at create-time as plain strings (see
+// design comment above createNotification). For currency amounts in
+// those strings, format as "<CODE> <amount>" instead of any specific
+// symbol so the body matches the platform's chosen currency.
+function fmtAmount(value: number): string {
+  return `${CURRENCY} ${value.toFixed(2)}`;
+}
 
 const COLLECTION = "notifications";
 
@@ -239,18 +248,15 @@ export async function notifyBookingStatusChange(input: {
   const type = typeMap[newStatus];
   if (!type) return;
 
-  const titleMap: Record<typeof type, string> = {
-    booking_accepted: "Booking accepted",
-    booking_rejected: "Booking not accepted",
-    booking_completed: "Visit completed",
-    booking_cancelled: "Booking cancelled",
-    booking_created: "Booking",
-    nurse_signup: "Booking",
-    nurse_approved: "Booking",
-    nurse_rejected: "Booking",
-    order_created: "Booking",
-    order_status_changed: "Booking",
-    system_alert: "Booking",
+  // Keyed on BookingStatus directly so we don't have to keep this map in
+  // lock-step with the broader NotificationType union (the prior pattern
+  // padded missing types with placeholder strings and broke as new
+  // notification types landed in Items 2 & 3).
+  const titleByStatus: Partial<Record<BookingStatus, string>> = {
+    accepted: "Booking accepted",
+    rejected: "Booking not accepted",
+    completed: "Visit completed",
+    cancelled: "Booking cancelled",
   };
 
   const bodyForRecipient = (() => {
@@ -273,7 +279,7 @@ export async function notifyBookingStatusChange(input: {
     createNotification({
       userId: recipientUserId,
       type,
-      title: titleMap[type],
+      title: titleByStatus[newStatus] ?? "Booking",
       body: bodyForRecipient,
       link: bookingLinkFor(recipientRole),
       payload: {
@@ -292,7 +298,7 @@ export async function notifyOrderCreated(order: Pick<StoreOrder, "id" | "patient
     broadcastToAdmins({
       type: "order_created",
       title: "New store order",
-      body: `A new order totaling $${order.total.toFixed(2)} is awaiting review.`,
+      body: `A new order totaling ${fmtAmount(order.total)} is awaiting review.`,
       link: "/admin/orders",
       payload: { orderId: order.id, total: order.total },
     }),
@@ -331,6 +337,84 @@ export async function notifyNurseSignup(input: { nurseUserId: string; nurseName:
       body: `${input.nurseName} just signed up and is awaiting approval.`,
       link: "/admin/nurses",
       payload: { nurseUserId: input.nurseUserId, nurseName: input.nurseName },
+    }),
+  );
+}
+
+export async function notifyPointsEarned(input: {
+  userId: string;
+  amount: number;
+  source: "booking_completed" | "order_delivered" | "review_submitted" | "admin_adjust";
+  sourceId?: string;
+}): Promise<void> {
+  await safe(() =>
+    createNotification({
+      userId: input.userId,
+      type: "points_earned",
+      title: `+${input.amount} points`,
+      body:
+        input.source === "review_submitted"
+          ? `You earned ${input.amount} bonus points for leaving a review.`
+          : `You earned ${input.amount} loyalty points.`,
+      link: "/patient/profile",
+      payload: { amount: input.amount, source: input.source, sourceId: input.sourceId },
+    }),
+  );
+}
+
+export async function notifyPointsRedeemed(input: {
+  userId: string;
+  amount: number;
+  orderId: string;
+}): Promise<void> {
+  await safe(() =>
+    createNotification({
+      userId: input.userId,
+      type: "points_redeemed",
+      title: `-${input.amount} points redeemed`,
+      body: `You redeemed ${input.amount} points on your order.`,
+      link: "/patient/orders",
+      payload: { amount: input.amount, orderId: input.orderId },
+    }),
+  );
+}
+
+export async function notifyPatientIdVerified(input: { userId: string }): Promise<void> {
+  await safe(() =>
+    createNotification({
+      userId: input.userId,
+      type: "patient_id_verified",
+      title: "Identity verified",
+      body: "Your identity document was approved. You can now book a nurse.",
+      link: "/patient/profile",
+    }),
+  );
+}
+
+export async function notifyPatientIdRejected(input: { userId: string; note?: string }): Promise<void> {
+  await safe(() =>
+    createNotification({
+      userId: input.userId,
+      type: "patient_id_rejected",
+      title: "Identity verification needs attention",
+      body: `Your identity document was not approved.${input.note ? ` ${input.note}` : ""}`,
+      link: "/patient/profile",
+      payload: input.note ? { note: input.note } : undefined,
+    }),
+  );
+}
+
+export async function notifyNurseProfileResubmit(input: {
+  nurseUserId: string;
+  nurseName: string;
+}): Promise<void> {
+  await safe(() =>
+    broadcastToAdmins({
+      type: "nurse_signup",
+      title: "Nurse profile resubmitted",
+      body: `${input.nurseName} edited their profile. Re-review required.`,
+      link: "/admin/nurses",
+      payload: { nurseUserId: input.nurseUserId, nurseName: input.nurseName, resubmit: true },
     }),
   );
 }

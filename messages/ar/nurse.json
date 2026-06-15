@@ -62,6 +62,8 @@
     "viewAllBookings": "عرض كل الحجوزات",
     "editProfile": "تعديل الملف",
     "yourRating": "تقييمك",
+    "perShiftBannerTitle": "حدّد أسعار الورديات الخاصة بك",
+    "perShiftBannerBody": "الحجوزات لا تزال تعتمد على أجرك بالساعة × ٨ ساعات حتى تحدّد سعرًا موحَّدًا لكل وردية تقدّمها.",
     "stats": {
       "totalBookings": "إجمالي الحجوزات",
       "pendingRequests": "طلبات قيد المراجعة",
@@ -213,7 +215,8 @@
     "setupHeadingNeutral": "أنشئ ملفك كممرض/ة",
     "manageHeading": "أدر ملفك",
     "onboardingBody": "أضف الخدمات والأسعار والمهارات والتواجد ليتمكّن المرضى من حجزك.",
-    "manageBody": "حدّث خدماتك وأسعارك وتواجدك ومستنداتك في أي وقت."
+    "manageBody": "حدّث خدماتك وأسعارك وتواجدك ومستنداتك في أي وقت.",
+    "backToDashboard": "العودة إلى لوحة التحكم"
   },
   "profileForm": {
     "hubTitle": "مركز الملف",
@@ -255,6 +258,12 @@
       "experienceLabel": "سنوات الخبرة",
       "hourlyRateLabel": "الأجر بالساعة (يُستخدم عند عدم تحديد سعر لكل خدمة)",
       "hourlyRatePlaceholder": "مثلًا: 25",
+      "perShiftTitle": "تسعير الوردية",
+      "perShiftHelp": "السعر الموحَّد لحجز وردية كاملة. اترك أي وردية فارغة إذا كنت لا تقدّمها.",
+      "perShiftALabel": "وردية أ (صباحًا)",
+      "perShiftBLabel": "وردية ب (بعد الظهر)",
+      "perShiftCLabel": "وردية ج (ليلية)",
+      "perShiftPlaceholder": "مثلًا: 200",
       "servicesOffered": "الخدمات المقدَّمة",
       "addService": "أضف خدمة",
       "serviceNamePlaceholder": "اسم الخدمة",

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { CalendarClock, CheckCircle, Clock, DollarSign, Star, TrendingUp, ChevronRight } from "lucide-react";
+import { CalendarClock, CheckCircle, Clock, DollarSign, Star, TrendingUp, ChevronRight, AlertCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseIncomingBookingCard from "@/components/nurse/NurseIncomingBookingCard";
@@ -81,6 +81,14 @@ export default function NurseDashboardPage() {
   const firstName = appUser.name.split(" ")[0];
   const welcome = t(welcomeKey(profile?.gender), { name: firstName });
 
+  // Per-shift migration banner: shown to approved nurses who haven't set
+  // any per-shift price yet. Pricing falls back to hourly × 8 in the
+  // meantime; we surface this so they can migrate proactively.
+  const hasAnyPerShift = profile?.pricePerShift
+    ? Object.values(profile.pricePerShift).some((n) => typeof n === "number" && n > 0)
+    : false;
+  const showPerShiftBanner = !!profile && !hasAnyPerShift;
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       {/* Hero */}
@@ -111,6 +119,20 @@ export default function NurseDashboardPage() {
         <div className="absolute -start-10 -bottom-10 h-64 w-64 rounded-full bg-sky-400/10 blur-3xl" />
         <TrendingUp className="absolute end-8 bottom-0 h-32 w-32 text-white/5" />
       </section>
+
+      {showPerShiftBanner && (
+        <Link
+          href="/nurse/setup"
+          className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 transition hover:bg-amber-100"
+        >
+          <AlertCircle className="h-5 w-5 shrink-0 text-amber-600" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900">{t("perShiftBannerTitle")}</p>
+            <p className="mt-0.5 text-xs text-amber-800">{t("perShiftBannerBody")}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-amber-700" />
+        </Link>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

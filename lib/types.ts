@@ -36,7 +36,16 @@ export interface NurseProfile {
   bio: string;
   specialization: string;
   services: NurseServiceItem[];
+  // Legacy hourly rate. Still used as: (a) the per-named-service fallback
+  // denominator for one-time bookings, (b) the shift-pricing fallback
+  // (× SHIFT_BILLED_HOURS) for nurses who haven't yet set pricePerShift.
+  // New shift bookings should use pricePerShift instead.
   pricePerHour?: number;
+  // Flat per-shift prices in the platform currency. When set, the shift
+  // booking total is exactly pricePerShift[shift] — no hourly × N math,
+  // no overnight surcharge (shift C already encodes the overnight premium).
+  // Any shift omitted means the nurse does not offer that shift.
+  pricePerShift?: { A?: number; B?: number; C?: number };
   rating: number;
   availableDays: NurseDay[];
   availableHours: NurseAvailabilityHours;
@@ -117,6 +126,15 @@ export interface PatientProfile {
   currentMedications?: string[];
   dateOfBirth?: string;
   bloodType?: string;
+  // Identity verification (post-launch gate before first booking).
+  // idDocumentKey holds the S3 object key (not a URL) — IDs live under a
+  // private prefix and are read only via short-lived signed URLs. Admin
+  // sets verificationStatus to "verified" or "rejected" after review.
+  idDocumentKey?: string;
+  verificationStatus?: "pending" | "verified" | "rejected";
+  verifiedAt?: string;
+  verifiedBy?: string;
+  verificationNote?: string;
 }
 
 export interface Booking {
@@ -135,6 +153,9 @@ export interface Booking {
     addons?: { id: string; name: string; price: number }[];
     transport?: number;
     subtotal?: number;
+    // Legacy: historical bookings persisted a tax line. New bookings never
+    // write it; PriceBreakdown only renders the row when > 0 so old totals
+    // still display correctly without re-running tax math.
     tax?: number;
     total?: number;
   };
@@ -184,6 +205,22 @@ export interface AppUser {
   // active locale; users can change it from profile/settings and via
   // the navbar locale switcher. Optional so legacy accounts keep working.
   language?: "en" | "ar";
+  // Sign-in provider. Defaults to "email" for back-compat — legacy
+  // accounts created before Google sign-in shipped don't have this set.
+  provider?: "email" | "google";
+  // Denormalized loyalty-points balance. Source of truth lives in the
+  // users/{uid}/pointsLedger subcollection; this aggregate is updated
+  // atomically (Firestore transaction) on every earn/redeem so the
+  // navbar pill and admin views can render without an extra query.
+  pointsBalance?: number;
+  // ISO timestamp of the most recent admin approval for nurses. Distinguishes
+  // first-time pending from re-pending (post-edit re-review). Always present
+  // on approved nurses after the re-approval workflow shipped.
+  approvedAt?: string;
+  // SHA-256 hash of the last-approved nurse profile snapshot. Used to detect
+  // whether a profile edit changed any "significant" field and should trigger
+  // re-review. Nurses only.
+  lastApprovedProfileHash?: string;
 }
 
 export interface StoreItem {
@@ -205,8 +242,40 @@ export interface StoreOrder {
   id: string;
   patientId: string;
   items: { productId: string; quantity: number; price: number }[];
+  // `subtotal` is the cart subtotal before any points discount. `total`
+  // is what the patient actually pays after `pointsDiscount` is applied.
+  // Legacy orders without redemption keep `total` only — subtotal is
+  // optional so old reads keep working.
+  subtotal?: number;
+  pointsRedeemed?: number;
+  pointsDiscount?: number;
   total: number;
   status: "pending" | "processing" | "shipped" | "delivered";
+  createdAt: string;
+}
+
+// Points ledger entries live in users/{uid}/pointsLedger/{id}. Every
+// balance change must be accompanied by a ledger doc so audit + admin
+// reconciliation works without parsing balance deltas.
+export type PointsSource =
+  | "booking_completed"
+  | "order_delivered"
+  | "review_submitted"
+  | "redemption"
+  | "admin_adjust";
+
+export interface PointsLedgerEntry {
+  id: string;
+  type: "earn" | "redeem";
+  source: PointsSource;
+  // Always positive — direction is encoded by `type` so the ledger
+  // displays cleanly without sign-juggling in UI code.
+  amount: number;
+  // bookingId / orderId / reviewId. Combined with `source` it forms the
+  // idempotency key — the points service refuses to write a second earn
+  // entry for the same (source, sourceId) pair.
+  sourceId?: string;
+  note?: string;
   createdAt: string;
 }
 
@@ -337,6 +406,10 @@ export type NotificationType =
   | "nurse_rejected"
   | "order_created"
   | "order_status_changed"
+  | "patient_id_verified"
+  | "patient_id_rejected"
+  | "points_earned"
+  | "points_redeemed"
   | "system_alert";
 
 export type NotificationChannel = "in_app" | "email" | "sms";

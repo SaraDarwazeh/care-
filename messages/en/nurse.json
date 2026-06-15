@@ -62,6 +62,8 @@
     "viewAllBookings": "View All Bookings",
     "editProfile": "Edit Profile",
     "yourRating": "Your Rating",
+    "perShiftBannerTitle": "Set your per-shift pricing",
+    "perShiftBannerBody": "Bookings still fall back to your hourly rate × 8 hours until you set a flat price for each shift you offer.",
     "stats": {
       "totalBookings": "Total Bookings",
       "pendingRequests": "Pending Requests",
@@ -213,7 +215,8 @@
     "setupHeadingNeutral": "Set up your nurse profile",
     "manageHeading": "Manage your profile",
     "onboardingBody": "Add services, pricing, skills, and availability so patients can book you.",
-    "manageBody": "Update your services, pricing, availability, and credentials anytime."
+    "manageBody": "Update your services, pricing, availability, and credentials anytime.",
+    "backToDashboard": "Back to dashboard"
   },
   "profileForm": {
     "hubTitle": "Profile hub",
@@ -255,6 +258,12 @@
       "experienceLabel": "Years of Experience",
       "hourlyRateLabel": "Hourly rate (used when no per-service price set)",
       "hourlyRatePlaceholder": "e.g. 25",
+      "perShiftTitle": "Per-shift pricing",
+      "perShiftHelp": "Flat price for booking a full shift. Leave a shift blank if you don't offer it.",
+      "perShiftALabel": "Shift A (morning)",
+      "perShiftBLabel": "Shift B (afternoon)",
+      "perShiftCLabel": "Shift C (overnight)",
+      "perShiftPlaceholder": "e.g. 200",
       "servicesOffered": "Services Offered",
       "addService": "Add service",
       "serviceNamePlaceholder": "Service name",

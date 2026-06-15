@@ -37,6 +37,7 @@ interface NurseSeedProfile {
   specialization: string;
   services: Array<{ name: string; price: number }>;
   pricePerHour?: number;
+  pricePerShift?: { A?: number; B?: number; C?: number };
   rating: number;
   availableDays: Array<"Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun">;
   availableHours: { from: string; to: string };
@@ -163,7 +164,6 @@ interface BookingSeedInput {
     addons?: { id: string; name: string; price: number }[];
     transport?: number;
     subtotal?: number;
-    tax?: number;
     total?: number;
   };
   patientNameSnapshot?: string;
@@ -486,6 +486,17 @@ function getNurseProfile(index: number, nurseName: string): NurseSeedProfile {
     specialization: SPECIALIZATION_BY_INDEX[index % SPECIALIZATION_BY_INDEX.length],
     services,
     pricePerHour: 18 + index,
+    // Per-shift price = ~8h × hourly + small variance, with shift C carrying
+    // the overnight premium baked in (replaces the legacy overnight surcharge).
+    pricePerShift: ((): { A?: number; B?: number; C?: number } => {
+      const hourly = 18 + index;
+      const base = hourly * 8;
+      const obj: { A?: number; B?: number; C?: number } = {};
+      if (availableShifts.includes("A")) obj.A = base;
+      if (availableShifts.includes("B")) obj.B = base + 10;
+      if (availableShifts.includes("C")) obj.C = base + 40;
+      return obj;
+    })(),
     rating: getRandomRating(index),
     availableDays: getRandomDays(index),
     availableHours: { from: shiftRange.from, to: shiftRange.to },
@@ -657,8 +668,7 @@ function buildBookingSeeds(patientIds: string[], nurseIds: string[]): BookingSee
     const base = service.basePrice + index;
     const transport = template.bookingType === "package" ? 8 : 4;
     const subtotal = base + transport;
-    const tax = Math.round(subtotal * 0.05 * 100) / 100;
-    const total = Math.round((subtotal + tax) * 100) / 100;
+    const total = subtotal;
 
     seeds.push({
       patientId,
@@ -676,7 +686,7 @@ function buildBookingSeeds(patientIds: string[], nurseIds: string[]): BookingSee
       durationDays: template.durationDays,
       durationMinutes: template.bookingType === "one-time" ? 60 : undefined,
       rejectionReason: template.rejectionReason,
-      pricing: { base, transport, subtotal, tax, total },
+      pricing: { base, transport, subtotal, total },
       createdAtIso: isoOffsetDate(Math.min(template.daysFromNow - 1, -1)),
     });
   });

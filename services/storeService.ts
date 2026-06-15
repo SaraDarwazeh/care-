@@ -84,12 +84,39 @@ export async function getOrders(): Promise<StoreOrder[]> {
 }
 
 export async function createOrder(
-  input: Omit<StoreOrder, "id">
+  input: Omit<StoreOrder, "id"> & { redeemPointsAmount?: number },
 ): Promise<StoreOrder> {
   const { db } = ensureClientFirebase();
-  const ref = await addDoc(collection(db, "orders"), input);
-  const order: StoreOrder = { id: ref.id, ...input };
+  // Strip the convenience field before writing — it isn't a persisted
+  // shape, it's just a per-call instruction to also burn points.
+  const { redeemPointsAmount, ...persistedInput } = input;
+  const ref = await addDoc(collection(db, "orders"), persistedInput);
+  const order: StoreOrder = { id: ref.id, ...persistedInput };
   await notifyOrderCreated(order);
+
+  // Burn the requested points atomically. Validation (min, max-fraction,
+  // balance) lives in the points service; if it throws, the order has
+  // already been written — admin can compensate via /api/points/adjust.
+  // We accept this asymmetry because the order itself should not fail
+  // for a points-side error mid-checkout.
+  if (redeemPointsAmount && redeemPointsAmount > 0) {
+    try {
+      const { redeemPoints } = await import("@/services/pointsService");
+      const subtotal = typeof persistedInput.subtotal === "number"
+        ? persistedInput.subtotal
+        : persistedInput.total;
+      await redeemPoints({
+        patientId: persistedInput.patientId,
+        amount: redeemPointsAmount,
+        sourceId: order.id,
+        cartSubtotal: subtotal,
+      });
+      const { notifyPointsRedeemed } = await import("@/services/notificationService");
+      await notifyPointsRedeemed({ userId: persistedInput.patientId, amount: redeemPointsAmount, orderId: order.id });
+    } catch (err) {
+      console.error("[storeService] points redemption failed (order persisted without burn)", err);
+    }
+  }
   return order;
 }
 
@@ -119,5 +146,26 @@ export async function updateOrderStatus(
       order: { id: orderId, patientId: existing.patientId },
       newStatus: status,
     });
+
+    // Loyalty earn on delivery. Idempotent per (orderId, source).
+    if (status === "delivered") {
+      try {
+        const { earnPoints } = await import("@/services/pointsService");
+        const { POINTS_PER_ILS } = await import("@/lib/pointsConstants");
+        const amount = Math.round(Number(existing.total ?? 0) * POINTS_PER_ILS);
+        if (amount > 0) {
+          await earnPoints({
+            patientId: existing.patientId,
+            source: "order_delivered",
+            amount,
+            sourceId: orderId,
+          });
+          const { notifyPointsEarned } = await import("@/services/notificationService");
+          await notifyPointsEarned({ userId: existing.patientId, amount, source: "order_delivered", sourceId: orderId });
+        }
+      } catch (err) {
+        console.warn("[storeService] points earn failed (non-fatal)", err);
+      }
+    }
   }
 }

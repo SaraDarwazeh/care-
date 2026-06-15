@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Filter, MapPin, Sparkles, Truck, Award, Stethoscope, HeartHandshake } from "lucide-react";
+import { Filter, MapPin, Sparkles, Truck, Stethoscope, HeartHandshake, Search } from "lucide-react";
 
 // Filter values split medical/professional offerings (services[]) from
 // extras (additionalServices[]) — operationally distinct categories that
 // the patient picks for very different reasons. Languages used to be a
 // chip filter; it's now informational-only on the nurse detail page.
 export interface MarketplaceFilterValues {
+  query: string;
   service: string;
   additionalServices: string[];
   shift: string;
@@ -18,12 +19,12 @@ export interface MarketplaceFilterValues {
   availableToday: boolean;
   transportAvailable: boolean;
   skills: string[];
-  certifications: string[];
 }
 
 export type SortKey = "rating" | "price_low" | "experience";
 
 export const EMPTY_FILTERS: MarketplaceFilterValues = {
+  query: "",
   service: "",
   additionalServices: [],
   shift: "",
@@ -34,11 +35,11 @@ export const EMPTY_FILTERS: MarketplaceFilterValues = {
   availableToday: false,
   transportAvailable: false,
   skills: [],
-  certifications: [],
 };
 
 export function countActiveFilters(f: MarketplaceFilterValues): number {
   let n = 0;
+  if (f.query.trim()) n++;
   if (f.service) n++;
   n += f.additionalServices.length;
   if (f.shift && f.shift !== "any") n++;
@@ -49,7 +50,6 @@ export function countActiveFilters(f: MarketplaceFilterValues): number {
   if (f.availableToday) n++;
   if (f.transportAvailable) n++;
   n += f.skills.length;
-  n += f.certifications.length;
   return n;
 }
 
@@ -60,7 +60,6 @@ interface MarketplaceFiltersProps {
   availableServices: string[];
   availableAdditionalServices: string[];
   availableSkills: string[];
-  availableCertifications: string[];
   sortBy: SortKey;
   onSortChange: (next: SortKey) => void;
 }
@@ -123,7 +122,6 @@ export default function MarketplaceFilters({
   availableServices,
   availableAdditionalServices,
   availableSkills,
-  availableCertifications,
   sortBy,
   onSortChange,
 }: MarketplaceFiltersProps) {
@@ -134,7 +132,7 @@ export default function MarketplaceFilters({
     onChange({ ...values, ...p });
   }
 
-  function toggleIn(field: "skills" | "certifications" | "additionalServices", value: string) {
+  function toggleIn(field: "skills" | "additionalServices", value: string) {
     const list = values[field];
     const next = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
     patch({ [field]: next } as Partial<MarketplaceFilterValues>);
@@ -154,6 +152,21 @@ export default function MarketplaceFilters({
       </div>
 
       <div className="space-y-5">
+        <div>
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("searchByName")}</label>
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              placeholder={t("searchByNamePlaceholder")}
+              value={values.query}
+              onChange={(e) => patch({ query: e.target.value })}
+              dir="auto"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-slate-700">{t("location")}</label>
           <div className="relative">
@@ -319,15 +332,6 @@ export default function MarketplaceFilters({
           selected={values.skills}
           onToggle={(v) => toggleIn("skills", v)}
           accent="violet"
-        />
-
-        <ChipMultiSelect
-          label={t("certifications")}
-          icon={Award}
-          options={availableCertifications}
-          selected={values.certifications}
-          onToggle={(v) => toggleIn("certifications", v)}
-          accent="emerald"
         />
 
         <button

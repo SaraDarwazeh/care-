@@ -56,5 +56,28 @@
   "system_alert": {
     "title": "تنبيه من النظام",
     "body": "{message}"
+  },
+  "patient_id_verified": {
+    "title": "تمّ التحقّق من الهويّة",
+    "body": "تمّت الموافقة على مستند هويّتك. أصبح بإمكانك حجز ممرّض/ة الآن."
+  },
+  "patient_id_rejected": {
+    "title": "تحقّق الهويّة يحتاج إلى مراجعة",
+    "body": "لم تُقبَل وثيقة هويّتك. يُرجى رفع مستند مختلف.",
+    "bodyWithNote": "لم تُقبَل وثيقة هويّتك: {note}"
+  },
+  "points_earned": {
+    "title": "+{amount} نقطة",
+    "body": {
+      "booking_completed": "كسبت {amount} نقطة على حجز مكتمل.",
+      "order_delivered": "كسبت {amount} نقطة على طلب تمّ تسليمه.",
+      "review_submitted": "كسبت {amount} نقطة مكافأة على ترك مراجعة.",
+      "admin_adjust": "أضاف مسؤول {amount} نقطة إلى حسابك.",
+      "default": "كسبت {amount} نقطة ولاء."
+    }
+  },
+  "points_redeemed": {
+    "title": "استُبدلت {amount} نقطة",
+    "body": "استبدلت {amount} نقطة على طلبك."
   }
 }

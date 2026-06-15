@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -25,6 +25,9 @@ import {
   Trash2,
 } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
+import SignedReadImage from "@/components/common/SignedReadImage";
+import { uploadFile } from "@/services/storageService";
+import { Loader2, Upload } from "lucide-react";
 import type { EmergencyContact, PatientLocation, PatientProfile } from "@/lib/types";
 import {
   computeProfileCompleted,
@@ -35,7 +38,7 @@ import {
 } from "@/services/patientService";
 import { useAuth } from "@/hooks/useAuth";
 
-type SectionId = "personal" | "locations" | "medical" | "emergency" | "payment";
+type SectionId = "personal" | "locations" | "medical" | "emergency" | "payment" | "identity";
 
 interface FormState {
   phone: string;
@@ -48,6 +51,9 @@ interface FormState {
   medicalHistory: string;
   paymentMethods: string[];
   emergencyContact: EmergencyContact;
+  idDocumentKey: string;
+  verificationStatus: "pending" | "verified" | "rejected" | "";
+  verificationNote: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -61,6 +67,9 @@ const EMPTY_FORM: FormState = {
   medicalHistory: "",
   paymentMethods: [],
   emergencyContact: { name: "", relationship: "", phone: "" },
+  idDocumentKey: "",
+  verificationStatus: "",
+  verificationNote: "",
 };
 
 const BLOOD_TYPES = ["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -85,6 +94,9 @@ function profileToForm(profile: PatientProfile): FormState {
     medicalHistory: profile.medicalHistory ?? "",
     paymentMethods: profile.paymentMethods ?? [],
     emergencyContact: profile.emergencyContact ?? { name: "", relationship: "", phone: "" },
+    idDocumentKey: profile.idDocumentKey ?? "",
+    verificationStatus: profile.verificationStatus ?? "",
+    verificationNote: profile.verificationNote ?? "",
   };
 }
 
@@ -124,6 +136,9 @@ function formToProfile(form: FormState, userId: string): PatientProfile {
             phone: form.emergencyContact.phone.trim(),
           }
         : undefined,
+    idDocumentKey: form.idDocumentKey || undefined,
+    verificationStatus: form.verificationStatus || undefined,
+    verificationNote: form.verificationNote || undefined,
   };
 }
 
@@ -137,6 +152,77 @@ function isEmergencyComplete(form: FormState): boolean {
   return (
     form.emergencyContact.name.trim().length > 0 &&
     form.emergencyContact.phone.trim().length > 0
+  );
+}
+function isIdentityComplete(form: FormState): boolean {
+  return form.verificationStatus === "verified";
+}
+
+// Tiny patient-id uploader. We don't reuse ImageUploadField because the
+// patient-id scope returns no public URL (signed-read prefix); the only
+// useful return value is the S3 key, which the editor persists to
+// PatientProfile.idDocumentKey.
+function IdDocumentUploader({
+  helperText,
+  buttonLabel,
+  onUploaded,
+}: {
+  helperText: string;
+  buttonLabel: string;
+  onUploaded: (key: string) => void;
+}) {
+  const tCommon = useTranslations("common.actions");
+  const tIdentity = useTranslations("patient.profile.editor.identity");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const result = await uploadFile(files[0], { scope: "patient-id" });
+      onUploaded(result.key);
+    } catch (err) {
+      console.error("[IdDocumentUploader] upload failed", err);
+      // Prefer the server-supplied message when present; fall back to a
+      // translated generic so AR users don't see English on infra errors.
+      setError(err instanceof Error && err.message ? err.message : tIdentity("uploadError"));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-4">
+      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-sky-50 hover:text-sky-700">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          className="sr-only"
+          disabled={uploading}
+          onChange={(e) => void handleFiles(e.target.files)}
+        />
+        {uploading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {tCommon("uploading")}
+          </>
+        ) : (
+          <>
+            <Upload className="h-4 w-4" />
+            {buttonLabel}
+          </>
+        )}
+      </label>
+      <p className="mt-2 text-xs text-slate-500">{helperText}</p>
+      {error && (
+        <p className="mt-2 rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error}</p>
+      )}
+    </div>
   );
 }
 
@@ -384,15 +470,27 @@ function SectionTabButton({
   );
 }
 
-export default function PatientProfileEditor({ userId }: { userId: string }) {
+export default function PatientProfileEditor({
+  userId,
+  initialSection,
+}: {
+  userId: string;
+  // Pre-select an editor section. Used by deep-links from the booking
+  // gate (e.g. ?section=identity) so users land directly on the field
+  // that's blocking them.
+  initialSection?: SectionId;
+}) {
   const { appUser } = useAuth();
   const t = useTranslations("patient.profile.editor");
+  // Root-scope translator so we can resolve fully-qualified keys (e.g.
+  // patient.profile.requiredFields.*) returned by patientService helpers.
+  const tRoot = useTranslations();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedProfile, setSavedProfile] = useState<PatientProfile | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [activeSection, setActiveSection] = useState<SectionId>("personal");
+  const [activeSection, setActiveSection] = useState<SectionId>(initialSection ?? "personal");
 
   useEffect(() => {
     let active = true;
@@ -414,7 +512,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     return () => { active = false; };
   }, [userId]);
 
-  const missingLabels = getMissingFieldLabels(savedProfile);
+  const missingLabels = getMissingFieldLabels(savedProfile, tRoot);
   const completion = computeProfileCompleted(savedProfile);
 
   function togglePayment(method: string) {
@@ -595,7 +693,7 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
   }
 
   const previewProfile: PatientProfile = formToProfile(form, userId);
-  const previewMissing = getMissingFieldLabels(previewProfile);
+  const previewMissing = getMissingFieldLabels(previewProfile, tRoot);
   const previewComplete = previewMissing.length === 0;
 
   const sectionComplete: Record<SectionId, boolean> = {
@@ -604,10 +702,12 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
     medical: true,
     emergency: isEmergencyComplete(form),
     payment: true,
+    identity: isIdentityComplete(form),
   };
 
   const sections: { id: SectionId; tabKey: string; icon: typeof UserCircle }[] = [
     { id: "personal", tabKey: "personal", icon: UserCircle },
+    { id: "identity", tabKey: "identity", icon: ShieldAlert },
     { id: "locations", tabKey: "locations", icon: MapPin },
     { id: "medical", tabKey: "medical", icon: Pill },
     { id: "emergency", tabKey: "emergency", icon: ShieldAlert },
@@ -841,6 +941,69 @@ export default function PatientProfileEditor({ userId }: { userId: string }) {
                     placeholder={t("emergency.phonePlaceholder")}
                   />
                 </div>
+              </div>
+            </section>
+          )}
+
+          {activeSection === "identity" && (
+            <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
+              <header className="mb-4 flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
+                  <ShieldAlert className="h-5 w-5 text-sky-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">{t("identity.title")}</h3>
+                  <p className="text-xs text-slate-500">{t("identity.subtitle")}</p>
+                </div>
+              </header>
+
+              <div className="space-y-4">
+                {form.verificationStatus === "verified" && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {t("identity.statusVerified")}
+                  </div>
+                )}
+                {form.verificationStatus === "pending" && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+                    <AlertCircle className="h-4 w-4" />
+                    {t("identity.statusPending")}
+                  </div>
+                )}
+                {form.verificationStatus === "rejected" && (
+                  <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    <p className="font-bold">{t("identity.statusRejected")}</p>
+                    {form.verificationNote && (
+                      <p className="mt-1 text-xs">{t("identity.rejectedNote", { note: form.verificationNote })}</p>
+                    )}
+                  </div>
+                )}
+
+                {form.idDocumentKey ? (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                      <SignedReadImage s3Key={form.idDocumentKey} alt={t("identity.previewAlt")} />
+                    </div>
+                    {form.verificationStatus !== "verified" && (
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, idDocumentKey: "" })}
+                        className="inline-flex items-center gap-1.5 self-start rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {t("identity.replace")}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <IdDocumentUploader
+                    helperText={t("identity.uploadHelp")}
+                    buttonLabel={t("identity.uploadLabel")}
+                    onUploaded={(key) =>
+                      setForm({ ...form, idDocumentKey: key, verificationStatus: "pending" })
+                    }
+                  />
+                )}
               </div>
             </section>
           )}

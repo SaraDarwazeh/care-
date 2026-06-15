@@ -76,6 +76,9 @@ export default function PatientHomePage() {
   const t = useTranslations("patient.dashboard");
   const tStatus = useTranslations("patient.bookingStatus");
   const tOrderStatus = useTranslations("patient.orderStatus");
+  // Root-scope translator for fully-qualified keys used by patientService
+  // helpers (e.g. patient.profile.requiredFields.*).
+  const tRoot = useTranslations();
   const tLoading = useTranslations("patient.loading");
   const tNav = useTranslations("nav");
   const locale = useLocale() as Locale;
@@ -125,8 +128,8 @@ export default function PatientHomePage() {
   }, [appUser]);
 
   const missingProfileFields = useMemo(
-    () => getMissingFieldLabels(patientProfile),
-    [patientProfile],
+    () => getMissingFieldLabels(patientProfile, tRoot),
+    [patientProfile, tRoot],
   );
   const isProfileIncomplete = !loadingData && missingProfileFields.length > 0;
 

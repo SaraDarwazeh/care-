@@ -20,6 +20,7 @@ const NAMESPACES = [
   "admin",
   "notifications",
   "errors",
+  "rewards",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

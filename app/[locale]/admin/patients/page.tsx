@@ -13,20 +13,286 @@ import {
   CreditCard,
   Phone,
   ShieldAlert,
+  ShieldCheck,
   Pill,
   Cake,
   Droplet,
   Download,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { AppUser, PatientProfile } from "@/lib/types";
 import { getPatientLocations, getPatientProfile } from "@/services/patientService";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import SignedReadImage from "@/components/common/SignedReadImage";
+import { getCurrentIdToken } from "@/services/authService";
+import { getPointsBalance, getPointsLedger } from "@/services/pointsService";
+import { fmtNumber } from "@/lib/format";
+import { useLocale } from "next-intl";
+import type { Locale } from "@/i18n/config";
+import type { PointsLedgerEntry } from "@/lib/types";
+import { Sparkles } from "lucide-react";
 import { downloadCsv, timestampedFilename, type CsvColumn } from "@/lib/csvExport";
 
 interface PatientWithProfile {
   user: AppUser;
   profile: PatientProfile | null;
+}
+
+// Admin loyalty card. Reads the patient's balance + last 5 ledger
+// entries, and exposes a manual-adjust form (audit-tagged) for support
+// cases — refund clawback, goodwill credit, etc.
+function PatientRewardsCard({ patientId }: { patientId: string }) {
+  const locale = useLocale() as Locale;
+  const [balance, setBalance] = useState<number | null>(null);
+  const [ledger, setLedger] = useState<PointsLedgerEntry[]>([]);
+  const [delta, setDelta] = useState("");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function reload() {
+    const [b, l] = await Promise.all([getPointsBalance(patientId), getPointsLedger(patientId, 5)]);
+    setBalance(b);
+    setLedger(l);
+  }
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([getPointsBalance(patientId), getPointsLedger(patientId, 5)])
+      .then(([b, l]) => {
+        if (!active) return;
+        setBalance(b);
+        setLedger(l);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [patientId]);
+
+  async function submitAdjust() {
+    const n = Math.floor(Number(delta));
+    if (!n || !reason.trim()) {
+      setError("Delta and reason required");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const token = await getCurrentIdToken();
+      const res = await fetch("/api/points/adjust", {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId, delta: n, reason: reason.trim() }),
+      });
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error ?? `HTTP ${res.status}`);
+      }
+      setDelta("");
+      setReason("");
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to adjust balance");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="col-span-full rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-amber-500" />
+        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Loyalty</p>
+        {balance !== null && (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+            {fmtNumber(balance, locale)} pts
+          </span>
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-[1fr_280px]">
+        <div>
+          <p className="mb-1 text-xs font-bold text-slate-500">Recent activity</p>
+          {ledger.length === 0 ? (
+            <p className="text-xs text-slate-400">No activity yet</p>
+          ) : (
+            <ul className="space-y-1 text-xs">
+              {ledger.map((entry) => (
+                <li key={entry.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-2 py-1">
+                  <span className="font-semibold text-slate-700">{entry.source}</span>
+                  <span
+                    className={`font-bold ${entry.type === "earn" ? "text-emerald-700" : "text-rose-700"}`}
+                    dir="ltr"
+                  >
+                    {entry.type === "earn" ? "+" : "−"}
+                    {entry.amount}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Manual adjust</p>
+          <input
+            type="number"
+            value={delta}
+            onChange={(e) => setDelta(e.target.value)}
+            placeholder="e.g. 100 or -50"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+          />
+          <input
+            type="text"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason"
+            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-amber-500 focus:outline-none"
+          />
+          {error && <p className="text-xs text-rose-700">{error}</p>}
+          <button
+            type="button"
+            onClick={() => void submitAdjust()}
+            disabled={busy}
+            className="w-full rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold text-white hover:bg-amber-700 disabled:opacity-50"
+          >
+            {busy ? "Adjusting…" : "Apply adjustment"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Admin-only identity-document card. Renders the signed-read image,
+// shows the verification status, and offers verify/reject actions.
+function PatientIdentityCard({
+  profile,
+  onChanged,
+}: {
+  profile: PatientProfile;
+  onChanged: () => void | Promise<void>;
+}) {
+  const [busy, setBusy] = useState<"verify" | "reject" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
+  const [showRejectInput, setShowRejectInput] = useState(false);
+
+  async function patch(status: "verified" | "rejected", note?: string) {
+    setBusy(status === "verified" ? "verify" : "reject");
+    setError(null);
+    try {
+      const token = await getCurrentIdToken();
+      if (!token) throw new Error("Not signed in");
+      const res = await fetch("/api/patients/verify", {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId: profile.userId, status, note }),
+      });
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error ?? `HTTP ${res.status}`);
+      }
+      setShowRejectInput(false);
+      setRejectNote("");
+      await onChanged();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update verification");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const status = profile.verificationStatus ?? null;
+  const hasUpload = Boolean(profile.idDocumentKey);
+
+  return (
+    <div className="col-span-full rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2">
+        <ShieldCheck className="h-4 w-4 text-sky-500" />
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Identity verification</p>
+        {status === "verified" && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+            Verified
+          </span>
+        )}
+        {status === "pending" && (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+            Pending review
+          </span>
+        )}
+        {status === "rejected" && (
+          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-700">
+            Rejected
+          </span>
+        )}
+      </div>
+
+      {!hasUpload ? (
+        <p className="text-sm text-slate-500">Patient has not uploaded an ID document yet.</p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
+          <div className="relative h-56 w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+            <SignedReadImage s3Key={profile.idDocumentKey!} alt="Patient ID document" />
+          </div>
+          <div className="flex flex-col gap-3">
+            {status === "rejected" && profile.verificationNote && (
+              <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                <span className="font-bold">Note:</span> {profile.verificationNote}
+              </p>
+            )}
+            {error && (
+              <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error}</p>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => void patch("verified")}
+                disabled={busy !== null || status === "verified"}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {busy === "verify" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                Verify
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowRejectInput((v) => !v)}
+                disabled={busy !== null}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+              >
+                <XCircle className="h-4 w-4" />
+                Reject
+              </button>
+            </div>
+            {showRejectInput && (
+              <div className="space-y-2">
+                <textarea
+                  value={rejectNote}
+                  onChange={(e) => setRejectNote(e.target.value)}
+                  placeholder="Reason for rejection (sent to the patient)"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
+                  rows={3}
+                />
+                <button
+                  type="button"
+                  disabled={!rejectNote.trim() || busy !== null}
+                  onClick={() => void patch("rejected", rejectNote.trim())}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-50"
+                >
+                  {busy === "reject" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                  Send rejection
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function PatientRow({ patient, profile, onLoadProfile }: {
@@ -227,6 +493,13 @@ function PatientRow({ patient, profile, onLoadProfile }: {
                   <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">{profile.medicalHistory}</p>
                 </div>
               )}
+
+              <PatientIdentityCard
+                profile={profile}
+                onChanged={() => onLoadProfile(patient.id)}
+              />
+
+              <PatientRewardsCard patientId={patient.id} />
             </div>
           ) : (
             <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl text-amber-800 font-medium text-sm">

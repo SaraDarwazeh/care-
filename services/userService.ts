@@ -20,6 +20,7 @@ function mapDocToUser(
   },
 ): AppUser {
   const lang = userDoc.language;
+  const provider = userDoc.provider;
   return {
     id: userDoc.id,
     name: String(userDoc.name ?? ""),
@@ -28,6 +29,12 @@ function mapDocToUser(
     status: (userDoc.status as UserStatus) ?? "approved",
     createdAt: String(userDoc.createdAt ?? ""),
     language: lang === "en" || lang === "ar" ? lang : undefined,
+    provider: provider === "google" ? "google" : "email",
+    approvedAt: typeof userDoc.approvedAt === "string" ? userDoc.approvedAt : undefined,
+    lastApprovedProfileHash:
+      typeof userDoc.lastApprovedProfileHash === "string"
+        ? userDoc.lastApprovedProfileHash
+        : undefined,
   };
 }
 
@@ -48,6 +55,7 @@ export async function createUserProfile(input: {
   email: string;
   role: Exclude<UserRole, "admin">;
   consent?: UserConsent;
+  provider?: "email" | "google";
 }) {
   const { db } = ensureClientFirebase();
   const status: UserStatus = input.role === "nurse" ? "pending" : "approved";
@@ -56,6 +64,7 @@ export async function createUserProfile(input: {
     id: input.id,
     role: input.role,
     status,
+    provider: input.provider ?? "email",
   });
 
   await setDoc(doc(db, "users", input.id), {
@@ -64,6 +73,7 @@ export async function createUserProfile(input: {
     email: input.email,
     role: input.role,
     status,
+    provider: input.provider ?? "email",
     createdAt: new Date().toISOString(),
     createdAtServer: serverTimestamp(),
     // Consent block is optional only for backward compat — the register

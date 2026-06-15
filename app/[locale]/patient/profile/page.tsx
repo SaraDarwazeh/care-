@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import PatientProfileEditor from "@/components/patient/PatientProfileEditor";
+import RewardsSection from "@/components/patient/RewardsSection";
 import { useAuth } from "@/hooks/useAuth";
 import { getMissingFieldLabels, getPatientProfile } from "@/services/patientService";
 
@@ -13,7 +14,19 @@ function PatientProfilePageInner() {
   const { appUser, loading } = useAuth();
   const searchParams = useSearchParams();
   const t = useTranslations("patient.profile");
+  // Root-scope translator so we can pass it into patientService helpers
+  // that return fully-qualified i18n keys.
+  const tRoot = useTranslations();
   const isOnboarding = searchParams.get("onboarding") === "true";
+  // Deep-link target from the booking gate (e.g. ?section=identity).
+  // Only accept the known section ids; anything else is ignored so a
+  // typo in a URL doesn't blow up the editor.
+  const SECTION_IDS = ["personal", "identity", "locations", "medical", "emergency", "payment"] as const;
+  type SectionId = (typeof SECTION_IDS)[number];
+  const requestedSection = searchParams.get("section");
+  const initialSection = (SECTION_IDS as readonly string[]).includes(requestedSection ?? "")
+    ? (requestedSection as SectionId)
+    : undefined;
 
   const [missingLabels, setMissingLabels] = useState<string[] | null>(null);
 
@@ -21,10 +34,10 @@ function PatientProfilePageInner() {
     if (!appUser || !isOnboarding) return;
     let active = true;
     void getPatientProfile(appUser.id).then((profile) => {
-      if (active) setMissingLabels(getMissingFieldLabels(profile));
+      if (active) setMissingLabels(getMissingFieldLabels(profile, tRoot));
     });
     return () => { active = false; };
-  }, [appUser, isOnboarding]);
+  }, [appUser, isOnboarding, tRoot]);
 
   if (loading || !appUser) {
     return <LoadingScreen text={t("loading")} />;
@@ -57,7 +70,8 @@ function PatientProfilePageInner() {
         <p className="mt-2 text-slate-600">{t("pageSubtitle")}</p>
       </div>
 
-      <PatientProfileEditor userId={appUser.id} />
+      <PatientProfileEditor userId={appUser.id} initialSection={initialSection} />
+      <RewardsSection />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { fmtCurrency } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
+import StoreItemImage from "@/components/common/StoreItemImage";
 
 export default function NurseStorePage() {
   useProtectedRoute({ allowedRoles: ["nurse"], requireApprovedNurse: true });
@@ -53,8 +54,12 @@ export default function NurseStorePage() {
               const qty = cart[item.id] || 0;
               return (
                 <div key={item.id} className="flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm hover:border-emerald-300 hover:shadow-lg transition group">
-                  <div className="flex h-36 items-center justify-center bg-slate-50 text-6xl group-hover:scale-110 transition-transform duration-300 border-b border-slate-100">
-                    {item.image}
+                  <div className="relative flex h-36 items-center justify-center overflow-hidden bg-slate-50 border-b border-slate-100">
+                    <StoreItemImage
+                      src={item.image}
+                      alt={tLocalized(item.name, locale)}
+                      glyphSize="text-6xl group-hover:scale-110 transition-transform duration-300"
+                    />
                   </div>
                   <div className="flex flex-1 flex-col p-5">
                     <div className="mb-2 flex items-start justify-between gap-2">

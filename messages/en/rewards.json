@@ -1,0 +1,23 @@
+{
+  "pts": "pts",
+  "pillTooltip": "Your loyalty points balance",
+  "sectionTitle": "Care+ Rewards",
+  "sectionSubtitle": "Earn points on bookings, store orders, and reviews. Redeem at checkout.",
+  "balanceLabel": "Current balance",
+  "worth": "Worth {amount} at checkout",
+  "recentActivity": "Recent activity",
+  "noActivity": "No activity yet. Complete a booking or an order to start earning.",
+  "useRewards": "Use rewards at checkout",
+  "balanceWithCap": "You have {balance} pts. You can use up to {cap} on this order.",
+  "useMax": "Use max",
+  "appliedDiscount": "{amount} off applied",
+  "minBlocked": "Minimum redemption is {min} points",
+  "notEnoughYet": "Earn {required} pts to start redeeming (you have {have}).",
+  "sources": {
+    "booking_completed": "Booking completed",
+    "order_delivered": "Order delivered",
+    "review_submitted": "Review submitted",
+    "redemption": "Redeemed at checkout",
+    "admin_adjust": "Manual adjustment"
+  }
+}

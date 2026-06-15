@@ -11,7 +11,13 @@
     "close": "Close",
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "uploading": "Uploading…"
+  },
+  "imageUpload": {
+    "uploadImage": "Upload image",
+    "addImage": "Add image",
+    "uploadError": "Upload failed. Please try again."
   },
   "locale": {
     "switchTo": "العربية",
@@ -25,5 +31,11 @@
   "status": {
     "loading": "Loading…",
     "empty": "Nothing here yet."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you were looking for has moved or never existed.",
+    "goHome": "Go home",
+    "goToDashboard": "Go to my dashboard"
   }
 }

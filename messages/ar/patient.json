@@ -145,7 +145,8 @@
       "overnightNo": "لا",
       "noPreference": "لا تفضيل",
       "skills": "المهارات",
-      "certifications": "الشهادات",
+      "searchByName": "البحث بالاسم",
+      "searchByNamePlaceholder": "اسم الممرض/ة…",
       "clearFilters": "مسح التصفية",
       "sortBy": "الترتيب حسب",
       "sortHighestRated": "الأعلى تقييمًا",
@@ -176,6 +177,8 @@
       "reviews": "{n,plural,zero{لا مراجعات}one{مراجعة واحدة}two{مراجعتان}few{# مراجعات}many{# مراجعة}other{# مراجعة}}",
       "startingAt": "ابتداءً من",
       "perHour": "/ساعة",
+      "perShift": "/وردية",
+      "perService": "/خدمة",
       "noBio": "لم يضف {name} نبذة بعد.",
       "certificatesMore": "+{n} مزيد"
     },
@@ -281,6 +284,10 @@
     "profileIncompleteTitle": "الملف غير مكتمل",
     "profileIncompleteBody": "يجب إكمال ملف المريض (شاملًا بيانات التواصل والمعلومات الطبية) قبل حجز ممرض.",
     "completeProfileNow": "أكمل الملف الآن",
+    "generalVisitFallback": "زيارة عامّة",
+    "profileMissingFieldsIntro": "ينقصنا:",
+    "profileMissingIdentityCTA": "ارفع وثيقة هويّتك",
+    "profileGenericCTA": "افتح الملف",
     "successTitle": "تم تأكيد الحجز",
     "successBody": "أُرسل طلبك إلى {name}. سيتم إشعارك حين يراجعه.",
     "successRedirect": "ستتم إعادة توجيهك إلى صفحة المواعيد قريبًا…",
@@ -367,7 +374,6 @@
       "noAddons": "لا توجد إضافات متاحة لهذا الممرض.",
       "pricingSummary": "ملخّص السعر",
       "base": "الأساسي",
-      "tax": "الضريبة",
       "total": "المجموع",
       "additionalNotes": "ملاحظات إضافية (اختياري)",
       "notesPlaceholder": "اشرح احتياجات الرعاية أو كيفية الدخول إلى البناية…",
@@ -601,6 +607,13 @@
     "onboardingWelcome": "أهلًا بك في Care+",
     "onboardingPrompt": "أضف ما يلي ليتمكّن النظام من اختيار الممرض المناسب بأمان:",
     "onboardingBanner": "أكمل ملفك لتبدأ بالحجز.",
+    "requiredFields": {
+      "phone": "رقم الهاتف",
+      "defaultLocation": "العنوان الافتراضي",
+      "emergencyContactName": "اسم جهة الاتصال للطوارئ",
+      "emergencyContactPhone": "هاتف جهة الاتصال للطوارئ",
+      "identityVerified": "وثيقة هوية موثَّقة"
+    },
     "editor": {
       "editProfile": "تعديل الملف",
       "completeTitle": "الملف مكتمل",
@@ -628,6 +641,7 @@
       "previewRemaining": "{n,plural,zero{لا حقول متبقّية}one{حقل مطلوب واحد متبقٍّ}two{حقلان مطلوبان}few{# حقول مطلوبة متبقّية}many{# حقلًا مطلوبًا متبقّيًا}other{# حقل مطلوب متبقٍّ}}",
       "tabs": {
         "personal": "شخصي",
+        "identity": "الهوية",
         "locations": "العناوين",
         "medical": "طبي",
         "emergency": "طوارئ",
@@ -645,6 +659,19 @@
         "dob": "تاريخ الميلاد",
         "bloodType": "فصيلة الدم",
         "preferNotToSay": "أفضّل عدم التحديد"
+      },
+      "identity": {
+        "title": "التحقّق من الهوية",
+        "subtitle": "مطلوب قبل أوّل حجز. يراجع المسؤول المستند بعد رفعه.",
+        "uploadLabel": "ارفع مستند الهوية",
+        "uploadHelp": "صور JPG/PNG أو ملف PDF. تُحفظ المستندات بشكل خاص ولا يطّلع عليها إلا أنت وفريق Care+.",
+        "uploadError": "فشل الرفع. حاول مرّةً أخرى.",
+        "previewAlt": "مستند الهوية المرفوع",
+        "replace": "استبدل المستند",
+        "statusVerified": "تمّ التحقّق من هويّتك.",
+        "statusPending": "بانتظار مراجعة المسؤول.",
+        "statusRejected": "نحتاج إلى مستند مختلف.",
+        "rejectedNote": "ملاحظة المراجع: {note}"
       },
       "locations": {
         "title": "العناوين",

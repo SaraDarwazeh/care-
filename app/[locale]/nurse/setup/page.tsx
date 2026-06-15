@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { ChevronLeft } from "lucide-react";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseProfileForm from "@/components/nurse/NurseProfileForm";
@@ -54,6 +55,14 @@ export default function NurseSetupPage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6">
+      {!onboarding && (
+        <Link
+          href="/nurse"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> {t("backToDashboard")}
+        </Link>
+      )}
       <section className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
         <p className="text-sm font-semibold text-emerald-700">{kicker}</p>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-800">{heading}</h1>

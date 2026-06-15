@@ -23,6 +23,7 @@ import { useEffect, useState, useMemo } from "react";
 import { fmtCurrency } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
+import StoreItemImage from "@/components/common/StoreItemImage";
 
 // Category keys map onto stored product.category values. Display labels
 // come from messages/{locale}/patient.store.categories.
@@ -209,11 +210,13 @@ export default function StorePage() {
                   className="flex flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:border-violet-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group"
                 >
                   <div
-                    className={`flex h-40 flex-col items-center justify-center bg-gradient-to-br ${gradientBg} gap-2 transition-transform duration-300`}
+                    className={`relative flex h-40 flex-col items-center justify-center overflow-hidden bg-gradient-to-br ${gradientBg} gap-2 transition-transform duration-300`}
                   >
-                    <span className="text-5xl group-hover:scale-110 transition-transform duration-300">
-                      {item.image}
-                    </span>
+                    <StoreItemImage
+                      src={item.image}
+                      alt={tLocalized(item.name, locale)}
+                      glyphSize="text-5xl group-hover:scale-110 transition-transform duration-300"
+                    />
                   </div>
 
                   <div className="flex flex-1 flex-col p-5">

@@ -11,7 +11,13 @@
     "close": "إغلاق",
     "signIn": "تسجيل الدخول",
     "signOut": "تسجيل الخروج",
-    "getStarted": "ابدأ الآن"
+    "getStarted": "ابدأ الآن",
+    "uploading": "جارٍ الرفع…"
+  },
+  "imageUpload": {
+    "uploadImage": "ارفع صورة",
+    "addImage": "أضف صورة",
+    "uploadError": "فشل الرفع. حاول مرّةً أخرى."
   },
   "locale": {
     "switchTo": "English",
@@ -25,5 +31,11 @@
   "status": {
     "loading": "جارٍ التحميل…",
     "empty": "لا يوجد محتوى بعد."
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "body": "الصفحة التي تبحث عنها انتقلت أو لم تكن موجودة أصلًا.",
+    "goHome": "الذهاب إلى الرئيسية",
+    "goToDashboard": "الذهاب إلى لوحة التحكم"
   }
 }

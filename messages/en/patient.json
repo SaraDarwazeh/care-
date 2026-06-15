@@ -145,7 +145,8 @@
       "overnightNo": "No",
       "noPreference": "No Preference",
       "skills": "Skills",
-      "certifications": "Certifications",
+      "searchByName": "Search by name",
+      "searchByNamePlaceholder": "Nurse name…",
       "clearFilters": "Clear Filters",
       "sortBy": "Sort By",
       "sortHighestRated": "Highest Rated",
@@ -176,6 +177,8 @@
       "reviews": "{n,plural,zero{No reviews}one{# review}other{# reviews}}",
       "startingAt": "Starting at",
       "perHour": "/hr",
+      "perShift": "/shift",
+      "perService": "/service",
       "noBio": "{name} hasn't added a bio yet.",
       "certificatesMore": "+{n} more"
     },
@@ -280,6 +283,10 @@
     "verifyingProfile": "Verifying patient profile…",
     "profileIncompleteTitle": "Profile Incomplete",
     "profileIncompleteBody": "You must complete your patient profile (including contact and medical information) before booking a nurse.",
+    "generalVisitFallback": "General visit",
+    "profileMissingFieldsIntro": "We still need:",
+    "profileMissingIdentityCTA": "Upload your ID",
+    "profileGenericCTA": "Open profile",
     "completeProfileNow": "Complete Profile Now",
     "successTitle": "Booking Confirmed",
     "successBody": "Your request has been sent to {name}. You will be notified once they review it.",
@@ -367,7 +374,6 @@
       "noAddons": "No add-ons available for this nurse.",
       "pricingSummary": "Pricing Summary",
       "base": "Base",
-      "tax": "Tax",
       "total": "Total",
       "additionalNotes": "Additional Notes (Optional)",
       "notesPlaceholder": "Describe your care needs or how to enter the building…",
@@ -601,6 +607,13 @@
     "onboardingWelcome": "Welcome to Care+",
     "onboardingPrompt": "Add the following so we can match you with the right nurse safely:",
     "onboardingBanner": "Complete your profile to start booking.",
+    "requiredFields": {
+      "phone": "Phone number",
+      "defaultLocation": "Default address",
+      "emergencyContactName": "Emergency contact name",
+      "emergencyContactPhone": "Emergency contact phone",
+      "identityVerified": "Verified identity document"
+    },
     "editor": {
       "editProfile": "Edit Profile",
       "completeTitle": "Profile complete",
@@ -628,6 +641,7 @@
       "previewRemaining": "{n,plural,one{# required field remaining}other{# required fields remaining}}",
       "tabs": {
         "personal": "Personal",
+        "identity": "Identity",
         "locations": "Locations",
         "medical": "Medical",
         "emergency": "Emergency",
@@ -645,6 +659,19 @@
         "dob": "Date of Birth",
         "bloodType": "Blood Type",
         "preferNotToSay": "Prefer not to say"
+      },
+      "identity": {
+        "title": "Identity verification",
+        "subtitle": "Required before your first booking. An admin reviews the document after upload.",
+        "uploadLabel": "Upload an ID document",
+        "uploadHelp": "JPG, PNG or PDF. Documents are stored privately and only viewable by you and Care+ staff.",
+        "uploadError": "Upload failed. Please try again.",
+        "previewAlt": "Uploaded ID document",
+        "replace": "Replace document",
+        "statusVerified": "Your identity is verified.",
+        "statusPending": "Awaiting admin review.",
+        "statusRejected": "We need a different document.",
+        "rejectedNote": "Note from the reviewer: {note}"
       },
       "locations": {
         "title": "Locations",

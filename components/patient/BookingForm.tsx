@@ -9,7 +9,14 @@ import PatientButton from "@/components/patient/PatientButton";
 import type { Booking, CarePackage, NurseMarketplaceProfile, PatientLocation } from "@/lib/types";
 import AddOnItem from "@/components/common/AddOnItem";
 import { createBooking } from "@/services/bookingService";
-import { getPatientLocations, getPatientProfile } from "@/services/patientService";
+import {
+  FIELD_TO_SECTION,
+  getFieldTranslationKey,
+  getMissingProfileFields,
+  getPatientLocations,
+  getPatientProfile,
+  type RequiredProfileField,
+} from "@/services/patientService";
 import { listPackages } from "@/services/packageService";
 import { getPricingConfig } from "@/services/pricingConfigService";
 import type { PricingConfig } from "@/services/pricingConfigService";
@@ -42,6 +49,9 @@ export default function BookingForm({
 }) {
   const router = useRouter();
   const t = useTranslations("patient.booking");
+  // Root translator so we can resolve fully-qualified required-field
+  // labels returned by patientService.getFieldTranslationKey.
+  const tRoot = useTranslations();
   const tBanner = useTranslations("patient.booking.packageBanner");
   const tS1 = useTranslations("patient.booking.step1");
   const tS2 = useTranslations("patient.booking.step2");
@@ -74,7 +84,11 @@ export default function BookingForm({
       ? nurse.services.find((item) => item.name.toLowerCase() === lastPrefs.service?.toLowerCase())
       : undefined;
     if (fromPrefs) return fromPrefs.name;
-    return nurse.services[0]?.name ?? "General Visit";
+    // Fallback when a nurse hasn't defined any services. Localized so
+    // the placeholder doesn't render as English to AR users. (The form
+    // also surfaces a "no services" state in the picker; this just keeps
+    // the persisted booking.service field non-empty.)
+    return nurse.services[0]?.name ?? t("generalVisitFallback");
   });
   const [shift, setShift] = useState(() => {
     if (initialShift) return initialShift.toUpperCase();
@@ -91,16 +105,23 @@ export default function BookingForm({
 
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [profileCompleted, setProfileCompleted] = useState(false);
+  // Specific missing required fields, so the booking-gate screen can
+  // tell the patient exactly what's missing (and deep-link to the
+  // relevant editor section — especially identity verification).
+  const [missingFields, setMissingFields] = useState<RequiredProfileField[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [tncAccepted, setTncAccepted] = useState(false);
+  // Shape returned by /api/bookings/pricing. `tax` is kept optional only
+  // so legacy server builds that still emit the field don't break the
+  // type check; new servers never set it.
   type ServerPricing = {
     base: number;
     addons?: { id: string; name: string; price: number }[];
     transport?: number;
     overnight?: number;
     subtotal: number;
-    tax: number;
+    tax?: number;
     total: number;
   } | null;
 
@@ -127,7 +148,6 @@ export default function BookingForm({
 
   const globalAddons = pricingConfig?.addons ?? AVAILABLE_ADDONS;
   const shiftBilledHours = pricingConfig?.shiftBilledHours ?? 8;
-  const taxRate = pricingConfig?.taxRate ?? 0.05;
 
   const serviceOptions = useMemo(() => nurse.services, [nurse.services]);
 
@@ -185,6 +205,7 @@ export default function BookingForm({
         if (profile?.defaultLocation) setLocation(profile.defaultLocation);
       }
       setProfileCompleted(!!profile?.profileCompleted);
+      setMissingFields(getMissingProfileFields(profile));
       setLoadingProfile(false);
 
       if (initialPackage) {
@@ -236,10 +257,18 @@ export default function BookingForm({
     return selectedPackage.durationOptions.find((opt) => opt.days === effectiveDurationDays) ?? null;
   }, [isFixedPackage, selectedPackage, effectiveDurationDays]);
 
+  // Per-shift price for the nurse, indexed by shift letter. Undefined for
+  // any shift the nurse hasn't priced — we fall back to hourly × N below
+  // so legacy nurses keep working. Memoized so referential identity
+  // doesn't churn the pricing useMemo on every render.
+  const nursePricePerShift = useMemo(() => nurse.pricePerShift ?? {}, [nurse.pricePerShift]);
+
   const pricing = useMemo(() => {
     let base = 0;
     if (bookingType === "shift") {
-      base = selectedPrice * shiftBilledHours;
+      const shiftKey = (shift?.toUpperCase() ?? "") as "A" | "B" | "C";
+      const flat = nursePricePerShift[shiftKey];
+      base = typeof flat === "number" && flat > 0 ? flat : selectedPrice * shiftBilledHours;
     } else if (bookingType === "package") {
       const days = Math.max(1, effectiveDurationDays || 1);
       let perDay = selectedPrice * shiftBilledHours;
@@ -255,10 +284,9 @@ export default function BookingForm({
     const addonsTotal = addons.reduce((s, a) => s + a.price, 0);
     const transport = 0;
     const subtotal = round2(base + addonsTotal + transport);
-    const tax = round2(subtotal * taxRate);
-    const total = round2(subtotal + tax);
-    return { base, addons, transport, subtotal, tax, total };
-  }, [selectedPrice, bookingType, addOns, effectiveDurationDays, isFixedPackage, selectedPackage, selectedDurationOption, effectiveAddons, shiftBilledHours, taxRate]);
+    const total = subtotal;
+    return { base, addons, transport, subtotal, total };
+  }, [selectedPrice, bookingType, addOns, effectiveDurationDays, isFixedPackage, selectedPackage, selectedDurationOption, effectiveAddons, shiftBilledHours, shift, nursePricePerShift]);
 
   useEffect(() => {
     if (step !== 5) return;
@@ -316,7 +344,11 @@ export default function BookingForm({
       bookingTime = time;
     }
 
-    type PricingLike = { base: number; addons?: { id: string; name: string; price: number }[]; transport?: number; subtotal: number; tax: number; total: number };
+    // Tax was removed in the ILS / tax-removal pass; the field is kept
+    // optional on the type only for tolerant reads of historical
+    // bookings (PriceBreakdown handles `pricing.tax > 0` for legacy
+    // records). New bookings never set it.
+    type PricingLike = { base: number; addons?: { id: string; name: string; price: number }[]; transport?: number; subtotal: number; total: number };
     const serverPriceObj: PricingLike = (serverPricing ?? pricing) as PricingLike;
 
     const booking: Omit<Booking, "id" | "status" | "createdAt"> = {
@@ -333,7 +365,6 @@ export default function BookingForm({
         addons: (serverPriceObj.addons ?? []).map((a) => ({ id: a.id, name: a.name, price: a.price })),
         transport: serverPriceObj.transport,
         subtotal: serverPriceObj.subtotal,
-        tax: serverPriceObj.tax,
         total: serverPriceObj.total,
       },
       date,
@@ -388,12 +419,44 @@ export default function BookingForm({
   }
 
   if (!profileCompleted) {
+    // Pick the deep-link target: identity verification is the most
+    // surprising blocker (it requires admin review on top of just
+    // filling fields), so we surface it specifically when it's the
+    // missing piece. Everything else opens the profile editor's
+    // matching section via ?section=.
+    const identityMissing = missingFields.includes("identityVerified");
+    const primaryMissing = identityMissing
+      ? "identityVerified"
+      : missingFields[0];
+    const ctaSection = primaryMissing ? FIELD_TO_SECTION[primaryMissing] : undefined;
+    const ctaHref = ctaSection
+      ? `/patient/profile?section=${ctaSection}`
+      : "/patient/profile";
+    const ctaLabel = identityMissing
+      ? t("profileMissingIdentityCTA")
+      : t("profileGenericCTA");
+
     return (
       <div className="rounded-3xl border border-orange-200 bg-orange-50 p-8 text-center shadow-sm">
         <h3 className="text-xl font-bold text-orange-800 mb-2">{t("profileIncompleteTitle")}</h3>
-        <p className="text-orange-700 mb-6 text-sm">{t("profileIncompleteBody")}</p>
-        <PatientButton href="/patient/profile" className="bg-orange-600 hover:bg-orange-700 text-white border-0">
-          {t("completeProfileNow")}
+        <p className="text-orange-700 mb-4 text-sm">{t("profileIncompleteBody")}</p>
+        {missingFields.length > 0 && (
+          <div className="mx-auto mb-6 max-w-sm rounded-2xl border border-orange-200 bg-white px-4 py-3 text-start">
+            <p className="text-xs font-bold uppercase tracking-wider text-orange-700">
+              {t("profileMissingFieldsIntro")}
+            </p>
+            <ul className="mt-2 space-y-1">
+              {missingFields.map((field) => (
+                <li key={field} className="flex items-center gap-2 text-sm text-orange-900">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
+                  {tRoot(getFieldTranslationKey(field))}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <PatientButton href={ctaHref} className="bg-orange-600 hover:bg-orange-700 text-white border-0">
+          {ctaLabel}
         </PatientButton>
       </div>
     );
@@ -597,19 +660,28 @@ export default function BookingForm({
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Clock className="h-5 w-5 text-sky-600"/> {bookingType === "shift" ? tS2("selectShift") : tS2("visitTiming")}</h3>
               {bookingType === "shift" ? (
                 <div className="grid gap-3">
-                  {(["A", "B", "C"] as const).map((id) => (
-                    <label key={id} className={`flex cursor-pointer items-center rounded-xl border p-4 transition-all ${shift === id ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200 hover:border-sky-300"}`}>
-                      <input
-                        type="radio"
-                        name="shift"
-                        value={id}
-                        checked={shift === id}
-                        onChange={() => setShift(id)}
-                        className="h-4 w-4 text-sky-600 focus:ring-sky-600 me-3"
-                      />
-                      <span className="font-medium text-slate-700">{SHIFT_LABELS[id]}</span>
-                    </label>
-                  ))}
+                  {(["A", "B", "C"] as const).map((id) => {
+                    const flat = nursePricePerShift[id];
+                    const hasFlat = typeof flat === "number" && flat > 0;
+                    const fallbackPrice = selectedPrice * shiftBilledHours;
+                    const displayPrice = hasFlat ? flat : fallbackPrice;
+                    return (
+                      <label key={id} className={`flex cursor-pointer items-center rounded-xl border p-4 transition-all ${shift === id ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200 hover:border-sky-300"}`}>
+                        <input
+                          type="radio"
+                          name="shift"
+                          value={id}
+                          checked={shift === id}
+                          onChange={() => setShift(id)}
+                          className="h-4 w-4 text-sky-600 focus:ring-sky-600 me-3"
+                        />
+                        <span className="flex-1 font-medium text-slate-700">{SHIFT_LABELS[id]}</span>
+                        {displayPrice > 0 && (
+                          <span className="text-sm font-bold text-sky-700">{fmtCurrency(displayPrice, locale)}</span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               ) : bookingType === "package" ? (
                 <div className="space-y-3">
@@ -851,7 +923,6 @@ export default function BookingForm({
                 {pricing.addons.length > 0 && pricing.addons.map((a) => (
                   <div key={a.id} className="flex justify-between text-sm text-slate-600"><span>{a.name}</span><span>{fmtCurrency(a.price, locale)}</span></div>
                 ))}
-                <div className="flex justify-between text-sm text-slate-600"><span>{tS5("tax")}</span><span>{fmtCurrency(pricing.tax, locale)}</span></div>
                 <div className="mt-3 flex justify-between text-base font-bold text-slate-800"><span>{tS5("total")}</span><span>{fmtCurrency(pricing.total, locale)}</span></div>
               </div>
               <div>

@@ -343,5 +343,29 @@ export async function updateBookingStatus(
       actor,
       rejectionReason,
     });
+
+    // Loyalty earn — 1 point per ILS spent, on the canonical "completed"
+    // state. Idempotency keyed on bookingId so admin re-completions are
+    // safe. We import lazily to avoid a circular import (bookingService
+    // → pointsService → notificationService → bookingService).
+    if (status === "completed") {
+      try {
+        const { earnPoints } = await import("@/services/pointsService");
+        const { POINTS_PER_ILS } = await import("@/lib/pointsConstants");
+        const amount = Math.round(Number(bookingData.price ?? 0) * POINTS_PER_ILS);
+        if (amount > 0) {
+          await earnPoints({
+            patientId: bookingData.patientId,
+            source: "booking_completed",
+            amount,
+            sourceId: bookingId,
+          });
+          const { notifyPointsEarned } = await import("@/services/notificationService");
+          await notifyPointsEarned({ userId: bookingData.patientId, amount, source: "booking_completed", sourceId: bookingId });
+        }
+      } catch (err) {
+        console.warn("[bookingService] points earn failed (non-fatal)", err);
+      }
+    }
   }
 }

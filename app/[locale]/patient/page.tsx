@@ -2,25 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
-import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import {
   CalendarClock,
   Stethoscope,
   Store,
   UserCircle,
-  Star,
   ShieldCheck,
   HeartPulse,
   ChevronRight,
-  Plus,
   BookOpen,
   Package,
   AlertCircle,
   HeartHandshake,
-  FileText,
-  History,
-  ShoppingBag,
 } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import PatientButton from "@/components/patient/PatientButton";
@@ -30,11 +24,8 @@ import { useAuth } from "@/hooks/useAuth";
 import type {
   BookingWithParticipants,
   CarePackage,
-  MedicalRecord,
   NurseMarketplaceProfile,
   PatientProfile,
-  StoreItem,
-  StoreOrder,
 } from "@/lib/types";
 import { getBookingsForPatientWithParticipants } from "@/services/bookingService";
 import { getApprovedNurseMarketplaceProfiles } from "@/services/nurseService";
@@ -42,22 +33,9 @@ import {
   getMissingFieldLabels,
   getPatientProfile,
 } from "@/services/patientService";
-import { useCart } from "@/components/patient/CartContext";
-import { getOrdersForPatient, getProducts } from "@/services/storeService";
-import { getRecordsForPatient } from "@/services/medicalService";
 import { listPackages } from "@/services/packageService";
-import { fmtCurrency, fmtDate, fmtNumber } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
-
-interface PreviousNurse {
-  userId: string;
-  fullName: string;
-  specialization?: string;
-  profileImage?: string;
-  visits: number;
-  lastVisit: string;
-}
 
 interface ActiveCarePlan {
   booking: BookingWithParticipants;
@@ -65,34 +43,29 @@ interface ActiveCarePlan {
   daysRemaining: number;
 }
 
-const ORDER_STATUS_COLOR: Record<StoreOrder["status"], string> = {
-  pending: "bg-amber-100 text-amber-700",
-  processing: "bg-sky-100 text-sky-700",
-  shipped: "bg-indigo-100 text-indigo-700",
-  delivered: "bg-emerald-100 text-emerald-700",
-};
-
 export default function PatientHomePage() {
   const { appUser, loading } = useAuth();
-  const { addToCart } = useCart();
   const t = useTranslations("patient.dashboard");
   const tStatus = useTranslations("patient.bookingStatus");
-  const tOrderStatus = useTranslations("patient.orderStatus");
   // Root-scope translator for fully-qualified keys used by patientService
   // helpers (e.g. patient.profile.requiredFields.*).
   const tRoot = useTranslations();
   const tLoading = useTranslations("patient.loading");
-  const tNav = useTranslations("nav");
   const locale = useLocale() as Locale;
   const [bookings, setBookings] = useState<BookingWithParticipants[]>([]);
   const [nurses, setNurses] = useState<NurseMarketplaceProfile[]>([]);
-  const [products, setProducts] = useState<StoreItem[]>([]);
-  const [orders, setOrders] = useState<StoreOrder[]>([]);
-  const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [packages, setPackages] = useState<CarePackage[]>([]);
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [loadingData, setLoadingData] = useState(true);
 
+  // Per the 2026-06-17 audit, the dashboard was collapsed from 11+
+  // sections to 6 (Welcome / Profile-incomplete / Health profile /
+  // Recommended for you / Quick actions / Upcoming + Active plans).
+  // Recent records, previous nurses, legacy "Recommended Nurses",
+  // recent orders, and the store preview were removed — they were
+  // either duplicating Recommended For You or surfacing low-frequency
+  // content. Records / orders / store remain reachable from Quick
+  // Actions and the profile menu, so no functionality was lost.
   useEffect(() => {
     if (!appUser) return;
     const patientId = appUser.id;
@@ -100,26 +73,18 @@ export default function PatientHomePage() {
 
     (async () => {
       try {
-        const [bookingsData, nursesData, productsData, ordersData, recordsData, packagesData, profileData] =
-          await Promise.all([
-            getBookingsForPatientWithParticipants(patientId),
-            getApprovedNurseMarketplaceProfiles(),
-            getProducts(),
-            getOrdersForPatient(patientId),
-            getRecordsForPatient(patientId),
-            listPackages(),
-            getPatientProfile(patientId),
-          ]);
+        const [bookingsData, nursesData, packagesData, profileData] = await Promise.all([
+          getBookingsForPatientWithParticipants(patientId),
+          getApprovedNurseMarketplaceProfiles(),
+          listPackages(),
+          getPatientProfile(patientId),
+        ]);
 
         if (!active) return;
         setBookings(bookingsData);
-        // Keep the full approved-nurse pool — RecommendedForYou needs to
-        // see everyone to compute matches. The legacy "Recommended Nurses"
-        // section slices to the top 4 by rating at render time.
+        // RecommendedForYou consumes the full approved-nurse pool to
+        // score matches against the patient's conditions.
         setNurses([...nursesData].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)));
-        setProducts(productsData);
-        setOrders(ordersData);
-        setRecords(recordsData);
         setPackages(packagesData);
         setPatientProfile(profileData);
       } catch (error) {
@@ -164,34 +129,6 @@ export default function PatientHomePage() {
       .slice(0, 2);
   }, [bookings, packages]);
 
-  const previousNurses = useMemo<PreviousNurse[]>(() => {
-    const byId = new Map<string, PreviousNurse>();
-    bookings
-      .filter((b) => b.status === "completed")
-      .forEach((b) => {
-        const existing = byId.get(b.nurseId);
-        if (existing) {
-          existing.visits += 1;
-          if (b.date > existing.lastVisit) existing.lastVisit = b.date;
-        } else {
-          byId.set(b.nurseId, {
-            userId: b.nurseId,
-            fullName: b.nurseName,
-            specialization: b.nurseSpecialization,
-            profileImage: b.nurseProfileImage,
-            visits: 1,
-            lastVisit: b.date,
-          });
-        }
-      });
-    return Array.from(byId.values())
-      .sort((a, b) => b.visits - a.visits || b.lastVisit.localeCompare(a.lastVisit))
-      .slice(0, 3);
-  }, [bookings]);
-
-  const recentRecords = useMemo(() => records.slice(0, 3), [records]);
-  const recentOrders = useMemo(() => orders.slice(0, 2), [orders]);
-  const bestSellers = products.slice(0, 3);
 
   if (loading) {
     return <LoadingScreen text={tLoading("dashboard")} />;
@@ -403,259 +340,6 @@ export default function PatientHomePage() {
                 </div>
               </div>
             ))}
-          </div>
-        </section>
-      )}
-
-      {/* 6. Recent visit notes */}
-      {!loadingData && recentRecords.length > 0 && (
-        <section>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("recentRecordsTitle")}</h2>
-              <p className="text-slate-500 font-medium">{t("recentRecordsSubtitle")}</p>
-            </div>
-            <Link href="/patient/records" className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition">
-              {t("allRecords")} <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {recentRecords.map((record) => (
-              <Link
-                key={record.id}
-                href={`/patient/records/${record.id}`}
-                className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:border-emerald-200 hover:shadow-md transition group"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 leading-tight truncate">
-                      {record.summary ?? t("visitRecord")}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {fmtDate(record.createdAt, locale, { year: "numeric", month: "short", day: "numeric" })}
-                    </p>
-                  </div>
-                  <ChevronRight className="mt-1 h-4 w-4 text-slate-300 group-hover:text-emerald-500 transition" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 7. Previous nurses */}
-      {!loadingData && previousNurses.length > 0 && (
-        <section>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("previousNursesTitle")}</h2>
-              <p className="text-slate-500 font-medium">{t("previousNursesSubtitle")}</p>
-            </div>
-            <Link href="/patient/appointments" className="flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700 transition">
-              {t("visitHistory")} <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {previousNurses.map((nurse) => (
-              <Link
-                key={nurse.userId}
-                href={`/patient/nurses/${nurse.userId}`}
-                className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:border-sky-200 hover:shadow-md transition group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 shrink-0 overflow-hidden">
-                    {nurse.profileImage ? (
-                      <Image
-                        src={nurse.profileImage}
-                        alt={nurse.fullName}
-                        width={48}
-                        height={48}
-                        unoptimized
-                        className="object-cover h-full w-full"
-                      />
-                    ) : (
-                      <History className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 truncate">{nurse.fullName}</p>
-                    <p className="text-xs text-slate-500 truncate">{nurse.specialization ?? tNav("findANurse")}</p>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2 text-xs">
-                  <span className="font-semibold text-slate-600">{t("visits", { n: nurse.visits })}</span>
-                  <span className="text-slate-400">{t("last", { date: nurse.lastVisit })}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 8. Recommended nurses */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("recommendedNursesTitle")}</h2>
-            <p className="text-slate-500 font-medium">{t("recommendedNursesSubtitle")}</p>
-          </div>
-          <Link href="/patient/nurses" className="hidden sm:flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700 transition">
-            {t("viewAll")} <ChevronRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x">
-          {loadingData ? (
-            Array(3).fill(0).map((_, i) => (
-              <div key={i} className="min-w-[280px] h-80 bg-slate-200 rounded-3xl animate-pulse shrink-0" />
-            ))
-          ) : nurses.length > 0 ? (
-            nurses.slice(0, 4).map((nurse) => (
-              <div key={nurse.userId} className="min-w-[280px] w-[280px] shrink-0 snap-start rounded-3xl bg-white shadow-sm border border-slate-100 overflow-hidden group flex flex-col">
-                <div className="relative h-48 w-full overflow-hidden">
-                  {nurse.profileImage ? (
-                    <Image
-                      src={nurse.profileImage}
-                      alt={nurse.fullName}
-                      fill
-                      unoptimized
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-3xl font-bold text-slate-300">
-                      {nurse.fullName.substring(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between text-white">
-                    <div className="min-w-0">
-                      <p className="font-extrabold text-lg leading-tight truncate">{nurse.fullName}</p>
-                      <p className="text-sm font-medium text-sky-200 truncate">{nurse.specialization}</p>
-                    </div>
-                    {nurse.rating > 0 && (
-                      <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-lg px-2 py-1 shrink-0">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                        <span className="text-xs font-bold">{fmtNumber(nurse.rating, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {nurse.services.slice(0, 2).map((s) => (
-                      <span key={`${nurse.userId}-${s.name}`} className="bg-slate-50 border border-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
-                        {s.name}
-                      </span>
-                    ))}
-                    {nurse.services.length > 2 && (
-                      <span className="bg-slate-50 border border-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-                        +{nurse.services.length - 2}
-                      </span>
-                    )}
-                  </div>
-                  <Link href={`/patient/nurses/${nurse.userId}`} className="w-full flex items-center justify-center py-2.5 rounded-xl bg-sky-50 text-sky-700 font-bold text-sm hover:bg-sky-600 hover:text-white transition-colors group-hover:shadow-md">
-                    {t("bookSessionShort")}
-                  </Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-slate-500">{t("noNurses")}</p>
-          )}
-        </div>
-      </section>
-
-      {/* 9. Recent orders */}
-      {!loadingData && recentOrders.length > 0 && (
-        <section>
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("recentOrdersTitle")}</h2>
-              <p className="text-slate-500 font-medium">{t("recentOrdersSubtitle")}</p>
-            </div>
-            <Link href="/patient/orders" className="flex items-center gap-1 text-sm font-bold text-violet-600 hover:text-violet-700 transition">
-              {t("allOrders")} <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {recentOrders.map((order) => {
-              const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0);
-              return (
-                <Link
-                  key={order.id}
-                  href="/patient/orders"
-                  className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:border-violet-200 hover:shadow-md transition"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 shrink-0">
-                        <ShoppingBag className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-800">{t("orderNumber", { id: order.id.slice(-8).toUpperCase() })}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {fmtDate(order.createdAt, locale, { year: "numeric", month: "short", day: "numeric" })}
-                          {" · "}{t("items", { n: itemCount })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className={`rounded-xl px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${ORDER_STATUS_COLOR[order.status]}`}>
-                        {tOrderStatus(order.status)}
-                      </span>
-                      <span className="text-sm font-extrabold text-slate-800">{fmtCurrency(order.total, locale)}</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* 10. Medical store preview */}
-      {bestSellers.length > 0 && (
-        <section className="rounded-3xl bg-violet-50 p-6 sm:p-10 border border-violet-100 relative overflow-hidden">
-          <div className="absolute end-0 top-0 h-64 w-64 bg-violet-200/50 rounded-full blur-3xl -z-0 translate-x-1/2 -translate-y-1/2" />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <div className="inline-flex items-center gap-2 text-violet-700 font-bold mb-2">
-                  <Store className="h-5 w-5" /> {t("storeKicker")}
-                </div>
-                <h2 className="text-xl font-extrabold text-slate-800 tracking-tight sm:text-3xl">{t("storeTitle")}</h2>
-              </div>
-              <Link href="/patient/store" className="hidden sm:flex items-center gap-1 text-sm font-bold text-violet-600 hover:text-violet-700 transition bg-white px-4 py-2 rounded-xl shadow-sm hover:shadow">
-                {t("browseStore")} <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-3">
-              {bestSellers.map((product) => (
-                <div key={product.id} className="bg-white rounded-3xl p-5 shadow-sm border border-white hover:border-violet-200 transition-colors group flex flex-col">
-                  <div className="h-32 flex items-center justify-center text-6xl bg-slate-50 rounded-2xl mb-4 group-hover:scale-105 transition-transform">
-                    {product.image}
-                  </div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-slate-800 leading-tight">{tLocalized(product.name, locale)}</h3>
-                    <span className="font-extrabold text-violet-700">{fmtCurrency(product.price, locale)}</span>
-                  </div>
-                  <button
-                    onClick={() => addToCart(product.id)}
-                    className="mt-auto w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-violet-100 text-violet-700 font-bold text-sm hover:bg-violet-600 hover:border-violet-600 hover:text-white transition-all"
-                  >
-                    <Plus className="h-4 w-4" /> {t("addToCart")}
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <Link href="/patient/store" className="mt-6 sm:hidden w-full flex items-center justify-center gap-1 text-sm font-bold text-violet-600 bg-white px-4 py-3 rounded-xl shadow-sm">
-              {t("browseStoreFull")} <ChevronRight className="h-4 w-4" />
-            </Link>
           </div>
         </section>
       )}

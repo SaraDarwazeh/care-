@@ -51,6 +51,14 @@ function NurseProfilePageInner() {
   const initialShift = searchParams.get("shift") ?? undefined;
   const initialPackage = searchParams.get("package") ?? undefined;
   const initialDurationDays = Number(searchParams.get("durationDays") ?? "0") || undefined;
+  // Explicit booking-mode signal from the referrer. /services/packages
+  // and /services/shifts append this so the booking form opens at the
+  // mode the patient already picked instead of defaulting to one-time.
+  const rawBookingType = searchParams.get("bookingType");
+  const initialBookingType: "one-time" | "shift" | "package" | undefined =
+    rawBookingType === "one-time" || rawBookingType === "shift" || rawBookingType === "package"
+      ? rawBookingType
+      : undefined;
 
   useEffect(() => {
     let active = true;
@@ -360,6 +368,7 @@ function NurseProfilePageInner() {
               initialShift={initialShift}
               initialPackage={initialPackage}
               initialDurationDays={initialDurationDays}
+              initialBookingType={initialBookingType}
             />
           ) : (
             <div className="rounded-3xl border border-sky-100 bg-white p-8 shadow-sm">

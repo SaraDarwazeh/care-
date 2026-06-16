@@ -40,10 +40,12 @@ export const serviceCategories: ServiceCategory[] = [
     image:
       "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd29?auto=format&fit=crop&q=80",
     ctaHref: "/services/shifts",
+    // bookingType=shift is implicit when shift=… is present, but the
+    // explicit param is harmless and keeps every link self-describing.
     bookingLinks: [
-      { href: "/patient/nurses?shift=a" },
-      { href: "/patient/nurses?shift=b" },
-      { href: "/patient/nurses?shift=c" },
+      { href: "/patient/nurses?bookingType=shift&shift=a" },
+      { href: "/patient/nurses?bookingType=shift&shift=b" },
+      { href: "/patient/nurses?bookingType=shift&shift=c" },
     ],
   },
   {
@@ -51,10 +53,13 @@ export const serviceCategories: ServiceCategory[] = [
     image:
       "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80",
     ctaHref: "/services/packages",
+    // bookingType=package opens the booking form at package mode even
+    // when no specific package is pre-selected. Previously the form
+    // defaulted to one-time, forcing the patient to re-choose package.
     bookingLinks: [
-      { href: "/patient/nurses?service=elderly%20care" },
-      { href: "/patient/nurses?service=post-operative%20care" },
-      { href: "/patient/nurses?service=wound%20dressing" },
+      { href: "/patient/nurses?bookingType=package&service=elderly%20care" },
+      { href: "/patient/nurses?bookingType=package&service=post-operative%20care" },
+      { href: "/patient/nurses?bookingType=package&service=wound%20dressing" },
     ],
   },
   {

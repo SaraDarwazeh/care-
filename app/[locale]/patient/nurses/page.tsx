@@ -109,6 +109,12 @@ function PatientNursesPageInner() {
 
   const initial = useMemo(() => readFiltersFromParams(new URLSearchParams(searchParams.toString())), [searchParams]);
 
+  // Capture the booking-mode hint once on mount. It's not a filter (it
+  // doesn't affect which nurses appear) so it lives outside the filter
+  // state; it just rides through to the nurse detail page so the
+  // booking form opens at the mode the patient picked upstream.
+  const [routingBookingType] = useState<string | null>(() => searchParams.get("bookingType"));
+
   const [filters, setFilters] = useState<MarketplaceFilterValues>(initial.filters);
   const [sortBy, setSortBy] = useState<SortKey>(initial.sortBy);
   const [nurses, setNurses] = useState<NurseMarketplaceProfile[]>([]);
@@ -289,6 +295,13 @@ function PatientNursesPageInner() {
   const detailQuery = new URLSearchParams();
   if (filters.service) detailQuery.set("service", filters.service);
   if (filters.shift) detailQuery.set("shift", filters.shift);
+  if (
+    routingBookingType === "one-time" ||
+    routingBookingType === "shift" ||
+    routingBookingType === "package"
+  ) {
+    detailQuery.set("bookingType", routingBookingType);
+  }
 
   if (loading) {
     return <LoadingScreen text={t("loading")} />;

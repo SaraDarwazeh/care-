@@ -13,20 +13,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/components/patient/CartContext";
 import { useEducationLibraryEnabled } from "@/hooks/useSiteSettings";
 
-// Patient main nav follows the same exploration-oriented structure as the
-// public site (Home / Services / Packages / Store / Community). Items
-// carry translation keys, not literal labels.
+// Patient main nav is the highest-frequency surface and should reflect
+// the actions a returning patient performs most often. After the audit
+// (2026-06-17) the order is: Home → My Visits → Find Care → Store →
+// (Library if the feature flag is on). Care Packages and Community moved
+// out of the navbar: packages remain reachable from /services and the
+// dashboard quick action; Community lives in the footer.
 const NAV_ITEMS: { key: string; href: string }[] = [
   { key: "dashboard", href: "/patient" },
-  { key: "services", href: "/services" },
-  { key: "carePackages", href: "/services/packages" },
+  { key: "myVisits", href: "/patient/appointments" },
+  { key: "findCare", href: "/services" },
   { key: "medicalStore", href: "/patient/store" },
-  { key: "community", href: "/community" },
 ];
 
-// Education Library is gated on the admin-controlled site setting so a
-// disabled feature is fully hidden from the nav.
-const EDUCATION_NAV_ITEM = { key: "educationLibrary", href: "/patient/education" };
+// Library (formerly Education Library) is gated on the admin-controlled
+// site setting so a disabled feature is fully hidden from the nav.
+const LIBRARY_NAV_ITEM = { key: "library", href: "/patient/education" };
 
 export default function PatientNavbar() {
   const { appUser } = useAuth();
@@ -39,7 +41,7 @@ export default function PatientNavbar() {
 
   if (!appUser) return null;
 
-  const navItems = educationEnabled ? [...NAV_ITEMS, EDUCATION_NAV_ITEM] : NAV_ITEMS;
+  const navItems = educationEnabled ? [...NAV_ITEMS, LIBRARY_NAV_ITEM] : NAV_ITEMS;
 
   function isActive(href: string): boolean {
     if (href === "/patient") return pathname === "/patient";

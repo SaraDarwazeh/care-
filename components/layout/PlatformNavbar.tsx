@@ -16,31 +16,29 @@ interface NavItem {
   href: string;
 }
 
-// Public navigation surfaces the four pillars of the platform plus the
-// "join as a nurse" CTA. Items carry translation keys, not literal
-// labels — the active locale resolves them in render.
+// Public navigation. Per the 2026-06-17 audit, the centered nav was
+// trimmed to keep first-impression focus on the patient conversion
+// path. Care Packages (now a result of Services), Find a Nurse (the
+// hero is the primary CTA), and Community (moved to the footer) were
+// dropped; nurse recruitment stays as the single dual-sided CTA.
 const GUEST_NAV: NavItem[] = [
   { key: "home", href: "/" },
   { key: "services", href: "/services" },
-  { key: "carePackages", href: "/services/packages" },
-  { key: "findANurse", href: "/patient/nurses" },
-  { key: "community", href: "/community" },
   { key: "joinAsNurse", href: "/register?role=nurse" },
 ];
 
+// Mirrors the signed-in patient navbar so a patient briefly bouncing
+// through the public shell sees the same surface map.
 const PATIENT_NAV: NavItem[] = [
   { key: "dashboard", href: "/patient" },
-  { key: "services", href: "/services" },
-  { key: "carePackages", href: "/services/packages" },
+  { key: "myVisits", href: "/patient/appointments" },
+  { key: "findCare", href: "/services" },
   { key: "medicalStore", href: "/patient/store" },
-  { key: "community", href: "/community" },
 ];
 
 const STAFF_NAV: NavItem[] = [
   { key: "workspace", href: "/" }, // overridden per role below
   { key: "services", href: "/services" },
-  { key: "carePackages", href: "/services/packages" },
-  { key: "community", href: "/community" },
 ];
 
 function dashboardHref(role?: string): string {

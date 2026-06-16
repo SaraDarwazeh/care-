@@ -39,6 +39,7 @@ export default function BookingForm({
   initialShift,
   initialPackage,
   initialDurationDays,
+  initialBookingType,
   onBooked,
 }: {
   patientId: string;
@@ -47,6 +48,11 @@ export default function BookingForm({
   initialShift?: string;
   initialPackage?: string;
   initialDurationDays?: number;
+  // Explicit booking-mode signal from the referrer. Lets /services/packages
+  // links pass bookingType=package even when they don't pre-select a
+  // specific package, so the form opens at the right tab instead of
+  // forcing the patient to re-pick a mode they already chose upstream.
+  initialBookingType?: "one-time" | "shift" | "package";
   onBooked?: () => void;
 }) {
   const router = useRouter();
@@ -69,6 +75,8 @@ export default function BookingForm({
   const lastPrefs = useMemo(() => getLastPreferences(), []);
 
   const [bookingType, setBookingType] = useState<"one-time" | "shift" | "package">(() => {
+    // Explicit referrer signal wins (e.g. user came from /services/packages).
+    if (initialBookingType) return initialBookingType;
     if (initialPackage) return "package";
     if (initialShift) return "shift";
     if (lastPrefs?.bookingType) return lastPrefs.bookingType;
@@ -480,15 +488,46 @@ export default function BookingForm({
 
   return (
     <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">{t("title")}</h2>
-          <p className="text-sm text-slate-500">{t("step", { current: step, total: totalSteps })}</p>
+      {/* Prominent running-total banner. Per the 2026-06-17 audit, the
+          old header showed the estimated total in a small text-end pill
+          which patients consistently missed until the final step. The
+          larger, separated panel keeps pricing visible from step 1 and
+          surfaces the base + add-on breakdown inline so a patient never
+          has to guess how the total was calculated. */}
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-sky-600 to-sky-700 p-5 text-white shadow-sm">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-100">
+              {t("estimatedTotal")}
+            </p>
+            <p className="mt-1 text-3xl font-extrabold leading-none tracking-tight">
+              {fmtCurrency(pricing.total, locale)}
+            </p>
+          </div>
+          <div className="text-end">
+            <p className="text-xs font-bold text-sky-100">{t("step", { current: step, total: totalSteps })}</p>
+            <p className="mt-0.5 text-xs font-medium text-sky-200">{t("title")}</p>
+          </div>
         </div>
-        <div className="text-end">
-          <p className="text-xs font-medium text-slate-500">{t("estimatedTotal")}</p>
-          <p className="text-lg font-bold text-sky-700">{fmtCurrency(pricing.total, locale)}</p>
-        </div>
+        {pricing.base > 0 && (
+          <div className="mt-4 grid gap-1.5 border-t border-sky-400/40 pt-3 text-xs">
+            <div className="flex items-center justify-between text-sky-50">
+              <span>{tS5("base")}</span>
+              <span className="font-semibold">{fmtCurrency(pricing.base, locale)}</span>
+            </div>
+            {pricing.addons.length > 0 &&
+              pricing.addons.map((a) => {
+                const catalog = findCatalogService(a.id);
+                const label = catalog ? tLocalized(catalog.label, locale) : a.name;
+                return (
+                  <div key={a.id} className="flex items-center justify-between text-sky-50">
+                    <span>+ {label}</span>
+                    <span className="font-semibold">{fmtCurrency(a.price, locale)}</span>
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </div>
 
       {bookingType === "package" && selectedPackage && (

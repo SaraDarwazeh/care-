@@ -121,7 +121,7 @@ export default function Home() {
 
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Link
-                  href="/patient/nurses"
+                  href="/find-care"
                   className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700"
                 >
                   {t("hero.ctaFindNurse")} <ArrowRight className="h-4 w-4" />
@@ -246,7 +246,7 @@ export default function Home() {
               ))}
             </div>
             <Link
-              href="/patient/nurses"
+              href="/find-care"
               className="mt-7 inline-flex items-center gap-1.5 text-sm font-bold text-sky-600 transition hover:text-sky-700"
             >
               {t("how.patients.cta")} <ArrowRight className="h-3.5 w-3.5" />

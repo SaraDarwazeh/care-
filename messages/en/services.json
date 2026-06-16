@@ -3,7 +3,9 @@
     "badge": "Services",
     "title": "Choose the right care path before you book.",
     "description": "Care+ groups the main services into one-time visits, shift coverage, and care packages so families can move into the right booking flow faster.",
-    "browseNurses": "Browse nurses",
+    "primaryCta": "Get a personal recommendation",
+    "primaryCtaHelp": "Answer 3 quick questions and we'll match the right service.",
+    "browseNurses": "Or browse all nurses",
     "backToHome": "Back to home"
   },
   "categories": {

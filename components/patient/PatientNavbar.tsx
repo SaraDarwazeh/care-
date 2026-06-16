@@ -22,7 +22,7 @@ import { useEducationLibraryEnabled } from "@/hooks/useSiteSettings";
 const NAV_ITEMS: { key: string; href: string }[] = [
   { key: "dashboard", href: "/patient" },
   { key: "myVisits", href: "/patient/appointments" },
-  { key: "findCare", href: "/services" },
+  { key: "findCare", href: "/find-care" },
   { key: "medicalStore", href: "/patient/store" },
 ];
 

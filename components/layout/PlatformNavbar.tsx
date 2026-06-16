@@ -18,12 +18,12 @@ interface NavItem {
 
 // Public navigation. Per the 2026-06-17 audit, the centered nav was
 // trimmed to keep first-impression focus on the patient conversion
-// path. Care Packages (now a result of Services), Find a Nurse (the
-// hero is the primary CTA), and Community (moved to the footer) were
-// dropped; nurse recruitment stays as the single dual-sided CTA.
+// path. "Find Care" routes to the new /find-care diagnostic instead of
+// the billing-mode /services grid (which stays alive for SEO + direct
+// links). Nurse recruitment stays as the single dual-sided CTA.
 const GUEST_NAV: NavItem[] = [
   { key: "home", href: "/" },
-  { key: "services", href: "/services" },
+  { key: "findCare", href: "/find-care" },
   { key: "joinAsNurse", href: "/register?role=nurse" },
 ];
 
@@ -32,7 +32,7 @@ const GUEST_NAV: NavItem[] = [
 const PATIENT_NAV: NavItem[] = [
   { key: "dashboard", href: "/patient" },
   { key: "myVisits", href: "/patient/appointments" },
-  { key: "findCare", href: "/services" },
+  { key: "findCare", href: "/find-care" },
   { key: "medicalStore", href: "/patient/store" },
 ];
 

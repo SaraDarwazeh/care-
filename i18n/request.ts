@@ -23,6 +23,7 @@ const NAMESPACES = [
   "rewards",
   "educationLibrary",
   "conditions",
+  "findCare",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

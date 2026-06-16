@@ -419,6 +419,25 @@ export default function BookingForm({
   const handleNext = () => setStep((prev) => Math.min(prev + 1, totalSteps));
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
 
+  // Section visibility per the responsive layout strategy: mobile shows
+  // the active step only (wizard); desktop (lg+) shows every section
+  // stacked vertically. We use CSS so there's no SSR mismatch and no
+  // viewport-detection hook.
+  const sectionVis = (n: number) =>
+    `${step === n ? "" : "hidden"} lg:block ${n > 1 ? "lg:mt-10 lg:border-t lg:border-slate-100 lg:pt-10" : ""}`;
+
+  // Whether the booking is submittable. Identical to the previous
+  // "step 5" submit-disabled clause; computed once so the desktop and
+  // mobile Submit buttons share the rule.
+  const submitDisabled =
+    loading ||
+    !date ||
+    !location ||
+    !tncAccepted ||
+    (bookingType === "shift" && !shift) ||
+    (bookingType === "one-time" && !time) ||
+    (bookingType === "package" && !packageId);
+
   if (success) {
     return (
       <div className="flex flex-col items-center justify-center rounded-3xl border border-emerald-100 bg-emerald-50 p-8 text-center shadow-sm">
@@ -487,7 +506,8 @@ export default function BookingForm({
   const stepLabelOrder = ["type", "service", "schedule", "addons", "review"] as const;
 
   return (
-    <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+    <>
+    <div className="rounded-3xl border border-sky-100 bg-white p-6 pb-24 lg:pb-6 shadow-sm">
       {/* Prominent running-total banner. Per the 2026-06-17 audit, the
           old header showed the estimated total in a small text-end pill
           which patients consistently missed until the final step. The
@@ -599,14 +619,16 @@ export default function BookingForm({
         </div>
       )}
 
-      <div className="mb-8 flex gap-2">
+      {/* Step pip indicator + numbered progress bar. Wizard chrome —
+          mobile only. Desktop renders the full form linearly. */}
+      <div className="lg:hidden mb-8 flex gap-2">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div key={i} className={`h-2 flex-1 rounded-full ${i + 1 <= step ? "bg-sky-600" : "bg-sky-100"}`} />
         ))}
       </div>
 
       <form onSubmit={onSubmit}>
-        <div className="mb-6">
+        <div className="lg:hidden mb-6">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t("step", { current: step, total: totalSteps })}</p>
             <p className="text-xs text-slate-400">{t("percentComplete", { n: Math.round((step / totalSteps) * 100) })}</p>
@@ -630,8 +652,7 @@ export default function BookingForm({
         </div>
 
         <div className="min-h-[250px]">
-          {step === 1 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4">
+          <div className={`${sectionVis(1)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Stethoscope className="h-5 w-5 text-sky-600"/> {tS1("title")}</h3>
               <div className="mb-3">
                 <label className="mb-2 block text-sm font-medium text-slate-700">{tS1("bookingType")}</label>
@@ -706,10 +727,8 @@ export default function BookingForm({
                 ))}
               </div>
             </div>
-          )}
 
-          {step === 2 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4">
+          <div className={`${sectionVis(2)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Clock className="h-5 w-5 text-sky-600"/> {bookingType === "shift" ? tS2("selectShift") : tS2("visitTiming")}</h3>
               {bookingType === "shift" ? (
                 <div className="grid gap-3">
@@ -758,10 +777,8 @@ export default function BookingForm({
                 <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">{tS2("oneTimeNoShift")}</p>
               )}
             </div>
-          )}
 
-          {step === 3 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4">
+          <div className={`${sectionVis(3)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Calendar className="h-5 w-5 text-sky-600"/> {tS3("title")}</h3>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">{bookingType === "package" ? tS3("startDate") : tS3("dateOfVisit")}</label>
@@ -837,10 +854,8 @@ export default function BookingForm({
                 </div>
               )}
             </div>
-          )}
 
-          {step === 4 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4">
+          <div className={`${sectionVis(4)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
               <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><MapPin className="h-5 w-5 text-sky-600"/> {tS4("title")}</h3>
               {savedLocations.length > 0 && !useCustomLocation && (
                 <div className="space-y-2">
@@ -921,10 +936,8 @@ export default function BookingForm({
                 </div>
               )}
             </div>
-          )}
 
-          {step === 5 && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4">
+          <div className={`${sectionVis(5)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
               <h3 className="mb-4 font-semibold text-slate-800">{tS5("title")}</h3>
               <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700 mb-4 space-y-1">
                 {bookingType === "package" && selectedPackage && (
@@ -1019,10 +1032,12 @@ export default function BookingForm({
                 </label>
               </div>
             </div>
-          )}
         </div>
 
-        <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+        {/* Mobile wizard chrome — Back/Next/Submit. Hidden on desktop
+            (lg+) where the form shows all sections vertically and only
+            the desktop submit button below is used. */}
+        <div className="lg:hidden mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
           <button
             type="button"
             onClick={handleBack}
@@ -1049,22 +1064,54 @@ export default function BookingForm({
           ) : (
             <button
               type="submit"
-              disabled={
-                loading ||
-                !date ||
-                !location ||
-                !tncAccepted ||
-                (bookingType === "shift" && !shift) ||
-                (bookingType === "one-time" && !time) ||
-                (bookingType === "package" && !packageId)
-              }
+              disabled={submitDisabled}
               className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
             >
               {loading ? t("submitting") : t("confirmBooking")}
             </button>
           )}
         </div>
+
+        {/* Desktop submit (lg+). The mobile wizard chrome above takes
+            care of Back/Next/Submit at small viewports; on desktop the
+            form is one long page, so we only need a Confirm button at
+            the end. Pricing already lives in the prominent header
+            panel and stays in view because the booking form itself is
+            sticky in the nurse-detail right column. */}
+        <div className="hidden lg:flex mt-10 items-center justify-end border-t border-slate-100 pt-6">
+          <button
+            type="submit"
+            disabled={submitDisabled}
+            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-10 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-95 disabled:opacity-50"
+          >
+            {loading ? t("submitting") : t("confirmBooking")}
+          </button>
+        </div>
       </form>
     </div>
+
+    {/* Mobile sticky bottom summary. On mobile the booking form is not
+        sticky in its parent (the nurse detail page only sticks the
+        right column at lg+), so as the patient scrolls down to fill
+        fields the prominent price banner at the top scrolls off-
+        screen. This pinned bar keeps the running total in view at all
+        times. Hidden on desktop where the sticky parent column does
+        the same job. */}
+    <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur shadow-[0_-4px_20px_rgba(15,23,42,0.08)]">
+      <div className="mx-auto flex max-w-md items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
+            {t("estimatedTotal")}
+          </p>
+          <p className="text-xl font-extrabold tracking-tight text-slate-900">
+            {fmtCurrency(pricing.total, locale)}
+          </p>
+        </div>
+        <p className="text-xs font-semibold text-slate-500">
+          {t("step", { current: step, total: totalSteps })}
+        </p>
+      </div>
+    </div>
+    </>
   );
 }

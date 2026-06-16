@@ -1,0 +1,81 @@
+{
+  "page": {
+    "kicker": "Find care",
+    "title": "Let's find the right care for you.",
+    "subtitle": "Three quick questions — about 30 seconds. We use your answers to surface the nurses and packages most relevant to your situation.",
+    "secured": "Your answers stay private. We use them to filter our nurse list; nothing is shared."
+  },
+  "questions": {
+    "recipient": {
+      "label": "Who needs care?",
+      "help": "Choose whoever the visit is for.",
+      "options": {
+        "self": "Myself",
+        "parent": "A parent",
+        "grandparent": "A grandparent",
+        "child": "A child",
+        "spouse": "My spouse",
+        "other-family": "Another family member"
+      }
+    },
+    "situation": {
+      "label": "What's going on?",
+      "help": "Pick the closest match — you can refine once you see nurses.",
+      "options": {
+        "post-surgery": "Recovering from surgery",
+        "chronic-condition": "Managing a chronic condition",
+        "daily-support": "Needs daily support",
+        "overnight": "Needs overnight help",
+        "pregnancy-newborn": "Pregnancy or new baby",
+        "specific-task": "A specific medical task",
+        "not-sure": "Not sure yet"
+      }
+    },
+    "when": {
+      "label": "When do you need care?",
+      "help": "An estimate is fine.",
+      "options": {
+        "today": "Today",
+        "this-week": "This week",
+        "this-month": "This month",
+        "ongoing": "Ongoing",
+        "not-sure": "Not sure yet"
+      }
+    }
+  },
+  "actions": {
+    "next": "Next",
+    "back": "Back",
+    "findMatches": "Find matches",
+    "talkToCoordinator": "Not sure? Talk to a Care+ coordinator",
+    "browseAllNurses": "Or skip this — browse all nurses"
+  },
+  "result": {
+    "title": "Here's who can help",
+    "summaryGeneric": "Based on your answers, here are the right caregivers and packages for you.",
+    "urgentBadge": "Marked as urgent — we're prioritising nurses available today.",
+    "continueCta": "See matched nurses"
+  },
+  "summary": {
+    "post-surgery": "Care for recovery after surgery",
+    "chronic-condition": "Care for a chronic condition",
+    "daily-support": "Daily support visits",
+    "overnight": "Overnight care",
+    "pregnancy-newborn": "Mother & baby care",
+    "specific-task": "A specific medical visit",
+    "not-sure": "Browsing our full nurse list"
+  },
+  "coordinator": {
+    "title": "Talk to a Care+ coordinator",
+    "body": "Tell us what's going on and we'll suggest the right nurse or package. We respond within working hours.",
+    "channelsHeading": "Choose how to reach us",
+    "kinds": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "phone": "Phone",
+      "telegram": "Telegram"
+    },
+    "fallbackChannelHint": "We'll get back to you within a few hours.",
+    "close": "Close"
+  }
+}

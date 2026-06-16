@@ -21,6 +21,8 @@ const NAMESPACES = [
   "notifications",
   "errors",
   "rewards",
+  "educationLibrary",
+  "conditions",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

@@ -103,7 +103,30 @@
     "browseStore": "تصفّح المتجر",
     "addToCart": "أضف إلى السلة",
     "browseStoreFull": "تصفّح المتجر بالكامل",
-    "profileMobile": "الملف"
+    "profileMobile": "الملف",
+    "recommendedForYou": {
+      "heading": "موصى به لك",
+      "subtitle": "بناءً على الحالات المسجلة في ملفك الصحي.",
+      "servicesTitle": "خدمات قد تهمك",
+      "nursesTitle": "ممرضون قد يساعدونك",
+      "packagesTitle": "باقات رعاية مناسبة لك",
+      "matchedFor": "لـ {labels}",
+      "matchedForOne": "لـ {label}",
+      "view": "عرض",
+      "browseAllNurses": "تصفّح جميع الممرضين",
+      "browseAllPackages": "تصفّح جميع الباقات",
+      "emptyTitle": "أخبرنا عن حالتك الصحية",
+      "emptyBody": "أضف حالاتك الطبية إلى ملفك وسنقترح عليك الخدمات والممرضين والباقات الأنسب لك.",
+      "emptyCta": "أضف حالاتك"
+    },
+    "yourHealthProfile": {
+      "heading": "ملفك الصحي",
+      "subtitle": "نستخدمه لتخصيص التوصيات.",
+      "edit": "تعديل",
+      "noConditions": "لا توجد حالات مسجلة حتى الآن.",
+      "moreCount": "+{n} أخرى",
+      "customSectionLabel": "أخرى"
+    }
   },
   "nurses": {
     "pageTitle": "ابحث عن ممرض",
@@ -654,6 +677,8 @@
       "personal": {
         "title": "البيانات الشخصية",
         "subtitle": "كيف يتواصل معك الممرضون وبياناتك الأساسية.",
+        "name": "الاسم الكامل",
+        "namePlaceholder": "اسمك الكامل",
         "phone": "رقم الهاتف",
         "phonePlaceholder": "+962 7 9000 0000",
         "dob": "تاريخ الميلاد",

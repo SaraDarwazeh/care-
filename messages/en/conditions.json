@@ -1,0 +1,30 @@
+{
+  "groups": {
+    "cardiovascular": "Heart & circulation",
+    "endocrine": "Endocrine & metabolic",
+    "respiratory": "Respiratory",
+    "neurological": "Neurological",
+    "musculoskeletal": "Bones, joints & muscles",
+    "mental-health": "Mental health",
+    "pediatric": "Pediatric",
+    "elderly": "Elderly care",
+    "oncology": "Oncology",
+    "maternal": "Maternal & postnatal",
+    "wound-skin": "Wounds & skin",
+    "other": "Other"
+  },
+  "picker": {
+    "label": "Conditions",
+    "subtitle": "Pick what applies. We use this to suggest the right services.",
+    "search": "Search conditions",
+    "noResults": "No conditions match that search.",
+    "selectedCount": "{n} selected",
+    "groupHeader": "{group} ({count})",
+    "customLabel": "Other condition (not listed)",
+    "customPlaceholder": "Type and press enter to add",
+    "customHint": "Use this for conditions not in the list above.",
+    "removeChip": "Remove",
+    "expandGroup": "Show",
+    "collapseGroup": "Hide"
+  }
+}

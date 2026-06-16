@@ -1,0 +1,30 @@
+{
+  "groups": {
+    "cardiovascular": "القلب والدورة الدموية",
+    "endocrine": "الغدد الصماء والأيض",
+    "respiratory": "الجهاز التنفسي",
+    "neurological": "الجهاز العصبي",
+    "musculoskeletal": "العظام والمفاصل والعضلات",
+    "mental-health": "الصحة النفسية",
+    "pediatric": "الأطفال",
+    "elderly": "كبار السن",
+    "oncology": "الأورام",
+    "maternal": "الأم وما بعد الولادة",
+    "wound-skin": "الجروح والجلد",
+    "other": "أخرى"
+  },
+  "picker": {
+    "label": "الحالات الصحية",
+    "subtitle": "اختر ما ينطبق عليك لنقترح الخدمات المناسبة.",
+    "search": "ابحث عن حالة",
+    "noResults": "لا توجد حالات تطابق البحث.",
+    "selectedCount": "تم اختيار {n}",
+    "groupHeader": "{group} ({count})",
+    "customLabel": "حالة أخرى (غير مدرجة)",
+    "customPlaceholder": "اكتب الحالة ثم اضغط Enter لإضافتها",
+    "customHint": "استخدم هذا الحقل للحالات غير الموجودة بالأعلى.",
+    "removeChip": "حذف",
+    "expandGroup": "إظهار",
+    "collapseGroup": "إخفاء"
+  }
+}

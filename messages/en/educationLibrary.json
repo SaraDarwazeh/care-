@@ -1,0 +1,143 @@
+{
+  "feature": {
+    "name": "Education Library",
+    "tagline": "Short videos to help you live better."
+  },
+  "disabled": {
+    "title": "Library temporarily unavailable",
+    "body": "Our care team is updating the library. Please check back soon."
+  },
+  "feed": {
+    "heading": "Education Library",
+    "subtitle": "Short videos curated by our care team.",
+    "savedCta": "Saved videos",
+    "filters": {
+      "all": "All",
+      "category": "Category",
+      "clear": "Clear filter"
+    },
+    "loadingMore": "Loading more…",
+    "endOfList": "You've reached the end.",
+    "empty": {
+      "title": "No videos yet",
+      "body": "New educational content is coming soon."
+    },
+    "emptyCategory": {
+      "title": "Nothing in this category yet",
+      "body": "Try another category or come back later."
+    },
+    "loadError": "Couldn't load videos. Please try again."
+  },
+  "detail": {
+    "back": "Back to library",
+    "saved": "Saved",
+    "save": "Save",
+    "saving": "Saving…",
+    "share": "Copy link",
+    "linkCopied": "Link copied",
+    "shareUnsupported": "Copy not supported. Copy the URL from your browser.",
+    "related": "More in this category",
+    "noRelated": "More videos coming soon.",
+    "notFound": {
+      "title": "Video not found",
+      "body": "This video may have been removed or unpublished.",
+      "cta": "Back to library"
+    },
+    "loadError": "Couldn't load this video."
+  },
+  "saved": {
+    "heading": "Saved videos",
+    "subtitle": "Watch later — your saved videos sync to every device.",
+    "empty": {
+      "title": "Nothing saved yet",
+      "body": "Tap the save icon on any video to keep it here.",
+      "cta": "Browse the library"
+    },
+    "loadError": "Couldn't load your saved videos."
+  },
+  "card": {
+    "watchNow": "Watch",
+    "saved": "Saved",
+    "durationLabel": "{minutes}:{seconds}"
+  },
+  "categories": {
+    "general": "General",
+    "preventive": "Preventive care",
+    "post-op": "Post-operative",
+    "chronic": "Chronic conditions",
+    "pediatric": "Pediatric",
+    "elderly": "Elderly care",
+    "wellness": "Wellness",
+    "nutrition": "Nutrition",
+    "mental-health": "Mental health"
+  },
+  "admin": {
+    "title": "Education Library",
+    "subtitle": "Manage short-form educational videos.",
+    "loading": "Loading library…",
+    "addVideo": "Add video",
+    "editVideo": "Edit video",
+    "newVideo": "New video",
+    "noVideos": {
+      "title": "No videos yet",
+      "body": "Click \"Add video\" to publish your first one."
+    },
+    "filter": {
+      "all": "All"
+    },
+    "form": {
+      "videoFile": "Video file *",
+      "videoFileHelp": "MP4, up to 100 MB. Vertical or horizontal both work.",
+      "videoReady": "Video uploaded",
+      "videoMissing": "Please upload a video before saving.",
+      "replaceVideo": "Replace video",
+      "thumbnail": "Thumbnail (optional)",
+      "thumbnailHelp": "PNG or JPG, up to 10 MB. Shown in the library grid.",
+      "titleEn": "Title (English) *",
+      "titleAr": "العنوان (العربية)",
+      "descEn": "Description (English) *",
+      "descAr": "الوصف (العربية)",
+      "category": "Category *",
+      "tags": "Tags",
+      "tagsHelp": "Comma-separated keywords.",
+      "duration": "Duration",
+      "durationAuto": "Detected from video",
+      "published": "Published",
+      "publishedHelp": "Patients can see this video.",
+      "errorTitleRequired": "Title (English) is required.",
+      "errorDescRequired": "Description (English) is required.",
+      "errorVideoRequired": "A video file is required.",
+      "uploadingVideo": "Uploading video…",
+      "uploadingThumb": "Uploading thumbnail…",
+      "saveCreate": "Create video",
+      "saveUpdate": "Update video",
+      "cancel": "Cancel",
+      "saving": "Saving…"
+    },
+    "row": {
+      "draft": "Draft",
+      "published": "Published",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "preview": "Preview",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this video? This cannot be undone.",
+      "arIncomplete": "AR incomplete"
+    },
+    "errors": {
+      "loadFailed": "Couldn't load videos.",
+      "saveFailed": "Couldn't save video.",
+      "deleteFailed": "Couldn't delete video.",
+      "publishFailed": "Couldn't update publication state."
+    }
+  },
+  "settings": {
+    "heading": "Education Library",
+    "description": "Show the Education Library section to patients across the platform. When off, the nav item and routes are hidden and patient links redirect home.",
+    "toggleOn": "Enabled",
+    "toggleOff": "Disabled",
+    "saving": "Saving…",
+    "savedAt": "Last updated {when}"
+  }
+}

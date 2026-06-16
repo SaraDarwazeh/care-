@@ -46,7 +46,31 @@
         { "label": "Post-op Recovery", "description": "Ideal for recovery support after surgery." },
         { "label": "Wound Care Package", "description": "Bundled support for wound dressing and healing." }
       ]
+    },
+    "additional": {
+      "eyebrow": "Beyond medical care",
+      "title": "Additional Services",
+      "description": "Non-medical support like cooking, driving, shopping and companionship — added on top of a nurse visit.",
+      "highlights": ["Cooking", "Driving", "Companionship"],
+      "ctaLabel": "Explore additional services",
+      "imageAlt": "Caregiver assisting with daily tasks",
+      "bookingLinks": [
+        { "label": "Cooking", "description": "Light meal prep for the patient." },
+        { "label": "Driving", "description": "Safe transport to appointments." },
+        { "label": "Companionship", "description": "Social presence for elderly patients." }
+      ]
     }
+  },
+  "additional": {
+    "kicker": "Additional services",
+    "title": "Non-medical support, added on top of any visit",
+    "subtitle": "Booked alongside a nurse — pick the ones that help, skip the rest.",
+    "addOnNotice": "Additional services are booked as add-ons to a nurse visit. Start a booking to add any of them.",
+    "startBooking": "Find a nurse to book",
+    "browseAll": "Browse all services",
+    "kindLabel": "Additional",
+    "priceLabel": "From {amount}",
+    "priceFreeLabel": "Included"
   },
   "card": {
     "nextStep": "Next step"

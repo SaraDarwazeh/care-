@@ -18,6 +18,7 @@ import {
   HandHeart,
   Bell,
   BookOpen,
+  PlaySquare,
   Activity,
 } from "lucide-react";
 import { useState } from "react";
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
   { key: "records", href: "/admin/records", icon: FileText },
   { key: "community", href: "/admin/community", icon: HandHeart },
   { key: "education", href: "/admin/education", icon: BookOpen },
+  { key: "educationLibrary", href: "/admin/education-library", icon: PlaySquare },
   { key: "notifications", href: "/admin/notifications", icon: Bell },
   { key: "systemStatus", href: "/admin/system-status", icon: Activity },
   { key: "settings", href: "/admin/settings", icon: Settings },

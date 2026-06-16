@@ -103,7 +103,30 @@
     "browseStore": "Browse Store",
     "addToCart": "Add to cart",
     "browseStoreFull": "Browse Full Store",
-    "profileMobile": "Profile"
+    "profileMobile": "Profile",
+    "recommendedForYou": {
+      "heading": "Recommended for you",
+      "subtitle": "Based on the conditions on your health profile.",
+      "servicesTitle": "Services worth a look",
+      "nursesTitle": "Nurses who can help",
+      "packagesTitle": "Care packages for you",
+      "matchedFor": "For {labels}",
+      "matchedForOne": "For {label}",
+      "view": "View",
+      "browseAllNurses": "Browse all nurses",
+      "browseAllPackages": "Browse all packages",
+      "emptyTitle": "Tell us about your health",
+      "emptyBody": "Add your medical conditions to your profile and we'll suggest the services, nurses, and packages most relevant to you.",
+      "emptyCta": "Add your conditions"
+    },
+    "yourHealthProfile": {
+      "heading": "Your health profile",
+      "subtitle": "We use this to personalise recommendations.",
+      "edit": "Edit",
+      "noConditions": "No conditions on file yet.",
+      "moreCount": "+{n} more",
+      "customSectionLabel": "Other"
+    }
   },
   "nurses": {
     "pageTitle": "Find a Nurse",
@@ -654,6 +677,8 @@
       "personal": {
         "title": "Personal",
         "subtitle": "How nurses reach you and basic details.",
+        "name": "Full Name",
+        "namePlaceholder": "Your full name",
         "phone": "Phone Number",
         "phonePlaceholder": "+1 234 567 890",
         "dob": "Date of Birth",

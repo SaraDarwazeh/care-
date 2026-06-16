@@ -86,6 +86,7 @@ async function main() {
     "nurses/certificates/*",
     "packages/*",
     "products/*",
+    "education/*",
   ];
 
   const policy = {

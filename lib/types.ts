@@ -124,6 +124,11 @@ export interface PatientProfile {
   emergencyContact?: EmergencyContact;
   allergies?: string[];
   currentMedications?: string[];
+  // Canonical condition ids from lib/medicalConditions.ts. New primary
+  // input for the medical section; the legacy `diseases` array stays
+  // around to hold free-text "other condition not in the list" strings
+  // captured via the same picker.
+  conditions?: string[];
   dateOfBirth?: string;
   bloodType?: string;
   // Identity verification (post-launch gate before first booking).
@@ -480,4 +485,76 @@ export interface EducationCard {
   active: boolean;
   createdAt: string;
   updatedAt?: string;
+}
+
+// Educational Library — short-form videos managed by admins.
+// Distinct subsystem from EducationCard (text trust cards). Each video
+// is a self-contained admin-curated record with bilingual copy and a
+// public-readable MP4 in S3.
+export const EDUCATION_VIDEO_CATEGORIES = [
+  "general",
+  "preventive",
+  "post-op",
+  "chronic",
+  "pediatric",
+  "elderly",
+  "wellness",
+  "nutrition",
+  "mental-health",
+] as const;
+export type EducationVideoCategory = (typeof EDUCATION_VIDEO_CATEGORIES)[number];
+
+export interface EducationVideo {
+  id: string;
+  // Bilingual admin-curated copy per Phase 5. Tolerant readers normalize
+  // legacy plain-string records on the way in.
+  title: LocalizedString;
+  description: LocalizedString;
+  // Public S3 URL. Browser plays via plain <video src>; no streaming
+  // protocol — MVP keeps the pipeline simple.
+  videoUrl: string;
+  // Optional poster image. Public URL. If absent the player shows a
+  // gradient placeholder.
+  thumbnailUrl?: string;
+  // Captured from <video> loadedmetadata on upload — purely a display
+  // hint ("2:14" badge). The video itself is the source of truth.
+  durationSeconds?: number;
+  category: EducationVideoCategory;
+  // Free-form admin keywords for client-side search. Not stored as a
+  // localized field — patients see the active locale's tag set if a
+  // tag matches existing i18n labels.
+  tags?: string[];
+  // Publication state. Unpublished videos are hidden from patient
+  // surfaces but remain editable in the admin panel.
+  published: boolean;
+  order: number;
+  // Best-effort denormalized counters. Increment from the patient
+  // surfaces but tolerate races — these are vanity stats, not billing.
+  viewCount?: number;
+  saveCount?: number;
+  createdAt: string;
+  updatedAt?: string;
+  createdBy?: string;
+}
+
+// Per-user save record. Lives at users/{uid}/savedVideos/{videoId}.
+// videoId is the doc id; the body just stores the bookmark timestamp
+// so the library page can sort by recency.
+export interface SavedVideoEntry {
+  videoId: string;
+  savedAt: string;
+}
+
+// Global site settings — single doc at siteSettings/global. New flags
+// live here. Reads are public; writes require admin role (enforced by
+// Firestore rules). Optional fields default to "enabled" so an empty
+// or missing doc keeps the platform fully functional.
+export interface SiteSettings {
+  // Toggles the Education Library feature platform-wide. When false
+  // the patient nav item is hidden, /patient/education* routes redirect
+  // home, and any homepage section is suppressed. Admin CRUD remains
+  // reachable so content can be staged before launch / re-launch.
+  educationLibraryEnabled?: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
 }

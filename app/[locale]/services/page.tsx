@@ -35,7 +35,7 @@ export default function ServicesOverviewPage() {
           </div>
         </section>
 
-        <section className="mt-12 grid gap-6 lg:grid-cols-3">
+        <section className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
           {serviceCategories.map((category) => (
             <ServiceCategoryCard key={category.slug} category={category} />
           ))}

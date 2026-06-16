@@ -11,6 +11,7 @@ import LocaleSwitcher from "@/components/common/LocaleSwitcher";
 import PointsBalancePill from "@/components/patient/PointsBalancePill";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/components/patient/CartContext";
+import { useEducationLibraryEnabled } from "@/hooks/useSiteSettings";
 
 // Patient main nav follows the same exploration-oriented structure as the
 // public site (Home / Services / Packages / Store / Community). Items
@@ -23,6 +24,10 @@ const NAV_ITEMS: { key: string; href: string }[] = [
   { key: "community", href: "/community" },
 ];
 
+// Education Library is gated on the admin-controlled site setting so a
+// disabled feature is fully hidden from the nav.
+const EDUCATION_NAV_ITEM = { key: "educationLibrary", href: "/patient/education" };
+
 export default function PatientNavbar() {
   const { appUser } = useAuth();
   const pathname = usePathname();
@@ -30,8 +35,11 @@ export default function PatientNavbar() {
   const tNav = useTranslations("nav");
   const tPatient = useTranslations("patient.navbar");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const educationEnabled = useEducationLibraryEnabled();
 
   if (!appUser) return null;
+
+  const navItems = educationEnabled ? [...NAV_ITEMS, EDUCATION_NAV_ITEM] : NAV_ITEMS;
 
   function isActive(href: string): boolean {
     if (href === "/patient") return pathname === "/patient";
@@ -50,7 +58,7 @@ export default function PatientNavbar() {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-6 lg:flex">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link
@@ -109,7 +117,7 @@ export default function PatientNavbar() {
               <LocaleSwitcher variant="menu" />
             </div>
             <nav className="flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const active = isActive(item.href);
                 return (
                   <Link

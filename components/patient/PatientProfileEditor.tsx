@@ -26,8 +26,10 @@ import {
 } from "lucide-react";
 import PatientButton from "@/components/patient/PatientButton";
 import SignedReadImage from "@/components/common/SignedReadImage";
+import MedicalConditionsField from "@/components/patient/MedicalConditionsField";
 import { uploadFile } from "@/services/storageService";
 import { Loader2, Upload } from "lucide-react";
+import { findMedicalCondition, matchConditionByLabel } from "@/lib/medicalConditions";
 import type { EmergencyContact, PatientLocation, PatientProfile } from "@/lib/types";
 import {
   computeProfileCompleted,
@@ -36,16 +38,22 @@ import {
   getPatientProfile,
   savePatientProfile,
 } from "@/services/patientService";
+import { updateUserDisplayName } from "@/services/userService";
 import { useAuth } from "@/hooks/useAuth";
 
 type SectionId = "personal" | "locations" | "medical" | "emergency" | "payment" | "identity";
 
 interface FormState {
+  name: string;
   phone: string;
   locations: PatientLocation[];
   dateOfBirth: string;
   bloodType: string;
-  diseases: string[];
+  // Canonical condition ids (from lib/medicalConditions.ts).
+  conditions: string[];
+  // Free-text "other condition" strings the picker didn't cover. Kept
+  // in the legacy `diseases` slot on PatientProfile for backward compat.
+  customConditions: string[];
   allergies: string[];
   currentMedications: string[];
   medicalHistory: string;
@@ -57,11 +65,13 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
+  name: "",
   phone: "",
   locations: [],
   dateOfBirth: "",
   bloodType: "",
-  diseases: [],
+  conditions: [],
+  customConditions: [],
   allergies: [],
   currentMedications: [],
   medicalHistory: "",
@@ -81,14 +91,46 @@ function newLocationId(): string {
   return `loc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// Legacy migration: profiles created before structured conditions shipped
+// stored everything in `diseases[]` as free text. On load we try a
+// best-effort canonical lookup so an existing "Type 2 Diabetes" string
+// surfaces as a pre-selected canonical chip; anything we can't resolve
+// stays as a custom entry the picker can show alongside the chips.
+function splitLegacyDiseases(diseases: string[] | undefined): {
+  canonicalIds: string[];
+  custom: string[];
+} {
+  const canonical = new Set<string>();
+  const custom: string[] = [];
+  for (const raw of diseases ?? []) {
+    const match = matchConditionByLabel(raw);
+    if (match) canonical.add(match.id);
+    else custom.push(raw);
+  }
+  return { canonicalIds: Array.from(canonical), custom };
+}
+
 function profileToForm(profile: PatientProfile): FormState {
   const locations = getPatientLocations(profile);
+  const canonical = new Set<string>();
+  for (const id of profile.conditions ?? []) {
+    if (findMedicalCondition(id)) canonical.add(id);
+  }
+  const { canonicalIds: legacyCanonical, custom } = splitLegacyDiseases(profile.diseases);
+  // Existing canonical wins; legacy strings only fill gaps. Custom
+  // strings (no canonical match) always make it through.
+  for (const id of legacyCanonical) canonical.add(id);
   return {
+    // The patient's display name lives on users/{uid}, not the
+    // PatientProfile doc. Hydrate it separately on mount (see the
+    // editor effect); seed with "" here so the FormState type matches.
+    name: "",
     phone: profile.phone ?? "",
     locations,
     dateOfBirth: profile.dateOfBirth ?? "",
     bloodType: profile.bloodType ?? "",
-    diseases: profile.diseases ?? [],
+    conditions: Array.from(canonical),
+    customConditions: custom,
     allergies: profile.allergies ?? [],
     currentMedications: profile.currentMedications ?? [],
     medicalHistory: profile.medicalHistory ?? "",
@@ -121,7 +163,8 @@ function formToProfile(form: FormState, userId: string): PatientProfile {
     locations: cleanedLocations,
     dateOfBirth: form.dateOfBirth || undefined,
     bloodType: form.bloodType || undefined,
-    diseases: form.diseases,
+    conditions: form.conditions,
+    diseases: form.customConditions,
     allergies: form.allergies,
     currentMedications: form.currentMedications,
     medicalHistory: form.medicalHistory.trim(),
@@ -480,7 +523,7 @@ export default function PatientProfileEditor({
   // that's blocking them.
   initialSection?: SectionId;
 }) {
-  const { appUser } = useAuth();
+  const { appUser, refreshProfile } = useAuth();
   const t = useTranslations("patient.profile.editor");
   // Root-scope translator so we can resolve fully-qualified keys (e.g.
   // patient.profile.requiredFields.*) returned by patientService helpers.
@@ -500,8 +543,9 @@ export default function PatientProfileEditor({
         if (!active) return;
         if (profile) {
           setSavedProfile(profile);
-          setForm(profileToForm(profile));
+          setForm({ ...profileToForm(profile), name: appUser?.name ?? "" });
         } else {
+          setForm((prev) => ({ ...prev, name: appUser?.name ?? "" }));
           setIsEditing(true);
         }
       } finally {
@@ -510,7 +554,7 @@ export default function PatientProfileEditor({
     }
     void loadProfile();
     return () => { active = false; };
-  }, [userId]);
+  }, [userId, appUser?.name]);
 
   const missingLabels = getMissingFieldLabels(savedProfile, tRoot);
   const completion = computeProfileCompleted(savedProfile);
@@ -531,7 +575,20 @@ export default function PatientProfileEditor({
       const profile = formToProfile(form, userId);
       const saved = await savePatientProfile(profile);
       setSavedProfile(saved);
-      setForm(profileToForm(saved));
+      // Persist a display-name change to users/{uid} + Firebase Auth.
+      // Done after savePatientProfile so a profile-write failure aborts
+      // before we touch the user doc.
+      const trimmedName = form.name.trim();
+      if (trimmedName && trimmedName !== appUser?.name) {
+        try {
+          await updateUserDisplayName(userId, trimmedName);
+          await refreshProfile();
+        } catch (err) {
+          // Non-fatal; the profile save already succeeded.
+          console.warn("[PatientProfileEditor] name update failed", err);
+        }
+      }
+      setForm({ ...profileToForm(saved), name: trimmedName || appUser?.name || "" });
       setIsEditing(false);
     } finally {
       setSaving(false);
@@ -771,6 +828,20 @@ export default function PatientProfileEditor({
                 </div>
               </header>
               <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                    {t("personal.name")} <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    dir="auto"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    placeholder={t("personal.namePlaceholder")}
+                  />
+                </div>
                 <div>
                   <label className="mb-2 block text-sm font-bold text-slate-700">
                     {t("personal.phone")} <span className="text-rose-500">*</span>
@@ -841,37 +912,39 @@ export default function PatientProfileEditor({
                   <p className="text-xs text-slate-500">{t("medical.subtitle")}</p>
                 </div>
               </header>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <TagInput
-                  label={t("medical.conditions")}
-                  placeholder={t("medical.conditionsPlaceholder")}
-                  values={form.diseases}
-                  onChange={(diseases) => setForm({ ...form, diseases })}
-                  accent="violet"
+              <div className="space-y-6">
+                <MedicalConditionsField
+                  selectedIds={form.conditions}
+                  onChangeIds={(conditions) => setForm({ ...form, conditions })}
+                  customValues={form.customConditions}
+                  onChangeCustom={(customConditions) => setForm({ ...form, customConditions })}
                 />
-                <TagInput
-                  label={t("medical.allergies")}
-                  placeholder={t("medical.allergiesPlaceholder")}
-                  values={form.allergies}
-                  onChange={(allergies) => setForm({ ...form, allergies })}
-                  accent="rose"
-                />
-                <TagInput
-                  label={t("medical.medications")}
-                  placeholder={t("medical.medicationsPlaceholder")}
-                  values={form.currentMedications}
-                  onChange={(currentMedications) => setForm({ ...form, currentMedications })}
-                  accent="sky"
-                />
-                <div>
-                  <label className="mb-2 block text-sm font-bold text-slate-700">{t("medical.notes")}</label>
-                  <textarea
-                    value={form.medicalHistory}
-                    onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
-                    dir="auto"
-                    className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
-                    placeholder={t("medical.notesPlaceholder")}
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TagInput
+                    label={t("medical.allergies")}
+                    placeholder={t("medical.allergiesPlaceholder")}
+                    values={form.allergies}
+                    onChange={(allergies) => setForm({ ...form, allergies })}
+                    accent="rose"
                   />
+                  <TagInput
+                    label={t("medical.medications")}
+                    placeholder={t("medical.medicationsPlaceholder")}
+                    values={form.currentMedications}
+                    onChange={(currentMedications) => setForm({ ...form, currentMedications })}
+                    accent="sky"
+                  />
+                  <div className="sm:col-span-2">
+                    <label className="mb-2 block text-sm font-bold text-slate-700">{t("medical.notes")}</label>
+                    <textarea
+                      value={form.medicalHistory}
+                      onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+                      dir="auto"
+                      className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                      placeholder={t("medical.notesPlaceholder")}
+                    />
+                  </div>
                 </div>
               </div>
             </section>

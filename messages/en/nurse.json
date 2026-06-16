@@ -237,6 +237,7 @@
     },
     "identity": {
       "fullName": "Full Name",
+      "fullNamePlaceholder": "Your full name",
       "profilePhoto": "Profile photo",
       "photoHelper": "Square images work best. Patients see this on every listing.",
       "locationLabel": "Location (City/Area)",

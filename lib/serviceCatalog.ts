@@ -1,4 +1,4 @@
-import { CalendarClock, HeartHandshake, Pill } from "lucide-react";
+import { CalendarClock, HeartHandshake, Pill, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // Service catalog. Labels and descriptions are NOT stored here — they live
@@ -9,7 +9,7 @@ import type { LucideIcon } from "lucide-react";
 // component out of the data lets RSC serialize this catalog when a
 // Server Component passes a `ServiceCategory` into a Client Component.
 
-export type ServiceSlug = "one-time" | "shifts" | "packages";
+export type ServiceSlug = "one-time" | "shifts" | "packages" | "additional";
 
 export interface ServiceBookingLink {
   /** Destination — labels come from messages/services.categories.{slug}.bookingLinks. */
@@ -57,6 +57,17 @@ export const serviceCategories: ServiceCategory[] = [
       { href: "/patient/nurses?service=wound%20dressing" },
     ],
   },
+  {
+    slug: "additional",
+    image:
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80",
+    ctaHref: "/services/additional",
+    bookingLinks: [
+      { href: "/patient/nurses?additional=cooking" },
+      { href: "/patient/nurses?additional=transport" },
+      { href: "/patient/nurses?additional=companion" },
+    ],
+  },
 ];
 
 // Slug → icon resolver. Used by Client Components only. Importing it
@@ -66,6 +77,7 @@ const ICONS: Record<ServiceSlug, LucideIcon> = {
   "one-time": Pill,
   shifts: CalendarClock,
   packages: HeartHandshake,
+  additional: Sparkles,
 };
 
 export function serviceIconForSlug(slug: ServiceSlug): LucideIcon {

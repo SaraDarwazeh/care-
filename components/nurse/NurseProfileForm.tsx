@@ -24,11 +24,15 @@ import type {
   NurseServiceItem,
 } from "@/lib/types";
 import { getNurseProfileByUserId, saveNurseProfile } from "@/services/nurseService";
+import { updateUserDisplayName } from "@/services/userService";
+import { useAuth } from "@/hooks/useAuth";
 import { uploadFile } from "@/services/storageService";
 import ImageUploadField from "@/components/common/ImageUploadField";
 import { weekOrderFor } from "@/i18n/week";
 import { useLocale } from "next-intl";
 import type { Locale } from "@/i18n/config";
+import { NURSING_SERVICES, SUPPORT_SERVICES } from "@/lib/serviceTaxonomy";
+import { tLocalized } from "@/lib/i18nContent";
 
 type SectionId = "identity" | "services" | "additional" | "availability" | "credentials";
 
@@ -96,8 +100,10 @@ export default function NurseProfileForm({
   const tErr = useTranslations("nurse.errors");
   const locale = useLocale() as Locale;
   const [activeSection, setActiveSection] = useState<SectionId>("identity");
+  const { refreshProfile } = useAuth();
 
   // Identity & Bio
+  const [fullNameDraft, setFullNameDraft] = useState(fullName);
   const [profileImage, setProfileImage] = useState("");
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
@@ -149,6 +155,10 @@ export default function NurseProfileForm({
         return;
       }
 
+      // Prefer the nurseProfile's persisted fullName; fall back to the
+      // prop (which mirrors users/{uid}.name) for older records that
+      // never wrote nurseProfile.fullName.
+      setFullNameDraft(profile.fullName?.trim() || fullName);
       setProfileImage(profile.profileImage ?? "");
       setBio(profile.bio ?? "");
       setLocation(profile.location ?? "");
@@ -183,7 +193,7 @@ export default function NurseProfileForm({
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, fullName]);
 
   function updateService(index: number, key: "name" | "price", value: string) {
     setServices((current) =>
@@ -257,9 +267,10 @@ export default function NurseProfileForm({
     setSaving(true);
     setSavedFlash(false);
 
+    const trimmedFullName = fullNameDraft.trim() || fullName;
     const payload: Omit<NurseProfile, "rating" | "reviewCount"> = {
       userId,
-      fullName,
+      fullName: trimmedFullName,
       profileImage,
       bio,
       location: location.trim() || undefined,
@@ -291,6 +302,19 @@ export default function NurseProfileForm({
     };
 
     await saveNurseProfile(payload);
+
+    // Persist the display name back to users/{uid} + Firebase Auth so
+    // the navbar, admin list, and marketplace fallback stay in sync.
+    // Best-effort: a failure here doesn't roll back the profile save.
+    if (trimmedFullName !== fullName) {
+      try {
+        await updateUserDisplayName(userId, trimmedFullName);
+        await refreshProfile();
+      } catch (err) {
+        console.warn("[NurseProfileForm] display-name update failed", err);
+      }
+    }
+
     setSaving(false);
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 2500);
@@ -374,7 +398,14 @@ export default function NurseProfileForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-slate-700">{tIdentity("fullName")}</label>
-                  <input value={fullName} readOnly className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500" />
+                  <input
+                    value={fullNameDraft}
+                    onChange={(e) => setFullNameDraft(e.target.value)}
+                    required
+                    dir="auto"
+                    placeholder={tIdentity("fullNamePlaceholder")}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  />
                 </div>
                 <ImageUploadField
                   scope="nurse-profile"
@@ -507,6 +538,11 @@ export default function NurseProfileForm({
                 </div>
               </div>
 
+              <datalist id="nurse-nursing-suggestions">
+                {NURSING_SERVICES.map((s) => (
+                  <option key={s.id} value={tLocalized(s.label, locale)} />
+                ))}
+              </datalist>
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-semibold text-slate-700">{tServices("servicesOffered")}</span>
@@ -526,6 +562,7 @@ export default function NurseProfileForm({
                         onChange={(e) => updateService(index, "name", e.target.value)}
                         placeholder={tServices("serviceNamePlaceholder")}
                         dir="auto"
+                        list="nurse-nursing-suggestions"
                         className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                       />
                       <input
@@ -569,6 +606,11 @@ export default function NurseProfileForm({
                 <p className="mt-1 text-xs leading-relaxed text-slate-600">{tAdditional("intro.body")}</p>
               </div>
 
+              <datalist id="nurse-support-suggestions">
+                {SUPPORT_SERVICES.map((s) => (
+                  <option key={s.id} value={tLocalized(s.label, locale)} />
+                ))}
+              </datalist>
               <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-semibold text-slate-700">{tAdditional("yourAddons")}</span>
@@ -591,6 +633,7 @@ export default function NurseProfileForm({
                           onChange={(e) => updateAdditional(index, "name", e.target.value)}
                           placeholder={tAdditional("addonNamePlaceholder")}
                           dir="auto"
+                          list="nurse-support-suggestions"
                           className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
                         />
                         <input

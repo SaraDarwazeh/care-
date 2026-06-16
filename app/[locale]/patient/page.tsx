@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import PatientButton from "@/components/patient/PatientButton";
+import RecommendedForYou from "@/components/patient/RecommendedForYou";
+import YourHealthProfile from "@/components/patient/YourHealthProfile";
 import { useAuth } from "@/hooks/useAuth";
 import type {
   BookingWithParticipants,
@@ -111,7 +113,10 @@ export default function PatientHomePage() {
 
         if (!active) return;
         setBookings(bookingsData);
-        setNurses([...nursesData].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 4));
+        // Keep the full approved-nurse pool — RecommendedForYou needs to
+        // see everyone to compute matches. The legacy "Recommended Nurses"
+        // section slices to the top 4 by rating at render time.
+        setNurses([...nursesData].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)));
         setProducts(productsData);
         setOrders(ordersData);
         setRecords(recordsData);
@@ -264,6 +269,13 @@ export default function PatientHomePage() {
           </div>
         </div>
       )}
+
+      {/* 2b. Health profile snapshot (hidden when no conditions are saved) */}
+      <YourHealthProfile profile={patientProfile} />
+
+      {/* 2c. Recommended for you — deterministic matches off the patient's
+           conditions against the in-memory nurses + packages lists. */}
+      <RecommendedForYou profile={patientProfile} nurses={nurses} packages={packages} />
 
       {/* 3. Quick actions */}
       <section>
@@ -501,7 +513,7 @@ export default function PatientHomePage() {
               <div key={i} className="min-w-[280px] h-80 bg-slate-200 rounded-3xl animate-pulse shrink-0" />
             ))
           ) : nurses.length > 0 ? (
-            nurses.map((nurse) => (
+            nurses.slice(0, 4).map((nurse) => (
               <div key={nurse.userId} className="min-w-[280px] w-[280px] shrink-0 snap-start rounded-3xl bg-white shadow-sm border border-slate-100 overflow-hidden group flex flex-col">
                 <div className="relative h-48 w-full overflow-hidden">
                   {nurse.profileImage ? (

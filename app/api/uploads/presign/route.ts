@@ -14,6 +14,8 @@ const UPLOAD_SCOPES = [
   "package",
   "product",
   "patient-id",
+  "education-video",
+  "education-thumbnail",
 ] as const;
 
 type UploadScope = (typeof UPLOAD_SCOPES)[number];
@@ -28,6 +30,8 @@ const SCOPE_PREFIXES: Record<UploadScope, string> = {
   // patients/ids/{patientUid}/{uuid}.ext — the uid in the key lets the
   // read proxy decide authz from the key alone, no extra lookups.
   "patient-id": "patients/ids",
+  "education-video": "education/videos",
+  "education-thumbnail": "education/thumbnails",
 };
 
 // Scopes whose objects must never be served via a public URL — the
@@ -35,9 +39,13 @@ const SCOPE_PREFIXES: Record<UploadScope, string> = {
 // reads via /api/uploads/read which mints short-lived signed GET URLs.
 const PRIVATE_SCOPES = new Set<UploadScope>(["patient-id"]);
 
-// Maximum file size enforced server-side. We bake it into the presigned
-// URL via Content-Length-Range on the upload — keeps abuse cheap.
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+// Per-scope max upload size. Images and documents stay capped at 10MB;
+// education videos are short-form (admin guidance: 30–90s) but raw MP4
+// can still reach ~80MB at 1080p, so the cap rises for that scope only.
+const SCOPE_MAX_BYTES: Partial<Record<UploadScope, number>> = {
+  "education-video": 100 * 1024 * 1024,
+};
+const DEFAULT_MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
 const PRESIGN_TTL_SECONDS = 60 * 5; // 5 minutes is enough for a single upload
 
 function isUploadScope(value: unknown): value is UploadScope {
@@ -94,9 +102,10 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  if (typeof size === "number" && size > MAX_UPLOAD_BYTES) {
+  const maxBytes = SCOPE_MAX_BYTES[scope] ?? DEFAULT_MAX_UPLOAD_BYTES;
+  if (typeof size === "number" && size > maxBytes) {
     return NextResponse.json(
-      { error: `File exceeds maximum size of ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB` },
+      { error: `File exceeds maximum size of ${Math.round(maxBytes / 1024 / 1024)}MB` },
       { status: 413 },
     );
   }
@@ -120,6 +129,11 @@ export async function POST(request: NextRequest) {
       // support / backfill flows. Nurses never touch this scope.
       if (caller.role !== "patient" && caller.role !== "admin") {
         throw new AuthError(403, "Only patients may upload identity documents");
+      }
+    } else if (scope === "education-video" || scope === "education-thumbnail") {
+      // Only admins curate the Educational Library.
+      if (caller.role !== "admin") {
+        throw new AuthError(403, "Only admins may upload education content");
       }
     }
   } catch (error) {

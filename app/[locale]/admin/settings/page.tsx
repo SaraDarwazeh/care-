@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import PricingConfigEditor from "@/components/admin/PricingConfigEditor";
+import FeatureFlagsEditor from "@/components/admin/FeatureFlagsEditor";
 
 export default function AdminSettingsPage() {
   const { appUser, loading } = useProtectedRoute({ allowedRoles: ["admin"] });
@@ -67,6 +68,8 @@ export default function AdminSettingsPage() {
       </div>
 
       <PricingConfigEditor />
+
+      <FeatureFlagsEditor />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {sections.map((section) => (

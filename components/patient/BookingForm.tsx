@@ -29,6 +29,7 @@ import {
 import { fmtCurrency } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
+import { findCatalogService } from "@/lib/serviceTaxonomy";
 import { getCurrentIdToken } from "@/services/authService";
 
 export default function BookingForm({
@@ -59,6 +60,7 @@ export default function BookingForm({
   const tS3 = useTranslations("patient.booking.step3");
   const tS4 = useTranslations("patient.booking.step4");
   const tS5 = useTranslations("patient.booking.step5");
+  const tAdditionalKind = useTranslations("services.additional");
   const tLabels = useTranslations("patient.booking.stepLabels");
   const locale = useLocale() as Locale;
   const [step, setStep] = useState(1);
@@ -901,10 +903,15 @@ export default function BookingForm({
                 <p><strong>{tS5("locationLabel")}</strong> {location}</p>
               </div>
               <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700 mb-4">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="font-medium">{tS5("addOnsTitle")}</p>
-                  {usingNurseAddons && (
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{tS5("addOnsTitle")}</p>
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                      {tAdditionalKind("kindLabel")}
+                    </span>
+                  </div>
+                  {usingNurseAddons && (
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
                       {tS5("offeredBy", { name: nurse.fullName.split(" ")[0] })}
                     </span>
                   )}
@@ -913,18 +920,27 @@ export default function BookingForm({
                   <p className="text-xs italic text-slate-500">{tS5("noAddons")}</p>
                 ) : (
                   <div className="grid gap-2">
-                    {effectiveAddons.map((a) => (
-                      <AddOnItem
-                        key={a.id}
-                        id={a.id}
-                        name={a.name}
-                        price={a.price}
-                        checked={addOns.includes(a.id)}
-                        onChange={(checked) => {
-                          setAddOns((prev) => (checked ? [...prev, a.id] : prev.filter((p) => p !== a.id)));
-                        }}
-                      />
-                    ))}
+                    {effectiveAddons.map((a) => {
+                      // Look up a catalogue entry so we can render the
+                      // bilingual label. Custom nurse-defined add-ons
+                      // (no catalogue id) fall back to the stored name.
+                      const catalog = findCatalogService(a.id);
+                      const displayName = catalog
+                        ? tLocalized(catalog.label, locale)
+                        : a.name;
+                      return (
+                        <AddOnItem
+                          key={a.id}
+                          id={a.id}
+                          name={displayName}
+                          price={a.price}
+                          checked={addOns.includes(a.id)}
+                          onChange={(checked) => {
+                            setAddOns((prev) => (checked ? [...prev, a.id] : prev.filter((p) => p !== a.id)));
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -932,9 +948,13 @@ export default function BookingForm({
               <div className="rounded-xl bg-white p-4 border border-slate-100">
                 <p className="text-sm text-slate-500">{tS5("pricingSummary")}</p>
                 <div className="mt-3 flex justify-between"><span className="text-sm">{tS5("base")}</span><span className="font-bold">{fmtCurrency(pricing.base, locale)}</span></div>
-                {pricing.addons.length > 0 && pricing.addons.map((a) => (
-                  <div key={a.id} className="flex justify-between text-sm text-slate-600"><span>{a.name}</span><span>{fmtCurrency(a.price, locale)}</span></div>
-                ))}
+                {pricing.addons.length > 0 && pricing.addons.map((a) => {
+                  const catalog = findCatalogService(a.id);
+                  const label = catalog ? tLocalized(catalog.label, locale) : a.name;
+                  return (
+                    <div key={a.id} className="flex justify-between text-sm text-slate-600"><span>{label}</span><span>{fmtCurrency(a.price, locale)}</span></div>
+                  );
+                })}
                 <div className="mt-3 flex justify-between text-base font-bold text-slate-800"><span>{tS5("total")}</span><span>{fmtCurrency(pricing.total, locale)}</span></div>
               </div>
               <div>

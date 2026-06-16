@@ -7,7 +7,9 @@ export type UploadScope =
   | "nurse-certificate"
   | "package"
   | "product"
-  | "patient-id";
+  | "patient-id"
+  | "education-video"
+  | "education-thumbnail";
 
 export interface UploadResult {
   // Empty for private scopes (patient-id) — callers should store `key`

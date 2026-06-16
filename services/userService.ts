@@ -49,6 +49,32 @@ export async function updateUserLanguage(
   await updateDoc(doc(db, "users", id), { language });
 }
 
+// Update the user's display name everywhere it's stored. Writes:
+//   1. users/{uid}.name — source of truth read by useAuth, the admin
+//      list, marketplace fallback, etc.
+//   2. Firebase Auth displayName — keeps the auth token's name claim
+//      consistent for any future server-side use. Best-effort; if the
+//      auth update fails we still persist the Firestore name so the UI
+//      reflects the change.
+export async function updateUserDisplayName(
+  id: string,
+  name: string,
+): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("Name cannot be empty.");
+  const { db, auth } = ensureClientFirebase();
+  await updateDoc(doc(db, "users", id), { name: trimmed });
+  if (auth.currentUser && auth.currentUser.uid === id) {
+    try {
+      const { updateProfile } = await import("firebase/auth");
+      await updateProfile(auth.currentUser, { displayName: trimmed });
+    } catch (error) {
+      // Auth-side update is non-fatal; the Firestore copy is what UI reads.
+      console.warn("[userService] updateProfile(auth) failed", error);
+    }
+  }
+}
+
 export async function createUserProfile(input: {
   id: string;
   name: string;

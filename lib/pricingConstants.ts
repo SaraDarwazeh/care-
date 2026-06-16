@@ -4,13 +4,17 @@ export interface AddOn {
   price: number;
 }
 
-export const AVAILABLE_ADDONS: ReadonlyArray<AddOn> = [
-  { id: "cooking", name: "Cooking", price: 15 },
-  { id: "transport", name: "Transportation", price: 10 },
-  { id: "shopping", name: "Shopping", price: 12 },
-  { id: "cleaning", name: "Cleaning", price: 10 },
-  { id: "companion", name: "Companion Support", price: 20 },
-];
+// AVAILABLE_ADDONS used to live as a hand-maintained array here. It now
+// derives from the unified service taxonomy so every add-on shipped to
+// the booking form has a bilingual label, an icon, and (when relevant)
+// indication metadata. The shape is unchanged — every legacy import of
+// AVAILABLE_ADDONS keeps working.
+//
+// serviceTaxonomy.ts uses `import type` for `AddOn` so the cycle is
+// type-only and stripped at compile time; the runtime import is one-way.
+import { getSupportAddOns } from "@/lib/serviceTaxonomy";
+
+export const AVAILABLE_ADDONS: ReadonlyArray<AddOn> = getSupportAddOns();
 
 export const SHIFT_RANGES: Record<string, { start: string; end: string }> = {
   A: { start: "07:00", end: "14:00" },

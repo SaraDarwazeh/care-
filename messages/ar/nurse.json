@@ -237,6 +237,7 @@
     },
     "identity": {
       "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "اسمك الكامل",
       "profilePhoto": "صورة الملف",
       "photoHelper": "الصور المربّعة أفضل. يراها المرضى في كل قائمة.",
       "locationLabel": "الموقع (المدينة/المنطقة)",

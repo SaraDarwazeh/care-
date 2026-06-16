@@ -1,7 +1,25 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Filter, MapPin, Sparkles, Truck, Stethoscope, HeartHandshake, Search } from "lucide-react";
+import { CATALOG_SERVICES } from "@/lib/serviceTaxonomy";
+import { tLocalized } from "@/lib/i18nContent";
+import type { Locale } from "@/i18n/config";
+
+// Map known catalogue EN labels to their bilingual entries so the
+// dropdowns can render the active locale's label without touching the
+// underlying storage shape. Falls back to the raw nurse-set string for
+// custom entries.
+const CATALOG_BY_EN_LABEL: Record<string, (typeof CATALOG_SERVICES)[number]> = (() => {
+  const out: Record<string, (typeof CATALOG_SERVICES)[number]> = {};
+  for (const s of CATALOG_SERVICES) out[s.label.en.toLowerCase()] = s;
+  return out;
+})();
+
+function displayServiceLabel(raw: string, locale: Locale): string {
+  const catalog = CATALOG_BY_EN_LABEL[raw.toLowerCase()];
+  return catalog ? tLocalized(catalog.label, locale) : raw;
+}
 
 // Filter values split medical/professional offerings (services[]) from
 // extras (additionalServices[]) — operationally distinct categories that
@@ -127,6 +145,7 @@ export default function MarketplaceFilters({
 }: MarketplaceFiltersProps) {
   const t = useTranslations("patient.nurses.filters");
   const tGender = useTranslations("patient.nurses.gender");
+  const locale = useLocale() as Locale;
 
   function patch(p: Partial<MarketplaceFilterValues>) {
     onChange({ ...values, ...p });
@@ -195,7 +214,7 @@ export default function MarketplaceFilters({
               <option value="">{t("anyMedicalService")}</option>
               {availableServices.map((service) => (
                 <option key={service} value={service}>
-                  {service}
+                  {displayServiceLabel(service, locale)}
                 </option>
               ))}
             </select>
@@ -222,7 +241,7 @@ export default function MarketplaceFilters({
                         : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
                     }`}
                   >
-                    {opt}
+                    {displayServiceLabel(opt, locale)}
                   </button>
                 );
               })}

@@ -16,6 +16,30 @@ service cloud.firestore {
         )
       );
       allow delete: if false;
+
+      // Per-user saved education videos. Doc id is the videoId; body
+      // is just the savedAt timestamp. Only the owner can read or
+      // write their own list; admins can read for support, never write.
+      match /savedVideos/{videoId} {
+        allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+        allow create, update, delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Education library videos: public read so guests can browse the
+    // feed and share links; only admins write. Catalog content is
+    // global, not user-scoped.
+    match /educationVideos/{videoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Site settings (global feature flags etc.). Public read so the
+    // navbar / patient feed can react to flag changes without an
+    // auth gate; admin-only writes.
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // Nurse profiles: nurse owns their own profile; marketplace remains readable to any signed-in user.

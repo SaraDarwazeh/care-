@@ -54,16 +54,30 @@ async function main() {
     process.exit(1);
   }
 
-  const origins = ["http://localhost:3000"];
+  // Origins we always trust for browser PUTs:
+  //   - Local dev server
+  //   - The production deployment at careplus.synorco.com
+  //   - Whatever NEXT_PUBLIC_SITE_URL points at (preview deploys etc.)
+  // Additional origins can be supplied via CORS_EXTRA_ORIGINS as a
+  // comma-separated list — useful for one-off ngrok / vercel previews.
+  const origins = new Set<string>([
+    "http://localhost:3000",
+    "https://careplus.synorco.com",
+  ]);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   if (siteUrl && siteUrl !== "https://careplus.example.com") {
-    origins.push(siteUrl);
+    origins.add(siteUrl);
   }
+  const extra = process.env.CORS_EXTRA_ORIGINS;
+  if (extra) {
+    extra.split(",").map((s) => s.trim()).filter(Boolean).forEach((o) => origins.add(o));
+  }
+  const originList = Array.from(origins);
 
   const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
 
   console.log(`[configure] Setting CORS on ${bucket}…`);
-  console.log(`[configure] AllowedOrigins: ${origins.join(", ")}`);
+  console.log(`[configure] AllowedOrigins: ${originList.join(", ")}`);
 
   await s3.send(
     new PutBucketCorsCommand({
@@ -71,7 +85,7 @@ async function main() {
       CORSConfiguration: {
         CORSRules: [
           {
-            AllowedOrigins: origins,
+            AllowedOrigins: originList,
             AllowedMethods: ["PUT", "GET", "HEAD"],
             AllowedHeaders: ["*"],
             ExposeHeaders: ["ETag"],

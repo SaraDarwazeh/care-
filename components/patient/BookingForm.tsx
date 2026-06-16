@@ -29,6 +29,7 @@ import {
 import { fmtCurrency } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
+import { getCurrentIdToken } from "@/services/authService";
 
 export default function BookingForm({
   patientId,
@@ -307,18 +308,29 @@ export default function BookingForm({
       },
     };
 
-    fetch("/api/bookings/pricing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then((json) => {
+    async function fetchServerPricing() {
+      try {
+        const token = await getCurrentIdToken();
+        if (!token) {
+          throw new Error("Missing auth token for pricing request");
+        }
+
+        const res = await fetch("/api/bookings/pricing", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
         if (active && json?.success) setServerPricing(json.pricing);
-      })
-      .catch((e) => {
+      } catch (e) {
         console.error("Pricing fetch failed", e);
-      });
+      }
+    }
+
+    void fetchServerPricing();
 
     return () => {
       active = false;

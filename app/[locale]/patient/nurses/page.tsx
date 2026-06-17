@@ -19,6 +19,8 @@ import MarketplaceFilters, {
 } from "@/components/patient/MarketplaceFilters";
 import type { NurseDay, NurseMarketplaceProfile } from "@/lib/types";
 import { getApprovedNurseMarketplaceProfiles } from "@/services/nurseService";
+import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
+import { providerKindFor } from "@/lib/providerKind";
 
 const WEEKDAYS: NurseDay[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -63,9 +65,16 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
   const sortBy: SortKey =
     sortRaw === "price_low" || sortRaw === "experience" ? sortRaw : "rating";
 
+  // providerKind URL param is honoured for /find-care → marketplace
+  // hand-offs. Anything other than "nurse" or "physio" → "any".
+  const pkRaw = params.get("providerKind");
+  const providerKind: "any" | "nurse" | "physio" =
+    pkRaw === "nurse" || pkRaw === "physio" ? pkRaw : "any";
+
   return {
     filters: {
       query: params.get("q") ?? "",
+      providerKind,
       service: params.get("service") ?? "",
       additionalServices: (params.get("extras") ?? "")
         .split(",")
@@ -87,6 +96,7 @@ function readFiltersFromParams(params: URLSearchParams): { filters: MarketplaceF
 function writeFiltersToParams(values: MarketplaceFilterValues, sortBy: SortKey): URLSearchParams {
   const p = new URLSearchParams();
   if (values.query.trim()) p.set("q", values.query.trim());
+  if (values.providerKind !== "any") p.set("providerKind", values.providerKind);
   if (values.service) p.set("service", values.service);
   if (values.additionalServices.length) p.set("extras", values.additionalServices.join(","));
   if (values.shift) p.set("shift", values.shift);
@@ -106,6 +116,7 @@ function PatientNursesPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations("patient.marketplace");
+  const physiotherapyEnabled = usePhysiotherapyEnabled();
 
   const initial = useMemo(() => readFiltersFromParams(new URLSearchParams(searchParams.toString())), [searchParams]);
 
@@ -200,6 +211,16 @@ function PatientNursesPageInner() {
     const q = normalizeForSearch(filters.query);
 
     return nurses.filter((nurse) => {
+      // Hide physiotherapists from patients entirely when the admin
+      // flag is off. Admin retains the ability to manage these
+      // providers (separate admin page is not flag-gated). Existing
+      // pre-toggle physios who were briefly visible will not be
+      // present here once the flag is flipped on by mistake either —
+      // marketplace always honours the current flag state.
+      const kind = providerKindFor(nurse);
+      if (!physiotherapyEnabled && kind === "physio") return false;
+      if (filters.providerKind !== "any" && kind !== filters.providerKind) return false;
+
       if (q) {
         const name = normalizeForSearch(nurse.fullName ?? "");
         if (!name.includes(q)) return false;
@@ -261,7 +282,7 @@ function PatientNursesPageInner() {
 
       return true;
     });
-  }, [nurses, filters]);
+  }, [nurses, filters, physiotherapyEnabled]);
 
   const sortedNurses = useMemo(() => {
     return [...filteredNurses].sort((a, b) => {
@@ -374,6 +395,7 @@ function PatientNursesPageInner() {
               availableSkills={availableSkills}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              showProviderKindFilter={physiotherapyEnabled}
             />
           </div>
         </div>

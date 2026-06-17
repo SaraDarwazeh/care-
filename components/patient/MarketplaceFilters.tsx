@@ -27,6 +27,12 @@ function displayServiceLabel(raw: string, locale: Locale): string {
 // chip filter; it's now informational-only on the nurse detail page.
 export interface MarketplaceFilterValues {
   query: string;
+  // Provider type discriminator added in Phase 5.3 of the multi-
+  // provider rollout. "any" means no filter (default). Only honoured
+  // when physiotherapyEnabled is true; the chip group is hidden
+  // otherwise so the marketplace looks identical to its pre-physio
+  // shape when the flag is off.
+  providerKind: "any" | "nurse" | "physio";
   service: string;
   additionalServices: string[];
   shift: string;
@@ -43,6 +49,7 @@ export type SortKey = "rating" | "price_low" | "experience";
 
 export const EMPTY_FILTERS: MarketplaceFilterValues = {
   query: "",
+  providerKind: "any",
   service: "",
   additionalServices: [],
   shift: "",
@@ -58,6 +65,7 @@ export const EMPTY_FILTERS: MarketplaceFilterValues = {
 export function countActiveFilters(f: MarketplaceFilterValues): number {
   let n = 0;
   if (f.query.trim()) n++;
+  if (f.providerKind !== "any") n++;
   if (f.service) n++;
   n += f.additionalServices.length;
   if (f.shift && f.shift !== "any") n++;
@@ -80,6 +88,10 @@ interface MarketplaceFiltersProps {
   availableSkills: string[];
   sortBy: SortKey;
   onSortChange: (next: SortKey) => void;
+  // Show the provider-kind chip group. Driven by the admin
+  // physiotherapyEnabled flag; when false the chips don't render and
+  // the filter behaves as the pre-physio marketplace.
+  showProviderKindFilter?: boolean;
 }
 
 function ChipMultiSelect({
@@ -142,9 +154,11 @@ export default function MarketplaceFilters({
   availableSkills,
   sortBy,
   onSortChange,
+  showProviderKindFilter = false,
 }: MarketplaceFiltersProps) {
   const t = useTranslations("patient.nurses.filters");
   const tGender = useTranslations("patient.nurses.gender");
+  const tProviderFilter = useTranslations("provider.marketplaceFilter");
   const locale = useLocale() as Locale;
 
   function patch(p: Partial<MarketplaceFilterValues>) {
@@ -200,6 +214,34 @@ export default function MarketplaceFilters({
             />
           </div>
         </div>
+
+        {/* Provider type chip group — only renders when the admin
+            physiotherapyEnabled flag is on. When off, the marketplace
+            looks identical to its pre-physio shape. */}
+        {showProviderKindFilter && (
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              {tProviderFilter("label")}
+            </label>
+            <div className="flex rounded-xl bg-slate-50 p-1">
+              {(["any", "nurse", "physio"] as const).map((opt) => {
+                const active = values.providerKind === opt;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => patch({ providerKind: opt })}
+                    className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-colors ${
+                      active ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {tProviderFilter(`options.${opt}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {availableServices.length > 0 && (
           <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-3">

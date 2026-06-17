@@ -9,6 +9,7 @@ import { AppUser, NurseProfile } from "@/lib/types";
 import { changeNurseStatus, fetchNurses } from "@/services/adminService";
 import { getNurseProfileByUserId } from "@/services/nurseService";
 import { getErrorMessage } from "@/services/errorService";
+import { providerKindFor } from "@/lib/providerKind";
 
 function NurseRow({
   nurse,
@@ -24,6 +25,10 @@ function NurseRow({
   const [loadingProfile, setLoadingProfile] = useState(false);
   const t = useTranslations("admin.nurses");
   const tStatus = useTranslations("admin.nurses.status");
+  const tProvider = useTranslations("provider.kinds");
+  // Provider kind for this row. Prefer the user-doc value (set at
+  // registration); we don't await the nurse-profile fetch here.
+  const kind = providerKindFor(nurse);
 
   async function handleExpand() {
     if (!expanded && !profile) {
@@ -46,7 +51,17 @@ function NurseRow({
             {nurse.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
-            <p className="font-bold text-slate-800 text-lg">{nurse.name}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-slate-800 text-lg">{nurse.name}</p>
+              {/* Provider kind chip — physio only. Nurses are the
+                  historical default; we keep their row visually
+                  identical to the pre-physio admin view. */}
+              {kind === "physio" && (
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-violet-700">
+                  {tProvider("physio")}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-slate-500">{nurse.email}</p>
           </div>
         </div>

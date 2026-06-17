@@ -6,6 +6,7 @@ import { ArrowRight, ChevronLeft, Sparkles } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import {
+  PHYSIO_ONLY_SITUATIONS,
   RECIPIENT_OPTIONS,
   SITUATION_OPTIONS,
   WHEN_OPTIONS,
@@ -14,6 +15,7 @@ import {
   type Situation,
   type When,
 } from "@/lib/findCareMapping";
+import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
 import CoordinatorPanel from "./CoordinatorPanel";
 
 type Step = 1 | 2 | 3 | "result";
@@ -25,13 +27,25 @@ type Step = 1 | 2 | 3 | "result";
 // using Back/Next buttons.
 export default function FindCareWizard() {
   const t = useTranslations("findCare");
+  const tProvider = useTranslations("provider.findCare");
   const router = useRouter();
+  const physiotherapyEnabled = usePhysiotherapyEnabled();
 
   const [step, setStep] = useState<Step>(1);
   const [recipient, setRecipient] = useState<Recipient | null>(null);
   const [situation, setSituation] = useState<Situation | null>(null);
   const [when, setWhen] = useState<When | null>(null);
   const [coordinatorOpen, setCoordinatorOpen] = useState(false);
+
+  // Hide physio-only situations when the admin flag is off. When flag
+  // is on, all options appear in their declared order.
+  const visibleSituations = useMemo(
+    () =>
+      SITUATION_OPTIONS.filter(
+        (opt) => physiotherapyEnabled || !PHYSIO_ONLY_SITUATIONS.has(opt),
+      ),
+    [physiotherapyEnabled],
+  );
 
   const canFindMatches = recipient && situation && when;
   const target = useMemo(() => {
@@ -133,14 +147,14 @@ export default function FindCareWizard() {
           help={t("questions.situation.help")}
           active={step === 2}
           answered={situation !== null && step !== 2}
-          summary={situation ? t(`questions.situation.options.${situation}`) : ""}
+          summary={situation ? situationLabel(situation, t, tProvider) : ""}
           onEdit={() => setStep(2)}
         >
           <div className="grid gap-2 sm:grid-cols-2">
-            {SITUATION_OPTIONS.map((opt) => (
+            {visibleSituations.map((opt) => (
               <OptionButton
                 key={opt}
-                label={t(`questions.situation.options.${opt}`)}
+                label={situationLabel(opt, t, tProvider)}
                 selected={situation === opt}
                 onClick={() => handleSituation(opt)}
               />
@@ -183,7 +197,9 @@ export default function FindCareWizard() {
             </p>
           </div>
           <p className="mt-3 text-base font-semibold text-slate-800">
-            {t(target.summaryKey)}
+            {situation && PHYSIO_ONLY_SITUATIONS.has(situation)
+              ? tProvider(`situations.${situation}Summary`)
+              : t(target.summaryKey)}
           </p>
           {target.urgent && (
             <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
@@ -295,6 +311,21 @@ function QuestionCard({
       {children}
     </section>
   );
+}
+
+// Resolve the user-facing label for a situation. Physio-only options
+// live under the provider.findCare i18n namespace; the rest live under
+// findCare.questions.situation.options to keep the original copy
+// surface intact.
+function situationLabel(
+  opt: Situation,
+  t: ReturnType<typeof useTranslations>,
+  tProvider: ReturnType<typeof useTranslations>,
+): string {
+  if (PHYSIO_ONLY_SITUATIONS.has(opt)) {
+    return tProvider(`situations.${opt}`);
+  }
+  return t(`questions.situation.options.${opt}`);
 }
 
 function OptionButton({

@@ -7,6 +7,7 @@ import { Star, MapPin, Clock, ChevronRight, BadgeCheck, Briefcase } from "lucide
 import type { NurseMarketplaceProfile } from "@/lib/types";
 import { fmtCurrency, fmtNumber } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
+import { providerKindFor } from "@/lib/providerKind";
 
 // "Starting at" picks the cheapest priced shift if the nurse has migrated
 // to per-shift pricing; otherwise the cheapest service; otherwise the
@@ -36,7 +37,9 @@ export default function NurseMarketplaceCard({
   detailQuery?: string;
 }) {
   const t = useTranslations("patient.nurses.card");
+  const tProvider = useTranslations("provider.kinds");
   const locale = useLocale() as Locale;
+  const kind = providerKindFor(nurse);
   const startingPrice = getStartingPrice(nurse);
   const unitKey: "perShift" | "perService" | "perHour" =
     startingPrice.unit === "shift" ? "perShift" : startingPrice.unit === "service" ? "perService" : "perHour";
@@ -68,9 +71,17 @@ export default function NurseMarketplaceCard({
 
           <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between text-white">
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-xl font-bold tracking-tight line-clamp-1">{nurse.fullName}</h3>
                 <BadgeCheck className="h-5 w-5 text-sky-400 shrink-0" />
+                {/* Provider-kind chip — physio only. Nurses are the
+                    historical default and stay unbadged to keep the
+                    card visually identical to its pre-physio form. */}
+                {kind === "physio" && (
+                  <span className="rounded-full bg-violet-500/90 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+                    {tProvider("physio")}
+                  </span>
+                )}
               </div>
               <p className="text-sm font-medium text-slate-200 line-clamp-1">{nurse.specialization}</p>
             </div>

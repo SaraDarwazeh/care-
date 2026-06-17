@@ -25,10 +25,19 @@ export const SITUATION_OPTIONS = [
   "daily-support",
   "overnight",
   "pregnancy-newborn",
+  "physical-rehab",
   "specific-task",
   "not-sure",
 ] as const;
 export type Situation = (typeof SITUATION_OPTIONS)[number];
+
+// Situations only shown when the admin physiotherapyEnabled flag is
+// on. The wizard filters SITUATION_OPTIONS through this list so when
+// physio is disabled the question looks identical to its pre-physio
+// shape.
+export const PHYSIO_ONLY_SITUATIONS: ReadonlySet<Situation> = new Set([
+  "physical-rehab",
+]);
 
 export const WHEN_OPTIONS = [
   "today",
@@ -125,6 +134,17 @@ export function mapAnswersToParams(input: FindCareAnswers): URLSearchParams {
       // postnatal care; one-time for a single visit ("today" / "this
       // week").
       params.set("service", "mother and baby care");
+      params.set("bookingType", isOngoing(input.when) ? "package" : "one-time");
+      break;
+
+    case "physical-rehab":
+      // Physiotherapy is its own provider type — route directly to
+      // the physio marketplace. Service hint is generic ("physical
+      // therapy") so the marketplace still has a default filter
+      // patients can clear. Ongoing rehab tends to be package-shaped;
+      // anything earlier becomes one-time visits.
+      params.set("providerKind", "physio");
+      params.set("service", "physical therapy");
       params.set("bookingType", isOngoing(input.when) ? "package" : "one-time");
       break;
 

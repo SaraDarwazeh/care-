@@ -146,6 +146,7 @@ function ChipMultiSelect({
               key={opt}
               type="button"
               onClick={() => onToggle(opt)}
+              dir="auto"
               className={`max-w-full whitespace-normal break-words rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight transition ${
                 isActive
                   ? accentClasses

@@ -33,6 +33,8 @@ import {
   summarize,
 } from "@/services/reviewService";
 import { fmtCurrency, fmtNumber } from "@/lib/format";
+import { findNurseSkill, resolveSkillId } from "@/lib/nurseSkills";
+import { tLocalized } from "@/lib/i18nContent";
 import type { Locale } from "@/i18n/config";
 
 function NurseProfilePageInner() {
@@ -234,17 +236,29 @@ function NurseProfilePageInner() {
 
             <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-xl font-bold text-slate-800">{t("skills")}</h2>
-              <div className="flex flex-wrap gap-2">
-                {nurse.skills.map((skill) => (
-                  <span
-                    key={`${nurse.userId}-${skill}`}
-                    className="rounded-full bg-brand-soft/30 px-3 py-1.5 text-xs font-semibold text-brand-deep"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              {/* Skill pills: same two-step resolution as the marketplace
+                  filter — new profiles save catalog ids, legacy ones
+                  still hold the free-text English label. dir="auto"
+                  resolves text direction per pill from its actual
+                  content so Arabic labels don't collide with their
+                  neighbours under RTL flex-wrap. */}
+              <div className="flex flex-wrap items-start gap-2">
+                {nurse.skills.map((rawSkill) => {
+                  const direct = findNurseSkill(rawSkill);
+                  const resolved = direct ?? findNurseSkill(resolveSkillId(rawSkill) ?? "");
+                  const label = resolved ? tLocalized(resolved.label, locale) : rawSkill;
+                  return (
+                    <span
+                      key={`${nurse.userId}-${rawSkill}`}
+                      dir="auto"
+                      className="max-w-full whitespace-normal break-words rounded-full bg-brand-soft/30 px-3 py-1.5 text-xs font-semibold leading-tight text-brand-deep"
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
                 {nurse.acceptsOvernight && (
-                  <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+                  <span className="max-w-full whitespace-normal break-words rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold leading-tight text-indigo-700">
                     {t("overnightCare")}
                   </span>
                 )}
@@ -255,7 +269,8 @@ function NurseProfilePageInner() {
                     {nurse.languages.map((lang) => (
                       <span
                         key={`${nurse.userId}-lang-${lang}`}
-                        className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
+                        dir="auto"
+                        className="max-w-full whitespace-normal break-words rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold leading-tight text-emerald-700"
                       >
                         {lang}
                       </span>

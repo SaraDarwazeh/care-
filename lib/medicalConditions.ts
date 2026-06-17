@@ -26,6 +26,12 @@ export interface MedicalCondition {
   id: string;
   label: LocalizedString;
   group: MedicalConditionGroup;
+  // Conditions that are only relevant in a specific care context
+  // (pregnancy, newborn, pediatric) — not standing health data for
+  // the typical patient. Hidden from the general patient profile
+  // picker; surfaced at booking time when the patient indicates
+  // they're booking for a child or expectant mother.
+  contextualOnly?: true;
 }
 
 // Curated short list — common conditions home-care patients tell us
@@ -67,10 +73,11 @@ export const MEDICAL_CONDITIONS: ReadonlyArray<MedicalCondition> = [
   { id: "depression", group: "mental-health", label: { en: "Depression", ar: "الاكتئاب" } },
   { id: "ptsd", group: "mental-health", label: { en: "PTSD", ar: "اضطراب ما بعد الصدمة" } },
 
-  // Pediatric
-  { id: "newborn-care", group: "pediatric", label: { en: "Newborn care", ar: "رعاية حديثي الولادة" } },
-  { id: "pediatric-asthma", group: "pediatric", label: { en: "Pediatric asthma", ar: "ربو الأطفال" } },
-  { id: "developmental-support", group: "pediatric", label: { en: "Developmental support", ar: "دعم النمو" } },
+  // Pediatric — contextualOnly: surfaced at booking time, not in the
+  // general patient profile picker.
+  { id: "newborn-care", group: "pediatric", contextualOnly: true, label: { en: "Newborn care", ar: "رعاية حديثي الولادة" } },
+  { id: "pediatric-asthma", group: "pediatric", contextualOnly: true, label: { en: "Pediatric asthma", ar: "ربو الأطفال" } },
+  { id: "developmental-support", group: "pediatric", contextualOnly: true, label: { en: "Developmental support", ar: "دعم النمو" } },
 
   // Elderly
   { id: "frailty", group: "elderly", label: { en: "Frailty", ar: "الوهن" } },
@@ -81,9 +88,10 @@ export const MEDICAL_CONDITIONS: ReadonlyArray<MedicalCondition> = [
   { id: "cancer-treatment", group: "oncology", label: { en: "Cancer treatment support", ar: "دعم علاج السرطان" } },
   { id: "palliative-care", group: "oncology", label: { en: "Palliative care", ar: "الرعاية التلطيفية" } },
 
-  // Maternal
-  { id: "pregnancy-support", group: "maternal", label: { en: "Pregnancy support", ar: "دعم الحمل" } },
-  { id: "postnatal-recovery", group: "maternal", label: { en: "Postnatal recovery", ar: "التعافي بعد الولادة" } },
+  // Maternal — contextualOnly: surfaced at booking time, not in the
+  // general patient profile picker.
+  { id: "pregnancy-support", group: "maternal", contextualOnly: true, label: { en: "Pregnancy support", ar: "دعم الحمل" } },
+  { id: "postnatal-recovery", group: "maternal", contextualOnly: true, label: { en: "Postnatal recovery", ar: "التعافي بعد الولادة" } },
 
   // Wound & skin
   { id: "wound-care", group: "wound-skin", label: { en: "Wound care", ar: "العناية بالجروح" } },
@@ -109,11 +117,23 @@ export function findMedicalCondition(id: string): MedicalCondition | undefined {
   return CONDITION_BY_ID[id];
 }
 
-export function groupedMedicalConditions(): Record<MedicalConditionGroup, MedicalCondition[]> {
+// Grouped conditions for the picker UI. Pass `{ includeContextual: true }`
+// to include pregnancy / pediatric entries — only the booking-time
+// "who is this for?" surface should opt in. The patient profile
+// picker keeps the default and shows only standing conditions.
+export function groupedMedicalConditions(
+  options: { includeContextual?: boolean } = {},
+): Record<MedicalConditionGroup, MedicalCondition[]> {
   const out = Object.fromEntries(
     MEDICAL_CONDITION_GROUPS.map((g) => [g, [] as MedicalCondition[]]),
   ) as Record<MedicalConditionGroup, MedicalCondition[]>;
-  for (const c of MEDICAL_CONDITIONS) out[c.group].push(c);
+  for (const c of MEDICAL_CONDITIONS) {
+    if (c.contextualOnly && !options.includeContextual) continue;
+    out[c.group].push(c);
+  }
+  // Empty groups (pediatric / maternal in the default render) stay
+  // in the map with an empty array; the picker UI iterates groups
+  // with item-count > 0 already, so empty headers don't render.
   return out;
 }
 

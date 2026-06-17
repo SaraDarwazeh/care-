@@ -38,6 +38,7 @@ import {
   type CatalogService,
 } from "@/lib/serviceTaxonomy";
 import { tLocalized } from "@/lib/i18nContent";
+import { NURSE_SKILLS, resolveSkillId, findNurseSkill } from "@/lib/nurseSkills";
 import {
   DEFAULT_PRICING_CONFIG,
   getPricingConfig,
@@ -168,7 +169,10 @@ export default function NurseProfileForm({
   const [pricePerShiftB, setPricePerShiftB] = useState<number | undefined>(undefined);
   const [pricePerShiftC, setPricePerShiftC] = useState<number | undefined>(undefined);
   const [experienceYears, setExperienceYears] = useState(0);
-  const [skills, setSkills] = useState("");
+  // Skills are stored as catalog ids (from lib/nurseSkills.ts). Legacy
+  // free-text entries that don't match the catalog are kept as raw
+  // strings and round-tripped untouched so older saves don't lose data.
+  const [skills, setSkills] = useState<string[]>([]);
 
   // Additional Services
   const [additionalServices, setAdditionalServices] = useState<NurseServiceItem[]>([]);
@@ -263,7 +267,11 @@ export default function NurseProfileForm({
       setPricePerShiftB(profile.pricePerShift?.B);
       setPricePerShiftC(profile.pricePerShift?.C);
       setExperienceYears(profile.experienceYears ?? 0);
-      setSkills((profile.skills ?? []).join(", "));
+      // Backfill legacy free-text skills onto catalog ids when possible
+      // so the saved record migrates organically on the next Save.
+      setSkills(
+        (profile.skills ?? []).map((raw) => resolveSkillId(raw) ?? raw),
+      );
 
       setAdditionalServices(normalizeAdditional(profile.additionalServices));
 
@@ -426,7 +434,7 @@ export default function NurseProfileForm({
         return Object.keys(obj).length > 0 ? obj : undefined;
       })(),
       experienceYears,
-      skills: skills.split(",").map((item) => item.trim()).filter(Boolean),
+      skills,
       languages: languages.split(",").map((item) => item.trim()).filter(Boolean),
       additionalServices: displayedAdditionalServices.filter((item) => item.name.trim().length > 0),
       availableDays,
@@ -879,13 +887,60 @@ export default function NurseProfileForm({
 
               <div>
                 <label className="mb-1 block text-sm font-semibold text-slate-700">{tServices("skillsLabel")}</label>
-                <input
-                  value={skills}
-                  onChange={(e) => setSkills(e.target.value)}
-                  placeholder={tServices("skillsPlaceholder")}
-                  dir="auto"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
-                />
+                <p className="mb-2 text-xs text-slate-500">{tServices("skillsHelp")}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {NURSE_SKILLS.map((skill) => {
+                    const active = skills.includes(skill.id);
+                    return (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        onClick={() =>
+                          setSkills((current) =>
+                            active
+                              ? current.filter((s) => s !== skill.id)
+                              : [...current, skill.id],
+                          )
+                        }
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                          active
+                            ? "border-brand bg-brand-soft/40 text-brand-deep"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-brand-soft"
+                        }`}
+                      >
+                        {tLocalized(skill.label, locale)}
+                      </button>
+                    );
+                  })}
+                </div>
+                {(() => {
+                  // Legacy free-text entries that didn't resolve to a
+                  // catalog id are still surfaced so the nurse can see
+                  // what they previously saved and replace them.
+                  const legacy = skills.filter((s) => !findNurseSkill(s));
+                  if (legacy.length === 0) return null;
+                  return (
+                    <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50/40 p-3">
+                      <p className="mb-1.5 text-xs font-semibold text-amber-800">
+                        {tServices("skillsLegacyTitle")}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {legacy.map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() =>
+                              setSkills((current) => current.filter((s) => s !== value))
+                            }
+                            className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-900 hover:border-amber-400"
+                          >
+                            {value} ×
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}

@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Filter, MapPin, Sparkles, Truck, Stethoscope, HeartHandshake, Search } from "lucide-react";
 import { CATALOG_SERVICES } from "@/lib/serviceTaxonomy";
 import { tLocalized } from "@/lib/i18nContent";
+import { findNurseSkill } from "@/lib/nurseSkills";
 import type { Locale } from "@/i18n/config";
 
 // Map known catalogue EN labels to their bilingual entries so the
@@ -101,6 +102,7 @@ function ChipMultiSelect({
   selected,
   onToggle,
   accent = "sky",
+  renderLabel,
 }: {
   label: string;
   icon: typeof Filter;
@@ -108,6 +110,11 @@ function ChipMultiSelect({
   selected: string[];
   onToggle: (value: string) => void;
   accent?: "sky" | "violet" | "emerald";
+  // Optional translation hook. When supplied, each option string is
+  // passed through this function before rendering. Used by the skills
+  // chip group to render catalog ids as their localized labels (or
+  // raw text for legacy free-text entries that aren't in the catalog).
+  renderLabel?: (option: string) => string;
 }) {
   if (options.length === 0) return null;
 
@@ -140,7 +147,7 @@ function ChipMultiSelect({
                   : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
               }`}
             >
-              {opt}
+              {renderLabel ? renderLabel(opt) : opt}
             </button>
           );
         })}
@@ -397,6 +404,10 @@ export default function MarketplaceFilters({
           selected={values.skills}
           onToggle={(v) => toggleIn("skills", v)}
           accent="violet"
+          renderLabel={(raw) => {
+            const skill = findNurseSkill(raw);
+            return skill ? tLocalized(skill.label, locale) : raw;
+          }}
         />
 
         <button

@@ -280,7 +280,9 @@
       "pricingBlockedTitle": "Pricing out of allowed range",
       "pricingBlockedBody": "{n, plural, one {# entry is} other {# entries are}} outside the admin-defined range. Fix the highlighted rows to save.",
       "removeServiceLabel": "Remove service",
-      "skillsLabel": "Skills (comma separated)",
+      "skillsLabel": "Skills",
+      "skillsHelp": "Tap every skill you regularly perform. Patients filter the marketplace by these.",
+      "skillsLegacyTitle": "Free-text entries from an older version of this form. Replace them with catalog selections above by removing them here.",
       "skillsPlaceholder": "e.g. IV placement, wound dressing, CPR"
     },
     "additional": {

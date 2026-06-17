@@ -15,6 +15,7 @@ import { registerWithEmail } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
+import { useAuth } from "@/hooks/useAuth";
 import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
 
 // useSearchParams forces this route off the static prerender path —
@@ -50,6 +51,7 @@ function RegisterPageInner() {
   });
   const [consentAccepted, setConsentAccepted] = useState(false);
   const physiotherapyEnabled = usePhysiotherapyEnabled();
+  const { refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -91,6 +93,17 @@ function RegisterPageInner() {
         router.replace("/login");
         return;
       }
+
+      // Sync useAuth.appUser with the freshly-written Firestore doc
+      // BEFORE we navigate. onAuthStateChanged inside useAuth fires the
+      // moment Firebase Auth confirms the new account, which can race
+      // ahead of createUserProfile's setDoc — without this refresh the
+      // destination route's useProtectedRoute may see appUser as null
+      // (race lost) or stale (race won but mapDoc skipped a field).
+      // The phone-required interstitial already does the same right
+      // before its navigation; matching the pattern keeps the post-
+      // registration redirect deterministic.
+      await refreshProfile();
 
       document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 

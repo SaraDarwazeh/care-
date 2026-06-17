@@ -20,10 +20,23 @@ function mapDocToUser(
 ): AppUser {
   const lang = userDoc.language;
   const provider = userDoc.provider;
+  // Every field this function returns IS the AppUser the rest of the
+  // app reads. Anything missing here is invisible to useAuth.appUser
+  // even though it's present in the Firestore document — silently
+  // breaking any UI gate that checks it. The phone + phoneCountry
+  // additions were the missing projection that caused the
+  // /auth/phone-required redirect loop; consent + pointsBalance are
+  // added in the same pass so the AppUser shape matches the type
+  // definition and no other gate is silently reading undefined.
   return {
     id: userDoc.id,
     name: String(userDoc.name ?? ""),
     email: String(userDoc.email ?? ""),
+    phone: typeof userDoc.phone === "string" ? userDoc.phone : undefined,
+    phoneCountry:
+      userDoc.phoneCountry === "PS" || userDoc.phoneCountry === "IL"
+        ? (userDoc.phoneCountry as "PS" | "IL")
+        : undefined,
     role: userDoc.role as UserRole,
     providerKind:
       userDoc.providerKind === "physio" || userDoc.providerKind === "nurse"
@@ -31,8 +44,14 @@ function mapDocToUser(
         : undefined,
     status: (userDoc.status as UserStatus) ?? "approved",
     createdAt: String(userDoc.createdAt ?? ""),
+    consent:
+      userDoc.consent && typeof userDoc.consent === "object"
+        ? (userDoc.consent as UserConsent)
+        : undefined,
     language: lang === "en" || lang === "ar" ? lang : undefined,
     provider: provider === "google" ? "google" : "email",
+    pointsBalance:
+      typeof userDoc.pointsBalance === "number" ? userDoc.pointsBalance : undefined,
     approvedAt: typeof userDoc.approvedAt === "string" ? userDoc.approvedAt : undefined,
     lastApprovedProfileHash:
       typeof userDoc.lastApprovedProfileHash === "string"

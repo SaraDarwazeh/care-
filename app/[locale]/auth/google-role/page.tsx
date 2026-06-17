@@ -14,6 +14,7 @@ import { getLocalizedErrorMessage } from "@/services/errorService";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
 import PhoneInput from "@/components/common/PhoneInput";
 import { validatePhone } from "@/lib/phone";
+import { useAuth } from "@/hooks/useAuth";
 
 // Interstitial shown after a first-time Google sign-in. The Google
 // credential is already created (auth.currentUser is set), but no
@@ -32,6 +33,7 @@ function GoogleRolePageInner() {
   const [error, setError] = useState("");
   const [phoneCountry, setPhoneCountry] = useState<"PS" | "IL">("PS");
   const [phoneLocal, setPhoneLocal] = useState("");
+  const { refreshProfile } = useAuth();
   // Subscribe to the auth state so we pick up the Google credential the
   // moment Firebase finishes restoring it on mount. Linting-friendly:
   // setState only fires inside the subscription callback, never
@@ -77,6 +79,11 @@ function GoogleRolePageInner() {
           acceptedAt: new Date().toISOString(),
         },
       });
+      // Sync useAuth.appUser with the freshly-written Firestore doc
+      // before navigating so the destination useProtectedRoute sees
+      // the new phone + role + status. Mirrors the same defensive
+      // refresh in the email-register flow.
+      await refreshProfile();
       document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
       const redirect = params.get("redirect");
       if (role === "nurse") {

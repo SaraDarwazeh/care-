@@ -251,9 +251,7 @@ export default function RegisterPage() {
                         dir="auto"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
-                        }`}
+                        className="w-full rounded-xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm transition-all outline-none focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                         placeholder={t("namePlaceholder")}
                       />
                     </div>
@@ -271,9 +269,7 @@ export default function RegisterPage() {
                         dir="ltr"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
-                        }`}
+                        className="w-full rounded-xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm transition-all outline-none focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                         placeholder={t("emailPlaceholder")}
                       />
                     </div>
@@ -304,9 +300,7 @@ export default function RegisterPage() {
                         dir="ltr"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
-                        }`}
+                        className="w-full rounded-xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm transition-all outline-none focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                         placeholder={t("passwordPlaceholder")}
                       />
                     </div>

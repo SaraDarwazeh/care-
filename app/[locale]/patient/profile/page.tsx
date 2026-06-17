@@ -73,8 +73,13 @@ function PatientProfilePageInner() {
         <p className="mt-2 text-slate-600">{t("pageSubtitle")}</p>
       </div>
 
-      <PatientProfileEditor userId={appUser.id} initialSection={initialSection} />
+      {/* Rewards card is promoted above the editor so points + recent
+          activity are visible the moment the profile page loads —
+          previously buried below a long editor, where most patients
+          never scrolled to discover it. */}
       <RewardsSection />
+
+      <PatientProfileEditor userId={appUser.id} initialSection={initialSection} />
     </div>
   );
 }

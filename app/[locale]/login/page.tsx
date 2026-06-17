@@ -162,7 +162,7 @@ export default function LoginPage() {
                     dir="ltr"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm transition-all outline-none focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                     placeholder={t("emailPlaceholder")}
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function LoginPage() {
                     dir="ltr"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm transition-all outline-none focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                     placeholder={t("passwordPlaceholder")}
                   />
                 </div>

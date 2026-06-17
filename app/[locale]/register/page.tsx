@@ -4,10 +4,11 @@ import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Activity, ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import Logo from "@/components/common/Logo";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import PhoneInput from "@/components/common/PhoneInput";
 import { validatePhone } from "@/lib/phone";
 import { registerWithEmail } from "@/services/authService";
@@ -16,7 +17,14 @@ import { getUserProfile } from "@/services/userService";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
 import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
 
-export default function RegisterPage() {
+// useSearchParams forces this route off the static prerender path —
+// Next.js 16 hard-fails the build (PRERENDER_ERROR) if the component
+// calling it isn't wrapped in a Suspense boundary, because the static
+// shell can't know the query string at build time. Splitting the page
+// into an inner client component + a Suspense-wrapped default export
+// lets the build pre-render the shell and defer the ?role=… read until
+// request time. Same pattern lives in app/[locale]/patient/profile/page.tsx.
+function RegisterPageInner() {
   const router = useRouter();
   const t = useTranslations("auth.register");
   const tRoot = useTranslations();
@@ -374,5 +382,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <RegisterPageInner />
+    </Suspense>
   );
 }

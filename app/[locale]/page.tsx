@@ -158,16 +158,21 @@ export default function Home() {
 
               <p className="max-w-xl text-lg leading-relaxed text-slate-600">{t("hero.subhead")}</p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              {/* Hero CTAs: stack on xs so the secondary contact button
+                  doesn't wrap onto a third line at 320–375px viewports;
+                  side-by-side from sm+ where there's room. justify-center
+                  on xs makes the buttons feel intentional rather than
+                  awkward when they take the full width. */}
+              <div className="flex flex-col items-stretch gap-3 pt-1 sm:flex-row sm:items-center sm:flex-wrap">
                 <Link
                   href="/find-care"
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-hover"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-hover"
                 >
                   {t("hero.ctaFindNurse")} <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="mailto:support@careplus.health"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
                 >
                   <MessageCircle className="h-4 w-4 text-brand" />
                   {t("hero.contactCta")}
@@ -209,7 +214,7 @@ export default function Home() {
 
             <div className="relative">
               <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 shadow-2xl shadow-brand-soft/60">
-                <div className="relative aspect-[4/5] w-full sm:aspect-[5/6]">
+                <div className="relative aspect-square w-full sm:aspect-[4/5] lg:aspect-[5/6]">
                   <Image
                     src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80"
                     alt={t("hero.imageAlt")}

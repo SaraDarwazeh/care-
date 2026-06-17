@@ -382,7 +382,15 @@ function PatientNursesPageInner() {
             <span className="text-sm font-normal text-brand">{showFilters ? t("hide") : t("show")}</span>
           </button>
 
-          <div className={`mt-4 lg:mt-0 ${showFilters ? "block" : "hidden lg:block"}`}>
+          {/* Mobile filter drawer: max-h + overflow-y so a long filter
+              list (services + skills + addons) doesn't bury the result
+              list under endless scrolling. lg+ shows the sidebar in
+              its natural height — no clamp needed. */}
+          <div
+            className={`mt-4 lg:mt-0 ${
+              showFilters ? "block max-h-[70vh] overflow-y-auto rounded-2xl border border-slate-100 bg-white p-2 shadow-sm lg:max-h-none lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none" : "hidden lg:block"
+            }`}
+          >
             <MarketplaceFilters
               values={filters}
               onChange={setFilters}

@@ -812,7 +812,10 @@ export default function BookingForm({
               )}
               <div className="grid gap-3">
                 {serviceOptions.map((item) => (
-                  <label key={item.name} className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${service === item.name ? "border-brand bg-brand-soft/30 shadow-sm" : "border-slate-200 hover:border-brand-soft"}`}>
+                  <label
+                    key={item.name}
+                    className={`flex cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-all sm:flex-row sm:items-center sm:justify-between ${service === item.name ? "border-brand bg-brand-soft/30 shadow-sm" : "border-slate-200 hover:border-brand-soft"}`}
+                  >
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
@@ -824,7 +827,7 @@ export default function BookingForm({
                       />
                       <span className="font-medium text-slate-700">{item.name}</span>
                     </div>
-                    <span className="font-bold text-slate-800">{fmtCurrency(item.price, locale)}</span>
+                    <span className="font-bold text-slate-800 ps-7 sm:ps-0">{fmtCurrency(item.price, locale)}</span>
                   </label>
                 ))}
               </div>
@@ -915,7 +918,7 @@ export default function BookingForm({
                       <p className="mt-1 text-xs text-slate-600">{tS3("fixedBundleBody")}</p>
                     </div>
                   ) : selectedPackage?.durationOptions && selectedPackage.durationOptions.length > 0 ? (
-                    <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {selectedPackage.durationOptions.map((opt) => (
                         <label
                           key={opt.days}

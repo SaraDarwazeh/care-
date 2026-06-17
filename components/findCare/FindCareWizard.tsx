@@ -95,28 +95,31 @@ export default function FindCareWizard() {
         <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
           {t("alreadyKnow.label")}
         </p>
-        <div className="flex flex-wrap gap-1.5">
+        {/* Escape chips — 2-up grid on xs so labels never collide on
+            320px viewports; switch to flex-wrap at sm+ where the row
+            naturally absorbs the variable label widths. */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-1.5">
           <Link
             href="/services/one-time"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.one-time")}
           </Link>
           <Link
             href="/services/shifts"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.shifts")}
           </Link>
           <Link
             href="/services/packages"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.packages")}
           </Link>
           <Link
             href="/services/additional"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-center text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.additional")}
           </Link>
@@ -304,7 +307,7 @@ function QuestionCard({
   }
 
   return (
-    <section className="rounded-3xl border border-brand-mist bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-brand-mist bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-4 flex items-center gap-3">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white">
           {index}

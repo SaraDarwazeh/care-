@@ -1057,7 +1057,7 @@ export default function BookingForm({
                 (step === 3 && !date) ||
                 (step === 3 && bookingType === "one-time" && !time)
               }
-              className="flex items-center gap-1 rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-sky-700 active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1 rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-hover active:scale-95 disabled:opacity-50"
             >
               {t("nextStep")} <ChevronRight className="h-4 w-4" />
             </button>

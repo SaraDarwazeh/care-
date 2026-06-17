@@ -22,6 +22,7 @@ import {
   Activity,
 } from "lucide-react";
 import { useState } from "react";
+import Logo from "@/components/common/Logo";
 import NotificationBell from "@/components/common/NotificationBell";
 import ProfileMenu from "@/components/common/ProfileMenu";
 import LocaleSwitcher from "@/components/common/LocaleSwitcher";
@@ -68,18 +69,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           with `lg:static lg:translate-x-0` present (Tailwind v4 user
           variant source order doesn't reliably let lg: win over rtl:). */}
       <aside className={`
-        fixed inset-y-0 start-0 z-50 w-72 flex flex-col bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
+        fixed inset-y-0 start-0 z-50 w-72 flex flex-col bg-gradient-to-b from-brand-deep to-slate-900 text-slate-300 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
         ${sidebarOpen ? "translate-x-0" : "max-lg:-translate-x-full max-lg:rtl:translate-x-full"}
       `}>
-        <div className="flex h-20 items-center px-8 bg-slate-950/50 border-b border-slate-800">
-          <Link href="/admin" className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white shadow-lg shadow-sky-500/20">
-              <Stethoscope className="h-6 w-6" />
-            </div>
-            <span className="text-xl font-bold text-white tracking-tight">{t("brand")}</span>
+        <div className="flex h-20 items-center px-6 bg-white/95 border-b border-white/10">
+          <Link href="/admin" aria-label={t("brand")} className="inline-flex items-center transition hover:opacity-85">
+            <Logo variant="full" size={36} />
           </Link>
           <button className="ms-auto lg:hidden" onClick={() => setSidebarOpen(false)}>
-            <X className="h-6 w-6 text-slate-400" />
+            <X className="h-6 w-6 text-slate-500" />
           </button>
         </div>
 
@@ -96,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`
                   flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all
                   ${isActive
-                    ? "bg-sky-500 text-white shadow-md shadow-sky-500/10"
+                    ? "bg-brand text-white shadow-md shadow-brand/10"
                     : "hover:bg-slate-800 hover:text-white"
                   }
                 `}
@@ -119,12 +117,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
         <header className="flex h-20 items-center justify-between bg-white px-6 shadow-sm border-b border-slate-200 lg:hidden shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500 text-white">
-              <Stethoscope className="h-5 w-5" />
-            </div>
-            <span className="font-bold text-slate-800">{t("mobileBrand")}</span>
-          </div>
+          <Link href="/admin" aria-label={t("mobileBrand")} className="inline-flex items-center">
+            <Logo variant="full" size={28} />
+          </Link>
           <div className="flex items-center gap-2">
             <NotificationBell href="/admin/notifications" />
             <button onClick={() => setSidebarOpen(true)} className="p-2 -me-2 text-slate-600 hover:bg-slate-100 rounded-lg">

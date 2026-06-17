@@ -135,7 +135,7 @@ export default function Home() {
       {/* ══ HERO ══ */}
       <section
         id="home"
-        className="relative overflow-hidden bg-gradient-to-b from-sky-50/40 via-white to-white pt-10 pb-16 sm:pt-16 sm:pb-20 lg:pt-24 lg:pb-28"
+        className="relative overflow-hidden bg-gradient-to-b from-brand-soft/25 via-white to-white pt-10 pb-16 sm:pt-16 sm:pb-20 lg:pt-24 lg:pb-28"
       >
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
@@ -148,7 +148,7 @@ export default function Home() {
               <h1 className="text-[2.1rem] font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-[3rem] lg:text-[3.4rem]">
                 {t("hero.headlineA")}
                 <br />
-                <span className="text-sky-600">{t("hero.headlineB")}</span>
+                <span className="text-brand-deep">{t("hero.headlineB")}</span>
               </h1>
 
               <p className="max-w-xl text-lg leading-relaxed text-slate-600">{t("hero.subhead")}</p>
@@ -156,15 +156,15 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Link
                   href="/find-care"
-                  className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700"
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-hover"
                 >
                   {t("hero.ctaFindNurse")} <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="mailto:support@careplus.health"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
                 >
-                  <MessageCircle className="h-4 w-4 text-sky-600" />
+                  <MessageCircle className="h-4 w-4 text-brand" />
                   {t("hero.contactCta")}
                 </a>
               </div>
@@ -255,12 +255,12 @@ export default function Home() {
         {/* ══ HOW IT WORKS — patient steps only ══ */}
         <section id="how-it-works" className="scroll-mt-20">
           <div className="mb-8 max-w-2xl">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">{t("how.kicker")}</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand">{t("how.kicker")}</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{t("how.title")}</h2>
           </div>
-          <div className="rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-7 sm:p-10">
+          <div className="rounded-3xl border border-brand-mist bg-gradient-to-br from-brand-soft/25 to-white p-7 sm:p-10">
             <div className="mb-7 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500 text-white shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-sm">
                 <HomeIcon className="h-5 w-5" />
               </div>
               <div>
@@ -271,7 +271,7 @@ export default function Home() {
             <div className="grid gap-5 sm:grid-cols-3">
               {patientSteps.map((s) => (
                 <div key={s.n} className="rounded-2xl border border-white/60 bg-white/70 p-5 backdrop-blur-sm">
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500 text-sm font-extrabold text-white shadow-sm">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-sm font-extrabold text-white shadow-sm">
                     {s.n}
                   </div>
                   <p className="font-semibold text-slate-800">{s.title}</p>
@@ -281,7 +281,7 @@ export default function Home() {
             </div>
             <Link
               href="/find-care"
-              className="mt-7 inline-flex items-center gap-1.5 text-sm font-bold text-sky-600 transition hover:text-sky-700"
+              className="mt-7 inline-flex items-center gap-1.5 text-sm font-bold text-brand transition hover:text-brand-hover"
             >
               {t("how.patients.cta")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>

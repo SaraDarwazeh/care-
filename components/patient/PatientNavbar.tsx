@@ -11,12 +11,12 @@ import {
   HeartHandshake,
   Menu,
   Pill,
-  ShieldCheck,
   ShoppingCart,
   Stethoscope,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Logo from "@/components/common/Logo";
 import NotificationBell from "@/components/common/NotificationBell";
 import ProfileMenu from "@/components/common/ProfileMenu";
 import LocaleSwitcher from "@/components/common/LocaleSwitcher";
@@ -102,12 +102,11 @@ export default function PatientNavbar() {
   const browseIsActive = browseItems.some((b) => isActive(b.href));
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sky-100 bg-white/85 backdrop-blur shadow-sm">
-      <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-brand-mist/60 bg-white/85 backdrop-blur shadow-sm">
+      <div className="mx-auto w-full max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/patient" className="flex items-center gap-2 text-sky-700 transition hover:opacity-80">
-            <ShieldCheck className="h-7 w-7" />
-            <span className="text-xl font-extrabold tracking-tight">Care+</span>
+          <Link href="/patient" aria-label="Care+ home" className="inline-flex items-center transition hover:opacity-85">
+            <Logo variant="full" size={36} />
           </Link>
 
           {/* Desktop nav */}

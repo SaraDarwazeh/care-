@@ -195,10 +195,10 @@ export default function FindCareWizard() {
 
       {/* Result + CTAs */}
       {step === "result" && canFindMatches && target && (
-        <div className="rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 to-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-brand-soft bg-gradient-to-br from-brand-soft/30 to-white p-6 shadow-sm">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-sky-600" />
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
+            <Sparkles className="h-5 w-5 text-brand" />
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-deep">
               {t("result.title")}
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function FindCareWizard() {
           <button
             type="button"
             onClick={findMatches}
-            className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700"
+            className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
           >
             {t("result.continueCta")} <ArrowRight className="h-4 w-4" />
           </button>

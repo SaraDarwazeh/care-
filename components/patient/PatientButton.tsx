@@ -9,13 +9,13 @@ interface PatientButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<NonNullable<PatientButtonProps["variant"]>, string> = {
-  primary: "bg-sky-600 text-white hover:bg-sky-700",
+  primary: "bg-brand text-white hover:bg-brand-hover",
   secondary: "bg-emerald-600 text-white hover:bg-emerald-700",
-  ghost: "bg-white text-sky-700 ring-1 ring-sky-200 hover:bg-sky-50",
+  ghost: "bg-white text-brand-deep ring-1 ring-brand-soft/70 hover:bg-brand-soft/20",
 };
 
 const baseClass =
-  "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300";
+  "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft";
 
 export default function PatientButton({
   children,

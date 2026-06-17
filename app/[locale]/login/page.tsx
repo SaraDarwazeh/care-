@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
-import { ShieldCheck, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import Logo from "@/components/common/Logo";
 import { loginWithEmail, signInWithGoogle } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
@@ -91,19 +92,18 @@ export default function LoginPage() {
           className="object-cover object-top md:object-center"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-sky-900/90 via-sky-800/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-brand-deep/95 via-brand-deep/80 to-transparent" />
 
         <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16">
-          <Link href="/" className="flex items-center gap-2 text-white hover:opacity-90 transition">
-            <ShieldCheck className="h-8 w-8" />
-            <span className="text-2xl font-extrabold tracking-tight">Care+</span>
+          <Link href="/" aria-label="Care+" className="inline-flex items-center self-start rounded-2xl bg-white/95 px-4 py-2 shadow-lg shadow-brand-deep/20 transition hover:opacity-95">
+            <Logo variant="full" size={32} />
           </Link>
 
           <div className="max-w-lg mb-4 md:mb-10">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
-              {t("heroHeadlineA")} <br className="hidden md:block" /><span className="text-sky-300">{t("heroHeadlineB")}</span>
+              {t("heroHeadlineA")} <br className="hidden md:block" /><span className="text-brand-soft">{t("heroHeadlineB")}</span>
             </h1>
-            <p className="text-sky-100 text-lg md:text-xl font-medium">{t("heroSubhead")}</p>
+            <p className="text-white/90 text-lg md:text-xl font-medium">{t("heroSubhead")}</p>
           </div>
         </div>
       </div>

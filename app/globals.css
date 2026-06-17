@@ -5,6 +5,21 @@
 :root {
   --background: #f7fbff;
   --foreground: #164e63;
+
+  /* Care+ brand palette — sampled from the brand assets in
+     /public/brand. The wordmark's deep teal is the heading colour;
+     "brand" is the primary CTA tone (readable on white); the lighter
+     variants are for badges, soft surfaces, and dividers; "sand" is
+     the warm secondary accent from the brand palette card.
+     See lib/brand.ts for the JS-side mirror and use cases. */
+  --color-brand-deep: #1f6a72;
+  --color-brand-deep-hover: #185760;
+  --color-brand: #2f8a8e;
+  --color-brand-hover: #257072;
+  --color-brand-soft: #a7d6d8;
+  --color-brand-mist: #cdd9d9;
+  --color-brand-sand: #e5c68e;
+  --color-brand-sand-strong: #cba75e;
 }
 
 /* Per-locale font selection. The body element inherits the active locale
@@ -24,6 +39,14 @@ html[dir="rtl"] {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-deep: var(--color-brand-deep);
+  --color-brand-deep-hover: var(--color-brand-deep-hover);
+  --color-brand: var(--color-brand);
+  --color-brand-hover: var(--color-brand-hover);
+  --color-brand-soft: var(--color-brand-soft);
+  --color-brand-mist: var(--color-brand-mist);
+  --color-brand-sand: var(--color-brand-sand);
+  --color-brand-sand-strong: var(--color-brand-sand-strong);
   --font-sans: var(--font-body);
   --font-heading: var(--font-heading);
 }

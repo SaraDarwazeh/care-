@@ -55,14 +55,14 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href={category.bookingLinks[0].href}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-hover"
               >
                 {tBook("startBooking")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/patient/nurses"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
               >
                 {tBook("browseAllNurses")}
               </Link>

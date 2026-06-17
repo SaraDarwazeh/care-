@@ -323,7 +323,7 @@ export default function PatientHomePage() {
           <div className="flex flex-col items-center justify-center py-10 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50">
             <CalendarClock className="mb-3 h-12 w-12 text-slate-300" />
             <p className="text-slate-500 font-medium mb-4">{t("upcomingEmpty")}</p>
-            <PatientButton href="/patient/nurses" className="bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-xl">{t("bookSession")}</PatientButton>
+            <PatientButton href="/patient/nurses" className="bg-brand-soft/50 text-brand-deep hover:bg-brand-soft rounded-xl">{t("bookSession")}</PatientButton>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

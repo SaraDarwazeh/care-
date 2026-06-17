@@ -14,24 +14,42 @@ interface LogoProps {
   size?: number;
   /** When true, wraps the image in a Link to the locale-prefixed home. */
   asLink?: boolean;
+  /**
+   * Surface to render the JPEG on. The supplied assets are JPEGs with
+   * baked-in white backgrounds and anti-aliased edges; rendering on
+   * anything other than white produces a visible halo. "white" wraps
+   * the mark in a white rounded pill so it survives on dark/colored
+   * parents. "soft" uses brand-mist for a quieter card-on-card feel.
+   * "bare" renders the JPEG without any wrapper surface — only use
+   * this when the parent is already a white surface. Defaults to
+   * "bare" to preserve existing layouts; new callers should pass
+   * "white" when placing on coloured backgrounds.
+   */
+  surface?: "bare" | "white" | "soft";
+  /**
+   * When true, the image is rendered with `priority` so next/image
+   * skips lazy-loading. Defaults to true because every current Logo
+   * placement is in a top bar or hero (above-the-fold). Pass `false`
+   * if you add Logo to a footer or modal where lazy-loading is fine.
+   */
+  priority?: boolean;
   /** Accessible alt text. Defaults to "Care+ home" when asLink, else "Care+". */
   alt?: string;
   /** Extra classes appended to the wrapper. */
   className?: string;
 }
 
-// Intrinsic aspect ratios of the supplied JPEGs. We render each asset
-// at its natural ratio so we never stretch or squish the brand mark —
-// the constraint "Do NOT reduce quality" extends to layout-level
-// scaling. Sizes derived from the source files; updating an asset
-// requires updating the ratio here.
+// Intrinsic aspect ratios of the supplied JPEGs, measured directly via
+// `sips -g pixelWidth -g pixelHeight` on the source files. Layout-level
+// scaling that disagrees with these ratios will visibly squish or
+// stretch the artwork — a "do not reduce quality" regression. The
+// earlier v1 numbers were eyeballed and squeezed the mark by 20%.
+//
+// Source dimensions (px): logo-full 788×274, mark 171×273, wordmark 463×274.
 const ASPECT: Record<"full" | "mark" | "wordmark", number> = {
-  // logo-full.jpeg is ~810×290 → 2.79
-  full: 2.79,
-  // mark.jpeg is ~280×360 → 0.78
-  mark: 0.78,
-  // wordmark.jpeg is ~430×220 → 1.95
-  wordmark: 1.95,
+  full: 788 / 274,
+  mark: 171 / 273,
+  wordmark: 463 / 274,
 };
 
 const SOURCE: Record<"full" | "mark" | "wordmark", string> = {
@@ -40,16 +58,18 @@ const SOURCE: Record<"full" | "mark" | "wordmark", string> = {
   wordmark: BRAND_ASSETS.wordmark,
 };
 
-// Care+ logo lockup. Renders the supplied brand JPEGs as-is via
-// next/image with `unoptimized` so the original bytes (and thus the
-// quality, weight, and visual fidelity the brand owner approved)
-// reach the DOM untouched. JPEGs have no transparency channel — so
-// every Logo placement uses a neutral light surface (white pill,
-// near-white card, or the page background).
+// Care+ logo. Renders the supplied brand JPEGs as-is via next/image
+// with `unoptimized` so the original bytes (and thus the quality,
+// weight, and visual fidelity the brand owner approved) reach the DOM
+// untouched. JPEGs have no transparency channel — so every Logo
+// placement either lands on a white parent surface ("bare") or
+// renders inside a white/soft rounded pill ("white" | "soft").
 export default function Logo({
   variant = "full",
   size = 36,
   asLink = false,
+  surface = "bare",
+  priority = true,
   alt,
   className,
 }: LogoProps) {
@@ -64,18 +84,41 @@ export default function Logo({
       height={size}
       alt={resolvedAlt}
       unoptimized
-      priority
+      priority={priority}
       className="block h-auto w-auto select-none"
       style={{ height: size, width }}
     />
   );
 
+  // The pill surface gets a small amount of padding so the JPEG edges
+  // never touch a coloured parent. Padding scales lightly with logo
+  // size to keep proportions consistent.
+  const pillPadY = Math.max(4, Math.round(size * 0.12));
+  const pillPadX = Math.max(8, Math.round(size * 0.22));
+  const pillStyle = { paddingTop: pillPadY, paddingBottom: pillPadY, paddingLeft: pillPadX, paddingRight: pillPadX };
+
+  const surfaceClass =
+    surface === "white"
+      ? "inline-flex items-center rounded-2xl bg-white shadow-sm shadow-brand-deep/10"
+      : surface === "soft"
+        ? "inline-flex items-center rounded-2xl bg-brand-mist/60"
+        : "inline-flex items-center";
+
+  const content =
+    surface === "bare" ? (
+      img
+    ) : (
+      <span className={surfaceClass} style={pillStyle}>
+        {img}
+      </span>
+    );
+
   if (!asLink) {
-    return <span className={className}>{img}</span>;
+    return <span className={className}>{content}</span>;
   }
   return (
     <Link href="/" aria-label={resolvedAlt} className={`inline-flex items-center ${className ?? ""}`}>
-      {img}
+      {content}
     </Link>
   );
 }

@@ -95,8 +95,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-brand-deep/95 via-brand-deep/80 to-transparent" />
 
         <div className="absolute inset-0 flex flex-col justify-between p-8 md:p-16">
-          <Link href="/" aria-label="Care+" className="inline-flex items-center self-start rounded-2xl bg-white/95 px-4 py-2 shadow-lg shadow-brand-deep/20 transition hover:opacity-95">
-            <Logo variant="full" size={32} />
+          <Link href="/" aria-label="Care+" className="inline-flex items-center self-start transition hover:opacity-95">
+            <Logo variant="full" size={32} surface="white" />
           </Link>
 
           <div className="max-w-lg mb-4 md:mb-10">

@@ -131,11 +131,11 @@ function FlagCard({
     }
   }
 
-  const iconBg = accent === "emerald" ? "bg-emerald-100 text-emerald-600" : "bg-sky-100 text-sky-600";
+  const iconBg = accent === "emerald" ? "bg-emerald-100 text-emerald-600" : "bg-brand-soft/50 text-brand";
   const switchBg = displayed
     ? accent === "emerald"
       ? "bg-emerald-500"
-      : "bg-sky-500"
+      : "bg-brand-soft/300"
     : "bg-slate-300";
 
   return (

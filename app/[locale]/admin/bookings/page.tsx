@@ -46,7 +46,7 @@ const STATUS_COLORS: Record<BookingStatus, string> = {
   pending: "bg-amber-100 text-amber-700",
   accepted: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
-  completed: "bg-sky-100 text-sky-700",
+  completed: "bg-brand-soft/50 text-brand-deep",
   cancelled: "bg-slate-100 text-slate-600",
 };
 
@@ -139,7 +139,7 @@ export default function AdminBookingsPage() {
             type="button"
             onClick={exportBookingsCsv}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-deep disabled:opacity-50"
           >
             <Download className="h-4 w-4" /> {tOrders("exportCsv")}
           </button>
@@ -250,7 +250,7 @@ export default function AdminBookingsPage() {
                           <button
                             onClick={() => handleStatus(b.id, "completed")}
                             disabled={updating === b.id}
-                            className="rounded-lg bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition disabled:opacity-50"
+                            className="rounded-lg bg-brand-soft/30 px-3 py-1.5 text-xs font-bold text-brand-deep hover:bg-brand-soft/50 transition disabled:opacity-50"
                           >
                             Mark Done
                           </button>

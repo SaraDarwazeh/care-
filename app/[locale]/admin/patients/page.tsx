@@ -213,7 +213,7 @@ function PatientIdentityCard({
   return (
     <div className="col-span-full rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <ShieldCheck className="h-4 w-4 text-sky-500" />
+        <ShieldCheck className="h-4 w-4 text-brand" />
         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Identity verification</p>
         {status === "verified" && (
           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
@@ -318,14 +318,14 @@ function PatientRow({ patient, profile, onLoadProfile }: {
   const locations = profile ? getPatientLocations(profile) : [];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:border-sky-300 transition-all">
+    <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:border-brand-soft transition-all">
       <button
         type="button"
         onClick={handleExpand}
         className="flex w-full items-center justify-between p-6 text-start hover:bg-slate-50"
       >
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-lg font-bold text-violet-700">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft/60 text-lg font-bold text-brand-deep">
             {patient.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
@@ -359,7 +359,7 @@ function PatientRow({ patient, profile, onLoadProfile }: {
               {/* Contact */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <Phone className="h-4 w-4 text-sky-500" />
+                  <Phone className="h-4 w-4 text-brand" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Phone</p>
                 </div>
                 <p className="font-semibold text-slate-700">{profile.phone || "Not set"}</p>
@@ -368,7 +368,7 @@ function PatientRow({ patient, profile, onLoadProfile }: {
               {/* DOB + Blood */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
                 <div className="mb-2 flex items-center gap-2">
-                  <Cake className="h-4 w-4 text-violet-500" />
+                  <Cake className="h-4 w-4 text-brand" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date of birth</p>
                 </div>
                 <p className="font-semibold text-slate-700">{profile.dateOfBirth || "Not set"}</p>
@@ -401,7 +401,7 @@ function PatientRow({ patient, profile, onLoadProfile }: {
               {/* Saved locations — spans 2 cols */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm sm:col-span-2 lg:col-span-2">
                 <div className="mb-2 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-emerald-500" />
+                  <MapPin className="h-4 w-4 text-brand" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Saved locations ({locations.length})
                   </p>
@@ -415,7 +415,7 @@ function PatientRow({ patient, profile, onLoadProfile }: {
                         <p className="text-sm font-bold text-slate-700">
                           {loc.label}
                           {loc.isDefault && (
-                            <span className="ms-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                            <span className="ms-2 rounded-full bg-brand-soft/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep">
                               Default
                             </span>
                           )}
@@ -430,13 +430,13 @@ function PatientRow({ patient, profile, onLoadProfile }: {
               {/* Payment */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
                 <div className="mb-2 flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-violet-500" />
+                  <CreditCard className="h-4 w-4 text-brand" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Payment</p>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {(profile.paymentMethods ?? []).length > 0
                     ? profile.paymentMethods!.map((pm) => (
-                        <span key={pm} className="px-2 py-1 rounded-lg bg-violet-50 text-violet-700 text-xs font-bold border border-violet-100 capitalize">{pm}</span>
+                        <span key={pm} className="px-2 py-1 rounded-lg bg-brand-soft/30 text-brand-deep text-xs font-bold border border-brand-mist capitalize">{pm}</span>
                       ))
                     : <p className="text-sm text-slate-400">None added</p>}
                 </div>
@@ -475,13 +475,13 @@ function PatientRow({ patient, profile, onLoadProfile }: {
               {/* Current medications */}
               <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <Pill className="h-4 w-4 text-sky-500" />
+                  <Pill className="h-4 w-4 text-brand" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Medications</p>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {(profile.currentMedications ?? []).length > 0
                     ? profile.currentMedications!.map((m) => (
-                        <span key={m} className="px-2 py-1 rounded-lg bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100">{m}</span>
+                        <span key={m} className="px-2 py-1 rounded-lg bg-brand-soft/30 text-brand-deep text-xs font-bold border border-brand-mist">{m}</span>
                       ))
                     : <p className="text-sm text-slate-400">None recorded</p>}
                 </div>
@@ -628,7 +628,7 @@ export default function AdminPatientsPage() {
             type="button"
             onClick={exportPatientsCsv}
             disabled={exporting || patients.length === 0}
-            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-deep disabled:opacity-50"
           >
             <Download className="h-4 w-4" /> {exporting ? "…" : tOrders("exportCsv")}
           </button>

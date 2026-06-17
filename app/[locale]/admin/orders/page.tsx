@@ -28,7 +28,7 @@ import { tLocalized } from "@/lib/i18nContent";
 
 const ORDER_STATUS_COLORS: Record<StoreOrder["status"], string> = {
   pending: "bg-amber-100 text-amber-700 border-amber-200",
-  processing: "bg-sky-100 text-sky-700 border-sky-200",
+  processing: "bg-brand-soft/50 text-brand-deep border-brand-soft",
   shipped: "bg-indigo-100 text-indigo-700 border-indigo-200",
   delivered: "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
@@ -68,11 +68,11 @@ function StatusLifecycle({ current }: { current: StoreOrder["status"] }) {
             <Icon
               className={`h-3.5 w-3.5 ${
                 reached ? "text-emerald-600" : "text-slate-300"
-              } ${isCurrent ? "text-sky-600" : ""}`}
+              } ${isCurrent ? "text-brand" : ""}`}
             />
             <span
               className={`font-semibold capitalize ${
-                isCurrent ? "text-sky-700" : reached ? "text-emerald-700" : "text-slate-400"
+                isCurrent ? "text-brand-deep" : reached ? "text-emerald-700" : "text-slate-400"
               }`}
             >
               {step}
@@ -120,15 +120,15 @@ function OrderCard({
   const patient = order.patient;
 
   return (
-    <div className="rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-sky-200 transition-all overflow-hidden">
+    <div className="rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-brand-soft transition-all overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-start justify-between gap-4 p-6 text-start hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100">
-            <Package className="h-5 w-5 text-sky-600" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-soft/50">
+            <Package className="h-5 w-5 text-brand" />
           </div>
           <div className="min-w-0">
             <p className="font-bold text-slate-800 text-lg">
@@ -245,7 +245,7 @@ function OrderCard({
               {nextStatuses.map((status) => {
                 const colorMap: Record<StoreOrder["status"], string> = {
                   pending: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
-                  processing: "bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100",
+                  processing: "bg-brand-soft/30 text-brand-deep border-brand-soft hover:bg-brand-soft/50",
                   shipped: "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100",
                   delivered: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
                 };
@@ -420,7 +420,7 @@ export default function AdminOrdersPage() {
             type="button"
             onClick={exportOrdersCsv}
             disabled={filtered.length === 0}
-            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-deep disabled:opacity-50"
           >
             <Download className="h-4 w-4" /> {t("exportCsv")}
           </button>
@@ -435,7 +435,7 @@ export default function AdminOrdersPage() {
             onClick={() => setStatusFilter(s)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all capitalize ${
               statusFilter === s
-                ? "bg-sky-500 text-white shadow-sm"
+                ? "bg-brand-soft/300 text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-100"
             }`}
           >

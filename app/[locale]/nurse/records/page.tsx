@@ -74,7 +74,7 @@ export default function NurseRecordsPage() {
               <Link
                 key={record.id}
                 href={`/patient/records/${record.id}`}
-                className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:border-emerald-200 hover:shadow-md transition group"
+                className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:border-brand-soft hover:shadow-md transition group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -91,7 +91,7 @@ export default function NurseRecordsPage() {
                       {t("patientIdLabel")} <span className="font-mono" dir="ltr">{record.patientId.slice(0, 10)}…</span>
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-emerald-500 transition" />
+                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand transition" />
                 </div>
               </Link>
             );

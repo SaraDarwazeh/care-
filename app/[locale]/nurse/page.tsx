@@ -72,10 +72,10 @@ export default function NurseDashboardPage() {
   const todayBookings = bookings.filter(b => b.date === today && b.status === "accepted");
 
   const stats = [
-    { label: t("stats.totalBookings"), value: fmtNumber(bookings.length, locale), icon: CalendarClock, color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-100" },
+    { label: t("stats.totalBookings"), value: fmtNumber(bookings.length, locale), icon: CalendarClock, color: "text-brand", bg: "bg-brand-soft/30", border: "border-brand-mist" },
     { label: t("stats.pendingRequests"), value: fmtNumber(pending.length, locale), icon: Clock, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
-    { label: t("stats.upcomingShifts"), value: fmtNumber(upcoming.length, locale), icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
-    { label: t("stats.totalEarned"), value: fmtCurrency(totalEarned, locale), icon: DollarSign, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100" },
+    { label: t("stats.upcomingShifts"), value: fmtNumber(upcoming.length, locale), icon: CheckCircle, color: "text-brand-deep", bg: "bg-brand-soft/40", border: "border-brand-mist" },
+    { label: t("stats.totalEarned"), value: fmtCurrency(totalEarned, locale), icon: DollarSign, color: "text-brand-sand-strong", bg: "bg-brand-sand/25", border: "border-brand-sand/50" },
   ];
 
   const firstName = appUser.name.split(" ")[0];
@@ -92,17 +92,17 @@ export default function NurseDashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-sky-700 p-6 text-white shadow-xl sm:p-10">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand-deep to-brand-deep p-6 text-white shadow-xl sm:p-10">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
           <div>
-            <p className="text-xs font-bold text-emerald-200 uppercase tracking-widest mb-1.5 sm:text-sm sm:mb-2">{t("kicker")}</p>
+            <p className="text-xs font-bold text-brand-soft uppercase tracking-widest mb-1.5 sm:text-sm sm:mb-2">{t("kicker")}</p>
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">{welcome}</h1>
-            {profile && <p className="mt-2 text-emerald-100 font-medium">{profile.specialization}</p>}
+            {profile && <p className="mt-2 text-white/85 font-medium">{profile.specialization}</p>}
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/nurse/bookings" className="inline-flex items-center gap-2 rounded-2xl bg-white/20 backdrop-blur-sm px-5 py-2.5 text-sm font-bold text-white border border-white/30 hover:bg-white/30 transition">
                 {t("viewAllBookings")} <ChevronRight className="h-4 w-4" />
               </Link>
-              <Link href="/nurse/setup" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-sm font-bold text-emerald-700 hover:bg-slate-50 transition shadow-md">
+              <Link href="/nurse/setup" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-sm font-bold text-brand-deep hover:bg-slate-50 transition shadow-md">
                 {t("editProfile")}
               </Link>
             </div>
@@ -111,12 +111,12 @@ export default function NurseDashboardPage() {
             <div className="hidden sm:flex flex-col items-center gap-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-6">
               <Star className="h-8 w-8 text-amber-300 fill-amber-300" />
               <p className="text-3xl font-extrabold">{fmtNumber(profile.rating, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</p>
-              <p className="text-sm text-emerald-200 font-medium">{t("yourRating")}</p>
+              <p className="text-sm text-white/75 font-medium">{t("yourRating")}</p>
             </div>
           )}
         </div>
         <div className="absolute -end-20 -top-20 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
-        <div className="absolute -start-10 -bottom-10 h-64 w-64 rounded-full bg-sky-400/10 blur-3xl" />
+        <div className="absolute -start-10 -bottom-10 h-64 w-64 rounded-full bg-brand-soft/20 blur-3xl" />
         <TrendingUp className="absolute end-8 bottom-0 h-32 w-32 text-white/5" />
       </section>
 
@@ -174,7 +174,7 @@ export default function NurseDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-slate-800">{t("incomingRequests")}</h2>
             {pending.length > 0 && (
-              <Link href="/nurse/bookings" className="text-sm font-bold text-emerald-600 hover:text-emerald-700">{t("viewAll")}</Link>
+              <Link href="/nurse/bookings" className="text-sm font-bold text-brand hover:text-brand-deep">{t("viewAll")}</Link>
             )}
           </div>
           {error && <p className="mb-4 text-sm text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100">{error}</p>}
@@ -199,7 +199,7 @@ export default function NurseDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-slate-800">{t("upcomingSchedule")}</h2>
             {upcoming.length > 0 && (
-              <Link href="/nurse/schedule" className="text-sm font-bold text-emerald-600 hover:text-emerald-700">{t("fullSchedule")}</Link>
+              <Link href="/nurse/schedule" className="text-sm font-bold text-brand hover:text-brand-deep">{t("fullSchedule")}</Link>
             )}
           </div>
           {upcoming.length === 0 ? (
@@ -214,7 +214,7 @@ export default function NurseDashboardPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-bold text-slate-800">{b.patientName}</p>
-                      <p className="text-sm text-emerald-600 font-semibold">{b.service}</p>
+                      <p className="text-sm text-brand font-semibold">{b.service}</p>
                       <p className="text-sm text-slate-500 mt-1">{b.date} · {b.time}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{b.location}</p>
                     </div>

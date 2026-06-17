@@ -14,33 +14,36 @@ export default function AdminSettingsPage() {
 
   if (loading || !appUser) return <LoadingScreen text={t("loading")} />;
 
+  // All settings tile icons share the brand-tone shell; differentiation
+  // comes from the Lucide glyph. badgeColor keeps semantic meaning
+  // (emerald = enabled, slate = neutral default, orange = caution).
   const sections = [
     {
       key: "security" as const,
       icon: Shield,
-      color: "text-sky-600",
-      bg: "bg-sky-100",
+      color: "text-brand-deep",
+      bg: "bg-brand-soft/40",
       badgeColor: "bg-emerald-100 text-emerald-700",
     },
     {
       key: "notifications" as const,
       icon: Bell,
-      color: "text-amber-600",
-      bg: "bg-amber-100",
+      color: "text-brand-deep",
+      bg: "bg-brand-soft/40",
       badgeColor: "bg-slate-100 text-slate-500",
     },
     {
       key: "appearance" as const,
       icon: Palette,
-      color: "text-violet-600",
-      bg: "bg-violet-100",
+      color: "text-brand-deep",
+      bg: "bg-brand-soft/40",
       badgeColor: "bg-slate-100 text-slate-500",
     },
     {
       key: "database" as const,
       icon: Database,
-      color: "text-emerald-600",
-      bg: "bg-emerald-100",
+      color: "text-brand-deep",
+      bg: "bg-brand-soft/40",
       badgeColor: "bg-orange-100 text-orange-700",
     },
   ];
@@ -54,13 +57,13 @@ export default function AdminSettingsPage() {
 
       <div className="rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 p-8 text-white shadow-lg">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-500 text-2xl font-extrabold text-white shadow-lg shadow-sky-500/20">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand text-2xl font-extrabold text-white shadow-lg shadow-brand/20">
             {appUser.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
             <p className="text-lg font-bold">{appUser.name}</p>
             <p className="text-slate-400">{appUser.email}</p>
-            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-sky-500/20 px-3 py-1 text-xs font-bold text-sky-300 border border-sky-500/30">
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-soft/300/20 px-3 py-1 text-xs font-bold text-brand-soft border border-brand/30">
               <Shield className="h-3 w-3" /> {t("superAdmin")}
             </span>
           </div>
@@ -73,7 +76,7 @@ export default function AdminSettingsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         {sections.map((section) => (
-          <div key={section.key} className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm hover:border-sky-200 hover:-translate-y-0.5 transition-all cursor-pointer group">
+          <div key={section.key} className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm hover:border-brand-soft hover:-translate-y-0.5 transition-all cursor-pointer group">
             <div className="flex items-start justify-between gap-4 mb-4">
               <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${section.bg} ${section.color}`}>
                 <section.icon className="h-6 w-6" />
@@ -82,7 +85,7 @@ export default function AdminSettingsPage() {
                 {tSections(`${section.key}.badge`)}
               </span>
             </div>
-            <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-sky-700 transition-colors">
+            <h3 className="font-bold text-slate-800 text-lg mb-1 group-hover:text-brand-deep transition-colors">
               {tSections(`${section.key}.title`)}
             </h3>
             <p className="text-slate-500 text-sm leading-relaxed">

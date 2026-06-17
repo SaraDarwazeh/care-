@@ -172,7 +172,7 @@ function AdminRecordsPageInner() {
                 active
                   ? opt.id === "disputed"
                     ? "bg-rose-500 text-white shadow-sm"
-                    : "bg-sky-500 text-white shadow-sm"
+                    : "bg-brand-soft/300 text-white shadow-sm"
                   : "text-slate-500 hover:bg-slate-100"
               }`}
             >
@@ -221,7 +221,7 @@ function AdminRecordsPageInner() {
               <Link
                 key={record.id}
                 href={`/patient/records/${record.id}`}
-                className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-sky-200 hover:shadow-md"
+                className="group block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand-soft hover:shadow-md"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
@@ -268,7 +268,7 @@ function AdminRecordsPageInner() {
                       )}
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 self-center text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-sky-500" />
+                  <ChevronRight className="h-5 w-5 shrink-0 self-center text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand" />
                 </div>
               </Link>
             );

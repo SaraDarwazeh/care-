@@ -123,7 +123,7 @@ export default function PricingConfigEditor() {
             <button
               type="button"
               onClick={addAddon}
-              className="flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700"
+              className="flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep"
             >
               <Plus className="h-4 w-4" /> Add add-on
             </button>

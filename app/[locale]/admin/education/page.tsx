@@ -261,7 +261,7 @@ export default function AdminEducationPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white hover:bg-sky-700 shadow-md shadow-sky-600/20 transition"
+          className="flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-deep shadow-md shadow-brand/20 transition"
         >
           <Plus className="h-5 w-5" /> {t("addCard")}
         </button>
@@ -286,14 +286,14 @@ export default function AdminEducationPage() {
               onClick={() => setFilter(k)}
               className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                 active
-                  ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-sky-200"
+                  ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft"
               }`}
             >
               {label}
               <span
                 className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  active ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+                  active ? "bg-brand-soft/50 text-brand-deep" : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {count}
@@ -305,7 +305,7 @@ export default function AdminEducationPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="rounded-3xl bg-white shadow-sm border border-sky-200 p-8 animate-in fade-in slide-in-from-top-4">
+        <div className="rounded-3xl bg-white shadow-sm border border-brand-soft p-8 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800">
               {editingId ? "Edit card" : "Add new card"}
@@ -429,8 +429,8 @@ export default function AdminEducationPage() {
                       title={name}
                       className={`flex h-9 w-9 items-center justify-center rounded-xl border transition ${
                         active
-                          ? "border-sky-500 bg-sky-50 text-sky-700"
-                          : "border-slate-200 bg-white text-slate-500 hover:border-sky-200"
+                          ? "border-brand bg-brand-soft/30 text-brand-deep"
+                          : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -445,7 +445,7 @@ export default function AdminEducationPage() {
                 type="checkbox"
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                className="h-4 w-4 rounded text-sky-600 focus:ring-brand-soft/50"
+                className="h-4 w-4 rounded text-brand focus:ring-brand-soft/50"
               />
               Active (visible on the homepage)
             </label>
@@ -461,7 +461,7 @@ export default function AdminEducationPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-sky-600 font-bold text-white hover:bg-sky-700 shadow-md transition disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-brand font-bold text-white hover:bg-brand-deep shadow-md transition disabled:opacity-50"
               >
                 <Check className="h-4 w-4" />
                 {saving ? "Saving..." : editingId ? "Update card" : "Create card"}
@@ -563,7 +563,7 @@ export default function AdminEducationPage() {
                     <button
                       type="button"
                       onClick={() => openEdit(card)}
-                      className="flex items-center gap-1.5 rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100"
+                      className="flex items-center gap-1.5 rounded-xl bg-brand-soft/30 px-3 py-2 text-xs font-bold text-brand-deep hover:bg-brand-soft/50"
                     >
                       <Pencil className="h-3.5 w-3.5" /> Edit
                     </button>

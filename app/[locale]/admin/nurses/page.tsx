@@ -44,10 +44,10 @@ function NurseRow({
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-all hover:border-sky-300">
+    <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm transition-all hover:border-brand-soft">
       <div className="flex items-center justify-between p-6 bg-white cursor-pointer hover:bg-slate-50" onClick={handleExpand}>
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-100 text-xl font-bold text-sky-700">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft/50 text-xl font-bold text-brand-deep">
             {nurse.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
@@ -135,7 +135,7 @@ function NurseRow({
                 ) : (
                   <ul className="flex flex-wrap gap-2">
                     {profile.certificates.map((cert) => (
-                      <li key={cert.id} className="flex items-center gap-2 text-sky-700 bg-sky-50 px-4 py-2 rounded-xl font-bold border border-sky-100 transition hover:bg-sky-100">
+                      <li key={cert.id} className="flex items-center gap-2 text-brand-deep bg-brand-soft/30 px-4 py-2 rounded-xl font-bold border border-brand-mist transition hover:bg-brand-soft/50">
                         <FileText className="h-4 w-4" />
                         {cert.url ? (
                           <a href={cert.url} target="_blank" rel="noreferrer noopener" className="hover:underline">

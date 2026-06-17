@@ -246,7 +246,7 @@ export default function AdminEducationLibraryPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white hover:bg-sky-700 shadow-md shadow-sky-600/20 transition"
+          className="flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-deep shadow-md shadow-brand/20 transition"
         >
           <Plus className="h-5 w-5" /> {t("addVideo")}
         </button>
@@ -265,14 +265,14 @@ export default function AdminEducationLibraryPage() {
           onClick={() => setFilter("all")}
           className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition ${
             filter === "all"
-              ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-              : "border-slate-200 bg-white text-slate-500 hover:border-sky-200"
+              ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+              : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft"
           }`}
         >
           {t("filter.all")}
           <span
             className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-              filter === "all" ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+              filter === "all" ? "bg-brand-soft/50 text-brand-deep" : "bg-slate-100 text-slate-500"
             }`}
           >
             {videos.length}
@@ -288,14 +288,14 @@ export default function AdminEducationLibraryPage() {
               onClick={() => setFilter(c)}
               className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                 active
-                  ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-sky-200"
+                  ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft"
               }`}
             >
               {tCat(c)}
               <span
                 className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  active ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+                  active ? "bg-brand-soft/50 text-brand-deep" : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {count}
@@ -307,7 +307,7 @@ export default function AdminEducationLibraryPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="rounded-3xl bg-white shadow-sm border border-sky-200 p-6 sm:p-8 animate-in fade-in slide-in-from-top-4">
+        <div className="rounded-3xl bg-white shadow-sm border border-brand-soft p-6 sm:p-8 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800">
               {editingId ? t("editVideo") : t("newVideo")}
@@ -453,7 +453,7 @@ export default function AdminEducationLibraryPage() {
                   type="checkbox"
                   checked={form.published}
                   onChange={(e) => setForm({ ...form, published: e.target.checked })}
-                  className="h-4 w-4 rounded text-sky-600 focus:ring-brand-soft/50"
+                  className="h-4 w-4 rounded text-brand focus:ring-brand-soft/50"
                 />
                 {tForm("published")}
                 <span className="text-xs font-normal text-slate-500">{tForm("publishedHelp")}</span>
@@ -477,7 +477,7 @@ export default function AdminEducationLibraryPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-sky-600 font-bold text-white hover:bg-sky-700 shadow-md transition disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-brand font-bold text-white hover:bg-brand-deep shadow-md transition disabled:opacity-50"
               >
                 <Check className="h-4 w-4" />
                 {saving ? tForm("saving") : editingId ? tForm("saveUpdate") : tForm("saveCreate")}
@@ -514,7 +514,7 @@ export default function AdminEducationLibraryPage() {
                         className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-600">
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-soft/50 to-indigo-100 text-brand">
                         <PlaySquare className="h-8 w-8" />
                       </div>
                     )}
@@ -585,7 +585,7 @@ export default function AdminEducationLibraryPage() {
                     <button
                       type="button"
                       onClick={() => openEdit(v)}
-                      className="flex items-center gap-1.5 rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100"
+                      className="flex items-center gap-1.5 rounded-xl bg-brand-soft/30 px-3 py-2 text-xs font-bold text-brand-deep hover:bg-brand-soft/50"
                     >
                       <Pencil className="h-3.5 w-3.5" /> {tRow("edit")}
                     </button>

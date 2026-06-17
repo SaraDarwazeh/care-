@@ -9,7 +9,7 @@ import type { Locale } from "@/i18n/config";
 
 function formatStatus(status: BookingWithParticipants["status"]) {
   if (status === "accepted") return "bg-emerald-100 text-emerald-700";
-  if (status === "completed") return "bg-sky-100 text-sky-700";
+  if (status === "completed") return "bg-brand-soft/50 text-brand-deep";
   if (status === "rejected") return "bg-red-100 text-red-700";
   return "bg-amber-100 text-amber-700";
 }

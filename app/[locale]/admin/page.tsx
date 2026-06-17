@@ -107,13 +107,19 @@ export default function AdminDashboardPage() {
     return <LoadingScreen text={t("loading")} />;
   }
 
+  // All stat tiles share the same brand-tone shell; differentiation
+  // comes from the icon glyph. Pre-brand the dashboard assigned each
+  // tile its own bright accent (blue/emerald/violet/amber/rose) which
+  // read as a rainbow rather than a cohesive admin shell. v2 collapses
+  // every operational stat to one teal pair; status-specific colour
+  // still appears on chips/badges (approved/pending/rejected) below.
   const statCards = [
-    { key: "totalUsers", value: fmtNumber(stats.totalUsers, locale), icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
-    { key: "totalNurses", value: fmtNumber(stats.totalNurses, locale), icon: Stethoscope, color: "text-emerald-600", bg: "bg-emerald-100" },
-    { key: "totalPatients", value: fmtNumber(stats.totalPatients, locale), icon: UserCheck, color: "text-violet-600", bg: "bg-violet-100" },
-    { key: "totalBookings", value: fmtNumber(stats.totalBookings, locale), icon: CalendarClock, color: "text-sky-600", bg: "bg-sky-100" },
-    { key: "pendingApprovals", value: fmtNumber(stats.pendingApprovals, locale), icon: ShieldAlert, color: "text-amber-600", bg: "bg-amber-100" },
-    { key: "totalRevenue", value: fmtCurrency(stats.totalRevenue, locale, { maximumFractionDigits: 0 }), icon: DollarSign, color: "text-rose-600", bg: "bg-rose-100" },
+    { key: "totalUsers", value: fmtNumber(stats.totalUsers, locale), icon: Users, color: "text-brand-deep", bg: "bg-brand-soft/40" },
+    { key: "totalNurses", value: fmtNumber(stats.totalNurses, locale), icon: Stethoscope, color: "text-brand-deep", bg: "bg-brand-soft/40" },
+    { key: "totalPatients", value: fmtNumber(stats.totalPatients, locale), icon: UserCheck, color: "text-brand-deep", bg: "bg-brand-soft/40" },
+    { key: "totalBookings", value: fmtNumber(stats.totalBookings, locale), icon: CalendarClock, color: "text-brand-deep", bg: "bg-brand-soft/40" },
+    { key: "pendingApprovals", value: fmtNumber(stats.pendingApprovals, locale), icon: ShieldAlert, color: "text-brand-sand-strong", bg: "bg-brand-sand/30" },
+    { key: "totalRevenue", value: fmtCurrency(stats.totalRevenue, locale, { maximumFractionDigits: 0 }), icon: DollarSign, color: "text-brand-deep", bg: "bg-brand-soft/40" },
   ] as const;
 
   const maxCount = Math.max(...stats.bookingTrendCounts, 1);
@@ -135,12 +141,12 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-      <div className="rounded-3xl bg-gradient-to-br from-sky-600 to-indigo-700 p-6 text-white shadow-lg overflow-hidden relative sm:p-8">
+      <div className="rounded-3xl bg-gradient-to-br from-brand to-indigo-700 p-6 text-white shadow-lg overflow-hidden relative sm:p-8">
         <div className="relative z-10">
           <h1 className="text-2xl font-extrabold tracking-tight mb-2 sm:text-3xl">
             {t("welcome", { name: appUser.name })}
           </h1>
-          <p className="text-sky-100 max-w-xl text-sm sm:text-lg">{t("subtitle")}</p>
+          <p className="text-white/85 max-w-xl text-sm sm:text-lg">{t("subtitle")}</p>
         </div>
         <div className="absolute end-0 top-0 h-64 w-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <Activity className="absolute end-10 bottom-0 translate-y-1/4 h-48 w-48 text-white/5" />
@@ -212,7 +218,7 @@ export default function AdminDashboardPage() {
               <h3 className="font-bold text-slate-800">{tTrends("title")}</h3>
               <p className="text-xs text-slate-400 mt-0.5">{tTrends("subtitle")}</p>
             </div>
-            <div className="p-2 bg-sky-50 rounded-xl text-sky-500">
+            <div className="p-2 bg-brand-soft/30 rounded-xl text-brand">
               <TrendingUp className="h-5 w-5" />
             </div>
           </div>
@@ -229,13 +235,13 @@ export default function AdminDashboardPage() {
                     <div
                       className={`w-full rounded-t-xl transition-all duration-500 ${
                         isToday
-                          ? "bg-gradient-to-t from-sky-600 to-sky-400"
-                          : "bg-gradient-to-t from-indigo-200 to-indigo-100"
+                          ? "bg-gradient-to-t from-brand-deep to-brand"
+                          : "bg-gradient-to-t from-brand-mist to-brand-soft/50"
                       }`}
                       style={{ height: `${heightPct}%` }}
                     />
                   </div>
-                  <span className={`text-xs font-bold ${isToday ? "text-sky-600" : "text-slate-400"}`}>
+                  <span className={`text-xs font-bold ${isToday ? "text-brand" : "text-slate-400"}`}>
                     {dayLabel(day)}
                   </span>
                 </div>
@@ -249,7 +255,7 @@ export default function AdminDashboardPage() {
               {tTrends("pastDays")}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-sky-500" />
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-brand" />
               {tTrends("today")}
             </span>
           </div>
@@ -300,7 +306,7 @@ export default function AdminDashboardPage() {
             <div className="pt-5">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-sky-500 inline-block" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand-soft/300 inline-block" />
                   <span className="text-sm font-semibold text-slate-600">{tRev("thisMonth")}</span>
                 </div>
                 <span className="text-sm font-extrabold text-slate-800">
@@ -308,7 +314,7 @@ export default function AdminDashboardPage() {
                 </span>
               </div>
               <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-sky-600 transition-all duration-700" style={{ width: `${monthPct}%` }} />
+                <div className="h-full rounded-full bg-gradient-to-r from-brand-soft to-brand transition-all duration-700" style={{ width: `${monthPct}%` }} />
               </div>
               <p className="text-xs text-slate-400 mt-1.5">
                 {tRev("monthShare", { pct: fmtNumber(Math.round(monthPct), locale) })}
@@ -380,7 +386,7 @@ function AttentionCard({
         </ul>
       )}
 
-      <Link href={href} className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-700">
+      <Link href={href} className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand hover:text-brand-deep">
         {cta} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
       </Link>
     </div>

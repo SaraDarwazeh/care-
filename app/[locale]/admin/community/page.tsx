@@ -115,7 +115,7 @@ export default function AdminCommunityPage() {
         </div>
         <Link
           href="/community"
-          className="inline-flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700"
+          className="inline-flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep"
         >
           View public board <ExternalLink className="h-3.5 w-3.5" />
         </Link>
@@ -135,13 +135,13 @@ export default function AdminCommunityPage() {
             onClick={() => setFilter(opt.id)}
             className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition ${
               filter === opt.id
-                ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-                : "border-slate-200 bg-white text-slate-500 hover:border-sky-200"
+                ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft"
             }`}
           >
             {opt.label}
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-              filter === opt.id ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+              filter === opt.id ? "bg-brand-soft/50 text-brand-deep" : "bg-slate-100 text-slate-500"
             }`}>
               {counts[opt.id]}
             </span>
@@ -179,7 +179,7 @@ export default function AdminCommunityPage() {
                       >
                         {status}
                       </span>
-                      <span className="text-[10px] font-bold uppercase tracking-wider rounded-full bg-sky-50 text-sky-700 px-2 py-0.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider rounded-full bg-brand-soft/30 text-brand-deep px-2 py-0.5">
                         {post.category}
                       </span>
                     </div>

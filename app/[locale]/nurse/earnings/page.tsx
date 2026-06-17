@@ -47,21 +47,21 @@ export default function NurseEarningsPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 text-white shadow-lg shadow-emerald-500/20">
+        <div className="rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 text-white shadow-lg shadow-brand/30">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
               <DollarSign className="h-6 w-6" />
             </div>
-            <p className="text-sm font-bold text-emerald-100 uppercase tracking-wider">{t("totalEarned")}</p>
+            <p className="text-sm font-bold text-brand-soft uppercase tracking-wider">{t("totalEarned")}</p>
           </div>
           <p className="text-4xl font-extrabold">{fmtCurrency(total, locale)}</p>
-          <p className="text-emerald-200 text-sm mt-1">{t("completedSessions", { n: completed.length })}</p>
+          <p className="text-white/85 text-sm mt-1">{t("completedSessions", { n: completed.length })}</p>
         </div>
 
         <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100">
-              <TrendingUp className="h-6 w-6 text-sky-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-soft/50">
+              <TrendingUp className="h-6 w-6 text-brand" />
             </div>
             <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t("thisMonth")}</p>
           </div>
@@ -114,15 +114,15 @@ export default function NurseEarningsPage() {
                     <td className="px-6 py-4 font-medium text-slate-600">{b.service}</td>
                     <td className="px-6 py-4 text-slate-600">{fmtDate(b.date, locale, { year: "numeric", month: "short", day: "numeric" })}</td>
                     <td className="px-6 py-4">
-                      <span className="font-extrabold text-emerald-700 text-base">{fmtCurrency(b.price, locale)}</span>
+                      <span className="font-extrabold text-brand-deep text-base">{fmtCurrency(b.price, locale)}</span>
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-emerald-50 border-t-2 border-emerald-200">
+                <tr className="bg-brand-sand/25 border-t-2 border-brand-sand/60">
                   <td colSpan={3} className="px-6 py-4 font-bold text-slate-700 uppercase tracking-wider text-sm">{t("totalEarningsRow")}</td>
-                  <td className="px-6 py-4 font-extrabold text-emerald-700 text-xl">{fmtCurrency(total, locale)}</td>
+                  <td className="px-6 py-4 font-extrabold text-brand-sand-strong text-xl">{fmtCurrency(total, locale)}</td>
                 </tr>
               </tfoot>
             </table>

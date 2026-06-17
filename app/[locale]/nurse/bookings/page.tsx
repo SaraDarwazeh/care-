@@ -16,7 +16,7 @@ const STATUS_COLORS: Record<BookingStatus, string> = {
   pending: "bg-amber-100 text-amber-700",
   accepted: "bg-emerald-100 text-emerald-700",
   rejected: "bg-rose-100 text-rose-700",
-  completed: "bg-sky-100 text-sky-700",
+  completed: "bg-brand-soft/50 text-brand-deep",
   cancelled: "bg-slate-100 text-slate-600",
 };
 
@@ -103,7 +103,7 @@ export default function NurseBookingsPage() {
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input type="text" placeholder={t("searchPlaceholder")} value={search}
             onChange={e => setSearch(e.target.value)} dir="auto"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-emerald-500 focus:outline-none" />
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-brand focus:outline-none" />
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export default function NurseBookingsPage() {
                         {b.status === "pending" && (
                           <>
                             <button onClick={() => handleStatus(b.id, "accepted")} disabled={updatingId === b.id}
-                              className="flex items-center gap-1 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition disabled:opacity-50">
+                              className="flex items-center gap-1 rounded-lg bg-brand-soft/30 px-3 py-1.5 text-xs font-bold text-brand-deep hover:bg-brand-soft/50 transition disabled:opacity-50">
                               <CheckCircle className="h-3.5 w-3.5" /> {t("actions.accept")}
                             </button>
                             <button onClick={() => handleStatus(b.id, "rejected")} disabled={updatingId === b.id}
@@ -159,7 +159,7 @@ export default function NurseBookingsPage() {
                           <button
                             onClick={() => setCompletingBooking(b)}
                             disabled={updatingId === b.id}
-                            className="flex items-center gap-1 rounded-lg bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition disabled:opacity-50"
+                            className="flex items-center gap-1 rounded-lg bg-brand-soft/30 px-3 py-1.5 text-xs font-bold text-brand-deep hover:bg-brand-soft/50 transition disabled:opacity-50"
                           >
                             <ClipboardCheck className="h-3.5 w-3.5" /> {t("actions.completeVisit")}
                           </button>
@@ -167,7 +167,7 @@ export default function NurseBookingsPage() {
                         {(b.status === "completed" || b.status === "rejected" || b.status === "cancelled") && (
                           <span className="text-xs text-slate-400 italic">{t("actions.noAction")}</span>
                         )}
-                        <button onClick={() => setOpenId(openId === b.id ? null : b.id)} className="ms-2 text-sm text-sky-600 font-bold">{t("actions.details")}</button>
+                        <button onClick={() => setOpenId(openId === b.id ? null : b.id)} className="ms-2 text-sm text-brand font-bold">{t("actions.details")}</button>
                       </div>
                     </td>
                   </tr>

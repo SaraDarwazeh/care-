@@ -135,7 +135,7 @@ export default function NurseAvailabilityPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="flex items-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition disabled:opacity-60 shrink-0"
+          className="flex items-center gap-2 rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white shadow-md shadow-brand/20 hover:bg-brand-hover transition disabled:opacity-60 shrink-0"
         >
           {saving ? (
             <>
@@ -159,8 +159,8 @@ export default function NurseAvailabilityPage() {
       {/* Working Days */}
       <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-            <Clock className="h-5 w-5 text-emerald-600" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+            <Clock className="h-5 w-5 text-brand-deep" />
           </div>
           <h2 className="font-bold text-slate-800 text-lg">{tSec("workingDays")}</h2>
         </div>
@@ -175,7 +175,7 @@ export default function NurseAvailabilityPage() {
                 onClick={() => toggleDay(day)}
                 className={`h-12 w-16 rounded-2xl text-sm font-bold transition-all ${
                   active
-                    ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+                    ? "bg-brand text-white shadow-md shadow-brand/20"
                     : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                 }`}
               >
@@ -185,7 +185,7 @@ export default function NurseAvailabilityPage() {
           })}
         </div>
         {availableDays.length > 0 && (
-          <p className="mt-3 text-xs text-emerald-600 font-semibold">
+          <p className="mt-3 text-xs text-brand-deep font-semibold">
             {tSec("selectedPrefix", { days: orderedSelected.map((d) => tDays(d)).join(", ") })}
           </p>
         )}
@@ -194,8 +194,8 @@ export default function NurseAvailabilityPage() {
       {/* Available Shifts */}
       <div className="rounded-3xl bg-white border border-slate-100 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
-            <Clock className="h-5 w-5 text-sky-600" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+            <Clock className="h-5 w-5 text-brand" />
           </div>
           <h2 className="font-bold text-slate-800 text-lg">{tSec("availableShifts")}</h2>
         </div>
@@ -210,14 +210,14 @@ export default function NurseAvailabilityPage() {
                 onClick={() => toggleShift(value)}
                 className={`flex flex-col items-center justify-center rounded-2xl border-2 px-4 py-5 text-center transition-all ${
                   active
-                    ? "border-sky-500 bg-sky-50 text-sky-700"
+                    ? "border-brand bg-brand-soft/30 text-brand-deep"
                     : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:bg-slate-100"
                 }`}
               >
-                <span className={`text-base font-extrabold ${active ? "text-sky-700" : "text-slate-700"}`}>{tShifts(labelKey)}</span>
-                <span className={`text-xs font-medium mt-1 ${active ? "text-sky-500" : "text-slate-400"}`}>{tShifts(subKey)}</span>
+                <span className={`text-base font-extrabold ${active ? "text-brand-deep" : "text-slate-700"}`}>{tShifts(labelKey)}</span>
+                <span className={`text-xs font-medium mt-1 ${active ? "text-brand" : "text-slate-400"}`}>{tShifts(subKey)}</span>
                 {active && (
-                  <CheckCircle2 className="h-4 w-4 text-sky-500 mt-2" />
+                  <CheckCircle2 className="h-4 w-4 text-brand mt-2" />
                 )}
               </button>
             );
@@ -367,7 +367,7 @@ export default function NurseAvailabilityPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="flex items-center gap-2 rounded-2xl bg-emerald-500 px-8 py-3 text-sm font-bold text-white shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition disabled:opacity-60"
+          className="flex items-center gap-2 rounded-2xl bg-brand px-8 py-3 text-sm font-bold text-white shadow-md shadow-brand/20 hover:bg-brand-hover transition disabled:opacity-60"
         >
           {saving ? (
             <>

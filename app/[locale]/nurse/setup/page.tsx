@@ -56,8 +56,8 @@ export default function NurseSetupPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6">
       {!onboarding && <BackLink href="/nurse" labelKey="nurse.setup.backToDashboard" />}
-      <section className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold text-emerald-700">{kicker}</p>
+      <section className="rounded-3xl border border-brand-mist bg-white p-6 shadow-sm">
+        <p className="text-sm font-semibold text-brand">{kicker}</p>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-800">{heading}</h1>
         <p className="mt-3 max-w-2xl text-sm text-slate-600">{body}</p>
       </section>

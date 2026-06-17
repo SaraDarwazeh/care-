@@ -133,7 +133,7 @@ export default function AdminProductsPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white hover:bg-sky-700 shadow-md shadow-sky-600/20 transition"
+          className="flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white hover:bg-brand-deep shadow-md shadow-brand/20 transition"
         >
           <Plus className="h-5 w-5" /> {t("addProduct")}
         </button>
@@ -141,7 +141,7 @@ export default function AdminProductsPage() {
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div className="rounded-3xl bg-white shadow-sm border border-sky-200 p-8 animate-in fade-in slide-in-from-top-4">
+        <div className="rounded-3xl bg-white shadow-sm border border-brand-soft p-8 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-800">{editingId ? t("editProduct") : t("addNewProduct")}</h2>
             <button onClick={() => setShowForm(false)} className="p-2 rounded-xl hover:bg-slate-100 transition text-slate-500">
@@ -212,7 +212,7 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-end gap-3 pt-2">
               <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition">{t("cancel")}</button>
               <button type="submit" disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-sky-600 font-bold text-white hover:bg-sky-700 shadow-md transition disabled:opacity-50">
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-brand font-bold text-white hover:bg-brand-deep shadow-md transition disabled:opacity-50">
                 <Check className="h-4 w-4" />{saving ? t("saving") : editingId ? t("update") : t("addProduct")}
               </button>
             </div>
@@ -230,8 +230,8 @@ export default function AdminProductsPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p) => (
-            <div key={p.id} className="rounded-3xl bg-white border border-slate-200 shadow-sm overflow-hidden hover:border-sky-200 transition-all group">
-              <div className="relative h-36 flex items-center justify-center overflow-hidden bg-slate-50 border-b border-slate-100 group-hover:bg-sky-50 transition-colors">
+            <div key={p.id} className="rounded-3xl bg-white border border-slate-200 shadow-sm overflow-hidden hover:border-brand-soft transition-all group">
+              <div className="relative h-36 flex items-center justify-center overflow-hidden bg-slate-50 border-b border-slate-100 group-hover:bg-brand-soft/30 transition-colors">
                 <StoreItemImage
                   src={p.image}
                   alt={tLocalized(p.name, "en")}
@@ -245,13 +245,13 @@ export default function AdminProductsPage() {
                     {p.name.ar && <p className="mt-0.5 text-xs text-slate-500" dir="rtl">{p.name.ar}</p>}
                     {!p.name.ar && <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">{t("arabicMissing")}</p>}
                   </div>
-                  <span className="text-lg font-extrabold text-sky-700 shrink-0">${p.price.toFixed(2)}</span>
+                  <span className="text-lg font-extrabold text-brand-deep shrink-0">${p.price.toFixed(2)}</span>
                 </div>
                 <p className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{p.category}</p>
                 <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{tLocalized(p.description, "en")}</p>
                 <div className="mt-5 flex gap-2 border-t border-slate-100 pt-4">
                   <button onClick={() => openEdit(p)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 transition">
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold text-brand-deep bg-brand-soft/30 hover:bg-brand-soft/50 transition">
                     <Pencil className="h-3.5 w-3.5" /> {t("edit")}
                   </button>
                   <button onClick={() => handleDelete(p.id)} disabled={deletingId === p.id}

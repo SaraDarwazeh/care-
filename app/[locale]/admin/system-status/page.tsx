@@ -202,7 +202,7 @@ export default function SystemStatusPage() {
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">{t("platformData")}</p>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <CountCard locale={locale} icon={Users} title={tCounts("users")} total={report.counts.users.total} color="bg-sky-50 text-sky-600" />
+                <CountCard locale={locale} icon={Users} title={tCounts("users")} total={report.counts.users.total} color="bg-brand-soft/30 text-brand" />
                 <CountCard locale={locale} icon={Stethoscope} title={tCounts("nurses")} total={report.counts.nurses.total} highlight={report.counts.nurses.pending} highlightLabel={tHi("pending")} color="bg-emerald-50 text-emerald-600" />
                 <CountCard locale={locale} icon={CalendarClock} title={tCounts("bookings")} total={report.counts.bookings.total} highlight={report.counts.bookings.pending} highlightLabel={tHi("pending")} color="bg-violet-50 text-violet-600" />
                 <CountCard locale={locale} icon={ShoppingBag} title={tCounts("orders")} total={report.counts.orders.total} highlight={report.counts.orders.pending} highlightLabel={tHi("pending")} color="bg-amber-50 text-amber-600" />
@@ -217,10 +217,10 @@ export default function SystemStatusPage() {
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">{t("quickLinks")}</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <Link href="/admin/nurses" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-sky-200 hover:bg-white transition">{tLinks("reviewNurses")}</Link>
-              <Link href="/admin/bookings" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-sky-200 hover:bg-white transition">{tLinks("reviewBookings")}</Link>
-              <Link href="/admin/orders" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-sky-200 hover:bg-white transition">{tLinks("fulfillOrders")}</Link>
-              <Link href="/admin/packages" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-sky-200 hover:bg-white transition">{tLinks("editPackages")}</Link>
+              <Link href="/admin/nurses" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-soft hover:bg-white transition">{tLinks("reviewNurses")}</Link>
+              <Link href="/admin/bookings" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-soft hover:bg-white transition">{tLinks("reviewBookings")}</Link>
+              <Link href="/admin/orders" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-soft hover:bg-white transition">{tLinks("fulfillOrders")}</Link>
+              <Link href="/admin/packages" className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-soft hover:bg-white transition">{tLinks("editPackages")}</Link>
             </div>
           </div>
         </>

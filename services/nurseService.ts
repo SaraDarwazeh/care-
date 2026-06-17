@@ -17,6 +17,11 @@ import {
 } from "@/lib/types";
 import { notifyNurseProfileResubmit } from "@/services/notificationService";
 import { significantProfileSnapshot, sha256Hex } from "@/lib/nurseApprovalSnapshot";
+import { getPricingConfig } from "@/services/pricingConfigService";
+import {
+  PricingValidationException,
+  validateProfilePricing,
+} from "@/lib/validatePricing";
 
 // Legacy certificate entries were typed filenames (string[]). Coerce them
 // into the new NurseCertificate shape so the UI can treat both uniformly.
@@ -116,6 +121,16 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
 // yet) doesn't trigger this branch.
 export async function saveNurseProfile(input: Omit<NurseProfile, "rating" | "reviewCount">) {
   const { db } = ensureClientFirebase();
+
+  // Authoritative pricing gate. The form runs the same check before
+  // submitting, but a stale or skipped client check can't bypass this:
+  // any out-of-range value throws before the Firestore write happens.
+  const pricingConfig = await getPricingConfig();
+  const check = validateProfilePricing(input, pricingConfig);
+  if (!check.valid) {
+    throw new PricingValidationException(check.errors);
+  }
+
   const cleaned = stripUndefined(input as unknown as Record<string, unknown>);
   await setDoc(doc(db, "nurseProfiles", input.userId), cleaned, { merge: true });
 

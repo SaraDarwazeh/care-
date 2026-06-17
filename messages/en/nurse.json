@@ -268,8 +268,17 @@
       "servicesOffered": "Services Offered",
       "addService": "Add service",
       "serviceNamePlaceholder": "Service name",
+      "serviceSelectPlaceholder": "Select a service…",
+      "serviceLegacyHint": "currently: {name}",
+      "serviceReSelectHint": "Please re-select this entry from the catalog so admin-defined price ranges can be enforced.",
       "priceLabel": "Price",
       "pricePlaceholder": "Price",
+      "allowedRange": "Allowed range: {min} – {max}",
+      "rangeErrorBelow": "Entered price {entered} is below the minimum allowed ({min} – {max}).",
+      "rangeErrorAbove": "Entered price {entered} is above the maximum allowed ({min} – {max}).",
+      "noRangeConfigured": "No price range configured by admin — any positive price is accepted.",
+      "pricingBlockedTitle": "Pricing out of allowed range",
+      "pricingBlockedBody": "{n, plural, one {# entry is} other {# entries are}} outside the admin-defined range. Fix the highlighted rows to save.",
       "removeServiceLabel": "Remove service",
       "skillsLabel": "Skills (comma separated)",
       "skillsPlaceholder": "e.g. IV placement, wound dressing, CPR"
@@ -283,6 +292,7 @@
       "addAddon": "Add add-on",
       "noAddons": "No custom add-ons configured — the platform default catalog will be used.",
       "addonNamePlaceholder": "Add-on name (e.g. Extra wound care)",
+      "addonSelectPlaceholder": "Select an add-on…",
       "removeAddonLabel": "Remove add-on"
     },
     "availability": {

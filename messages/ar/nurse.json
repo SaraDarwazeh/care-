@@ -268,8 +268,17 @@
       "servicesOffered": "الخدمات المقدَّمة",
       "addService": "أضف خدمة",
       "serviceNamePlaceholder": "اسم الخدمة",
+      "serviceSelectPlaceholder": "اختر خدمة…",
+      "serviceLegacyHint": "حاليًا: {name}",
+      "serviceReSelectHint": "يرجى إعادة اختيار هذا العنصر من القائمة كي تُطبَّق نطاقات الأسعار التي حدّدها المسؤول.",
       "priceLabel": "السعر",
       "pricePlaceholder": "السعر",
+      "allowedRange": "النطاق المسموح: {min} – {max}",
+      "rangeErrorBelow": "السعر المُدخل {entered} أقل من الحد الأدنى المسموح ({min} – {max}).",
+      "rangeErrorAbove": "السعر المُدخل {entered} أعلى من الحد الأقصى المسموح ({min} – {max}).",
+      "noRangeConfigured": "لا يوجد نطاق أسعار محدَّد من المسؤول — أي سعر موجب مقبول.",
+      "pricingBlockedTitle": "أسعار خارج النطاق المسموح",
+      "pricingBlockedBody": "{n, plural, one {# إدخال خارج} other {# إدخالات خارج}} النطاق الذي حدّده المسؤول. صحّح الصفوف المُحدَّدة لحفظ الملف.",
       "removeServiceLabel": "إزالة الخدمة",
       "skillsLabel": "المهارات (مفصولة بفاصلة)",
       "skillsPlaceholder": "مثلًا: تركيب الكانيولا، تضميد الجروح، الإنعاش القلبي الرئوي"
@@ -283,6 +292,7 @@
       "addAddon": "أضف إضافة",
       "noAddons": "لم تُضِف أي إضافات مخصّصة — سيُستخدم كتالوج المنصة الافتراضي.",
       "addonNamePlaceholder": "اسم الإضافة (مثلًا: عناية إضافية بالجروح)",
+      "addonSelectPlaceholder": "اختر إضافة…",
       "removeAddonLabel": "إزالة الإضافة"
     },
     "availability": {

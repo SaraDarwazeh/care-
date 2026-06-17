@@ -11,6 +11,13 @@ export type NurseDay = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 export interface NurseServiceItem {
   name: string;
   price: number;
+  // Catalog service id (from lib/serviceTaxonomy.ts CATALOG_SERVICES).
+  // When set, admin-configured price ranges (appConfig/pricing.serviceRanges)
+  // are enforced against this entry. Optional for back-compat with
+  // legacy free-text entries written before the catalog picker shipped;
+  // those entries skip range validation until the provider re-picks
+  // the service from the dropdown.
+  serviceId?: string;
 }
 
 // Credential document attached to a nurse profile. The url points at the

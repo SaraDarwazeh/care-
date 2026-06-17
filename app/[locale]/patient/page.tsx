@@ -263,18 +263,14 @@ export default function PatientHomePage() {
         </div>
       )}
 
-      {/* 2b. Health profile snapshot (hidden when no conditions are saved) */}
-      <YourHealthProfile profile={patientProfile} />
-
-      {/* 2c. Recommended for you — deterministic matches off the patient's
-           conditions against the in-memory nurses + packages lists. */}
-      <RecommendedForYou profile={patientProfile} nurses={nurses} packages={packages} />
-
-      {/* 2d. Warmth rails. Post-visit review prompts, Library teaser,
-           Rewards balance, and Community preview. Each rail hides
-           silently when its backing data is missing so the dashboard
-           collapses gracefully. */}
-      <DashboardWarmthRails pendingReviewBookings={pendingReviewBookings} />
+      {/* Per the 2026-06-17 dashboard-hierarchy pass, transactional
+          content (Quick Actions / Upcoming Appointments / Active Care
+          Plans) now precedes discovery rails (Health Profile /
+          Recommended For You / warmth content). The reasoning: a
+          patient opening their dashboard typically wants to take an
+          action or check a visit, not be served exploratory content
+          first. Discovery rails still surface in the same view, just
+          below the fold of the action-first layout. */}
 
       {/* 3. Quick actions */}
       <section>
@@ -405,6 +401,19 @@ export default function PatientHomePage() {
           </div>
         </section>
       )}
+
+      {/* 6. Health profile snapshot (hidden when no conditions are saved) */}
+      <YourHealthProfile profile={patientProfile} />
+
+      {/* 7. Recommended for you — deterministic matches off the patient's
+           conditions against the in-memory nurses + packages lists. */}
+      <RecommendedForYou profile={patientProfile} nurses={nurses} packages={packages} />
+
+      {/* 8. Warmth rails — post-visit review prompts, Health Hub teaser,
+           Rewards balance, and Community preview. Each rail hides
+           silently when its backing data is missing so the dashboard
+           collapses gracefully. */}
+      <DashboardWarmthRails pendingReviewBookings={pendingReviewBookings} />
 
       <div className="flex items-center justify-center gap-3 pt-2 text-sm font-bold text-slate-500 sm:hidden">
         <Link href="/patient/profile" className="rounded-xl bg-slate-100 px-3 py-2 hover:bg-slate-200 transition">

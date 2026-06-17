@@ -176,6 +176,19 @@ function NurseProfilePageInner() {
                   <Award className="h-5 w-5 text-emerald-500" /> {t("yearsExp", { n: nurse.experienceYears })}
                 </div>
               </div>
+
+              {/* Mobile-only jump-to-booking CTA. On lg+ the booking form
+                  is sticky in the right column; on mobile the form sits
+                  below long content sections (services, availability,
+                  gallery, reviews) so the patient would otherwise need
+                  to scroll past everything to find it. Anchor link to
+                  #booking-form gives them a 1-tap path. */}
+              <a
+                href="#booking-form"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-deep lg:hidden"
+              >
+                {t("bookNow")} <Sparkles className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
@@ -193,7 +206,10 @@ function NurseProfilePageInner() {
 
           <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="mb-4 text-xl font-bold text-slate-800">{t("services")}</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            {/* Services grid: single column on xs so pricing has room to
+                breathe; 2-up from md+ where there's enough width to
+                avoid cramping. sm was too aggressive on 640–767px. */}
+            <div className="grid gap-4 md:grid-cols-2">
               {nurse.services.map((service) => (
                 <div
                   key={`${nurse.userId}-${service.name}`}

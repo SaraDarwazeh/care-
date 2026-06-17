@@ -1,12 +1,12 @@
 {
   "hero": {
-    "badge": "Every nurse verified by Care+",
+    "badge": "Every provider verified by Care+",
     "headlineA": "Home healthcare",
     "headlineB": "that visits you.",
-    "subhead": "Trusted nurses for recovery, elderly support, post-op care, and everyday help — booked in minutes, delivered to your door.",
-    "ctaFindNurse": "Find a Nurse",
-    "ctaJoinNurse": "Join as Nurse",
-    "joinNurseLink": "Are you a nurse? Join Care+",
+    "subhead": "Trusted care professionals for recovery, elderly support, post-op care, and everyday help — booked in minutes, delivered to your door.",
+    "ctaFindNurse": "Find Care",
+    "ctaJoinNurse": "Join as a provider",
+    "joinNurseLink": "Are you a healthcare provider? Join Care+",
     "contactCta": "Have a question? Talk to a Care+ coordinator",
     "verified": {
       "kicker": "Approved",

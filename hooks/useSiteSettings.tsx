@@ -40,3 +40,13 @@ export function useEducationLibraryEnabled(): boolean {
   const { settings } = useSiteSettings();
   return settings.educationLibraryEnabled !== false;
 }
+
+// Physiotherapy support is opt-in — defaults to OFF if the field is
+// missing on the settings doc. Only returns true when explicitly set
+// to true. Used everywhere the platform needs to decide whether to
+// surface physio-specific UI, registration paths, or marketplace
+// entries.
+export function usePhysiotherapyEnabled(): boolean {
+  const { settings } = useSiteSettings();
+  return settings.physiotherapyEnabled === true;
+}

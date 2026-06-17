@@ -1,0 +1,41 @@
+{
+  "kinds": {
+    "nurse": "Nurse",
+    "physio": "Physiotherapist",
+    "nursesPlural": "Nurses",
+    "physiosPlural": "Physiotherapists"
+  },
+  "physioFlag": {
+    "heading": "Physiotherapy",
+    "description": "Allow physiotherapists to register, appear in the marketplace, and be matched by Find Care. When off, the entire physio surface disappears from patient-facing UI; existing physio profiles stay in admin for management.",
+    "saving": "Saving…",
+    "savedAt": "Last updated {when}",
+    "toggleOn": "Enabled",
+    "toggleOff": "Disabled"
+  },
+  "specializations": {
+    "physio": {
+      "sportsRehab": "Sports rehabilitation",
+      "orthoRehab": "Orthopaedic rehab",
+      "neuroRehab": "Neurological rehab",
+      "pediatricRehab": "Paediatric physiotherapy",
+      "geriatricRehab": "Geriatric physiotherapy",
+      "postOpRehab": "Post-op rehab",
+      "general": "General physiotherapy"
+    }
+  },
+  "marketplaceFilter": {
+    "label": "Provider type",
+    "options": {
+      "any": "Any",
+      "nurse": "Nurses",
+      "physio": "Physiotherapists"
+    }
+  },
+  "findCare": {
+    "situations": {
+      "physical-rehab": "Recovering from injury / physical therapy",
+      "physical-rehabSummary": "Physical rehabilitation visits"
+    }
+  }
+}

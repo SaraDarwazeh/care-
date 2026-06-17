@@ -29,8 +29,19 @@ export interface NurseAvailabilityHours {
   to: string;
 }
 
+// Provider kind discriminator. Care+ launched as a nurse-only marketplace;
+// physiotherapists were added as a second provider type behind the
+// admin-controlled `siteSettings.physiotherapyEnabled` flag. The nurse
+// infrastructure (collection, routes, services) handles both kinds —
+// this field is the only thing that tells them apart at the data layer.
+// Missing on legacy records → treated as "nurse" by every reader.
+export type ProviderKind = "nurse" | "physio";
+
 export interface NurseProfile {
   userId: string;
+  // See ProviderKind above. Optional for back-compat with pre-physio
+  // records; readers should default to "nurse" when absent.
+  providerKind?: ProviderKind;
   fullName: string;
   profileImage: string;
   bio: string;
@@ -555,6 +566,14 @@ export interface SiteSettings {
   // home, and any homepage section is suppressed. Admin CRUD remains
   // reachable so content can be staged before launch / re-launch.
   educationLibraryEnabled?: boolean;
+  // Toggles physiotherapist support across the platform. When false
+  // (the default), the marketplace filters physios out, registration
+  // doesn't offer the "Physiotherapist" role, the Find Care wizard
+  // hides the physio-specific situation, and homepage/copy stay
+  // nurse-focused. Existing physio profiles are NOT deleted — admin
+  // can still see and manage them, and their workspace logins still
+  // work so they can update their profile while disabled.
+  physiotherapyEnabled?: boolean;
   updatedAt?: string;
   updatedBy?: string;
 }

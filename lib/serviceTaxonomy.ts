@@ -18,6 +18,12 @@ import type { AddOn } from "@/lib/pricingConstants";
 
 export type ServiceKind = "nursing" | "support";
 
+// Which provider types can deliver this service. Per-service tagging
+// lets the marketplace surface kind-appropriate options to physios vs
+// nurses, and lets the Find Care wizard route situations correctly.
+// Missing on a record → treated as ["nurse"] (the historical default).
+export type ServiceProviderKind = "nurse" | "physio";
+
 export interface CatalogService {
   id: string;
   kind: ServiceKind;
@@ -26,6 +32,10 @@ export interface CatalogService {
   icon: string;
   defaultPrice?: number;
   indicatedConditions?: string[];
+  // Defaults to ["nurse"] when missing. Set to ["physio"] for physio-
+  // only services and ["nurse", "physio"] for services either kind can
+  // deliver (e.g. post-op rehab support).
+  providerKinds?: ServiceProviderKind[];
 }
 
 export const CATALOG_SERVICES: ReadonlyArray<CatalogService> = [
@@ -179,6 +189,85 @@ export const CATALOG_SERVICES: ReadonlyArray<CatalogService> = [
       "chronic-back-pain",
       "parkinsons",
     ],
+    providerKinds: ["physio"],
+  },
+  // ---------- physio-only services ----------
+  // Added as part of the 2026-06-17 multi-provider rollout. Each entry
+  // is gated by SiteSettings.physiotherapyEnabled at every surface that
+  // reads CATALOG_SERVICES — when the flag is off these still exist in
+  // the catalogue but no marketplace / Find Care / profile-form surface
+  // exposes them.
+  {
+    id: "manual-therapy",
+    kind: "nursing",
+    label: { en: "Manual therapy", ar: "العلاج اليدوي" },
+    description: {
+      en: "Hands-on joint mobilisation, soft-tissue release, and posture correction.",
+      ar: "تحريك المفاصل بشكل يدوي وتحرير الأنسجة الرخوة وتصحيح الوضعية.",
+    },
+    icon: "Hand",
+    indicatedConditions: ["chronic-back-pain", "arthritis", "recent-fracture"],
+    providerKinds: ["physio"],
+  },
+  {
+    id: "sports-rehab",
+    kind: "nursing",
+    label: { en: "Sports injury rehab", ar: "إعادة تأهيل الإصابات الرياضية" },
+    description: {
+      en: "Recovery programmes for sports and overuse injuries.",
+      ar: "برامج تعافٍ من الإصابات الرياضية والإجهاد المتكرر.",
+    },
+    icon: "Activity",
+    indicatedConditions: ["recent-fracture", "chronic-back-pain"],
+    providerKinds: ["physio"],
+  },
+  {
+    id: "post-op-rehab",
+    kind: "nursing",
+    label: { en: "Post-operative rehab", ar: "إعادة التأهيل بعد العمليات" },
+    description: {
+      en: "Structured recovery after orthopaedic, knee, or hip surgery.",
+      ar: "تعافٍ منظَّم بعد جراحات العظام والركبة والورك.",
+    },
+    icon: "HeartPulse",
+    indicatedConditions: ["post-surgical-recovery", "recent-fracture"],
+    providerKinds: ["physio"],
+  },
+  {
+    id: "gait-training",
+    kind: "nursing",
+    label: { en: "Gait & balance training", ar: "تدريب المشي والتوازن" },
+    description: {
+      en: "Walking re-education and fall prevention for stroke or fracture recovery.",
+      ar: "إعادة تعليم المشي والوقاية من السقوط للتعافي من السكتة أو الكسر.",
+    },
+    icon: "Footprints",
+    indicatedConditions: ["stroke-recovery", "fall-risk", "parkinsons", "recent-fracture"],
+    providerKinds: ["physio"],
+  },
+  {
+    id: "exercise-prescription",
+    kind: "nursing",
+    label: { en: "Home exercise programme", ar: "برنامج تمارين منزلية" },
+    description: {
+      en: "Personalised exercise plan you can do between visits.",
+      ar: "خطة تمارين شخصية يمكنك أداؤها بين الزيارات.",
+    },
+    icon: "ClipboardCheck",
+    indicatedConditions: ["chronic-back-pain", "arthritis", "post-surgical-recovery"],
+    providerKinds: ["physio"],
+  },
+  {
+    id: "neuro-rehab",
+    kind: "nursing",
+    label: { en: "Neurological rehab", ar: "إعادة التأهيل العصبي" },
+    description: {
+      en: "Recovery work for stroke, Parkinson's, and other neurological conditions.",
+      ar: "عمل إعادة التأهيل بعد السكتة الدماغية ومرض باركنسون وحالات عصبية أخرى.",
+    },
+    icon: "Brain",
+    indicatedConditions: ["stroke-recovery", "parkinsons", "dementia"],
+    providerKinds: ["physio"],
   },
   {
     id: "palliative-support",
@@ -308,6 +397,18 @@ export function findCatalogService(id: string): CatalogService | undefined {
 
 export function getCatalogServicesByKind(kind: ServiceKind): CatalogService[] {
   return CATALOG_SERVICES.filter((s) => s.kind === kind);
+}
+
+// Filter the nursing catalogue by which provider type can deliver each
+// service. Defaults a missing providerKinds field to ["nurse"] so legacy
+// nursing entries stay nurse-only without explicit tagging.
+export function getCatalogServicesForProvider(
+  providerKind: ServiceProviderKind,
+): CatalogService[] {
+  return getCatalogServicesByKind("nursing").filter((s) => {
+    const kinds = s.providerKinds ?? ["nurse"];
+    return kinds.includes(providerKind);
+  });
 }
 
 export const NURSING_SERVICES: ReadonlyArray<CatalogService> = getCatalogServicesByKind("nursing");

@@ -6,10 +6,15 @@ const COLLECTION = "siteSettings";
 const GLOBAL_DOC = "global";
 
 // Defaults applied when the siteSettings/global doc is missing or a
-// field is omitted. Designed so a fresh project boots with every
-// feature toggled on — admins opt out, not in.
-export const DEFAULT_SITE_SETTINGS: Required<Pick<SiteSettings, "educationLibraryEnabled">> = {
+// field is omitted. Each flag picks its default based on launch
+// strategy: educationLibraryEnabled defaults ON because the feature
+// is mature; physiotherapyEnabled defaults OFF because it's an opt-in
+// expansion (admins flip it on when they're ready to onboard physios).
+export const DEFAULT_SITE_SETTINGS: Required<
+  Pick<SiteSettings, "educationLibraryEnabled" | "physiotherapyEnabled">
+> = {
   educationLibraryEnabled: true,
+  physiotherapyEnabled: false,
 };
 
 function normalize(data: Record<string, unknown> | undefined): SiteSettings {
@@ -19,6 +24,10 @@ function normalize(data: Record<string, unknown> | undefined): SiteSettings {
       typeof data.educationLibraryEnabled === "boolean"
         ? data.educationLibraryEnabled
         : DEFAULT_SITE_SETTINGS.educationLibraryEnabled,
+    physiotherapyEnabled:
+      typeof data.physiotherapyEnabled === "boolean"
+        ? data.physiotherapyEnabled
+        : DEFAULT_SITE_SETTINGS.physiotherapyEnabled,
     updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : undefined,
     updatedBy: typeof data.updatedBy === "string" ? data.updatedBy : undefined,
   };
@@ -35,7 +44,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 // just the client-side write path. Uses setDoc with merge so partial
 // updates don't clobber unrelated fields.
 export async function updateSiteSettings(
-  patch: Pick<SiteSettings, "educationLibraryEnabled">,
+  patch: Partial<Pick<SiteSettings, "educationLibraryEnabled" | "physiotherapyEnabled">>,
   actorUid?: string,
 ): Promise<void> {
   const { db } = ensureClientFirebase();

@@ -39,6 +39,17 @@ export function getS3Client(): S3Client {
   cachedClient = new S3Client({
     region,
     credentials: { accessKeyId, secretAccessKey },
+    // Disable AWS SDK v3's auto-checksum middleware. As of
+    // @aws-sdk/client-s3 ~3.730+ the SDK defaults to
+    // requestChecksumCalculation: "WHEN_SUPPORTED", which adds an
+    // x-amz-checksum-crc32 header into the *signed* PutObject URL.
+    // The browser's plain fetch() PUT never sends that header → S3
+    // rejects with 403 SignatureDoesNotMatch. Switching to
+    // WHEN_REQUIRED restores the pre-3.730 behaviour where only
+    // explicitly-requested checksums are signed. The bucket CORS is
+    // unaffected and needs no console change.
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
   });
   return cachedClient;
 }

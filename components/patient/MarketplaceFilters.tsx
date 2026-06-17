@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Filter, MapPin, Sparkles, Truck, Stethoscope, HeartHandshake, Search } from "lucide-react";
 import { CATALOG_SERVICES } from "@/lib/serviceTaxonomy";
 import { tLocalized } from "@/lib/i18nContent";
-import { findNurseSkill } from "@/lib/nurseSkills";
+import { findNurseSkill, resolveSkillId } from "@/lib/nurseSkills";
 import type { Locale } from "@/i18n/config";
 
 // Map known catalogue EN labels to their bilingual entries so the
@@ -133,7 +133,12 @@ function ChipMultiSelect({
       <label className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-slate-700">
         <Icon className="h-3.5 w-3.5" /> {label}
       </label>
-      <div className="flex flex-wrap gap-1.5">
+      {/* Chip row. gap-2 + items-start avoids the awkward overlap
+          observed in AR where longer Arabic skill labels wrapped onto
+          a second line that clipped the chip below. max-w-full +
+          break-words on the chip itself stops a single multi-word
+          label from forcing a horizontal scroll. */}
+      <div className="flex flex-wrap items-start gap-2">
         {options.map((opt) => {
           const isActive = selected.includes(opt);
           return (
@@ -141,7 +146,7 @@ function ChipMultiSelect({
               key={opt}
               type="button"
               onClick={() => onToggle(opt)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              className={`max-w-full whitespace-normal break-words rounded-full border px-3 py-1.5 text-xs font-semibold leading-tight transition ${
                 isActive
                   ? accentClasses
                   : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
@@ -405,7 +410,15 @@ export default function MarketplaceFilters({
           onToggle={(v) => toggleIn("skills", v)}
           accent="violet"
           renderLabel={(raw) => {
-            const skill = findNurseSkill(raw);
+            // Two-step resolution: most nurses save raw catalog ids
+            // ("iv-placement") since the chip picker shipped, but
+            // pre-rollout profiles still hold the free-text label
+            // ("IV placement") nurses originally typed. resolveSkillId
+            // best-matches the free-text against the catalog so AR
+            // patients always see Arabic labels for any skill the
+            // catalog recognises, even on un-migrated profiles.
+            const direct = findNurseSkill(raw);
+            const skill = direct ?? findNurseSkill(resolveSkillId(raw) ?? "");
             return skill ? tLocalized(skill.label, locale) : raw;
           }}
         />

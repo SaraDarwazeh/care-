@@ -73,6 +73,28 @@ function randomKey(): string {
 }
 
 export async function POST(request: NextRequest) {
+  // Unmistakable build marker — if you see this line in the Vercel
+  // logs, prod is running this code. If you don't, the deploy hasn't
+  // rolled out yet (or you're looking at logs from a cold-cached
+  // function instance running an older build). Date pinned so the
+  // marker is identifiable across runs.
+  console.info("PRESIGN BUILD MARKER 2026-06-17");
+
+  // Per-request credential identity dump. The lib/aws/s3.ts log only
+  // fires once per cold start; this one fires on every presign call,
+  // so it shows up in the logs immediately on the next upload attempt
+  // without waiting for Lambda recycle. accessKeyLast4 is the last 4
+  // chars of AWS_ACCESS_KEY_ID — never echo the secret or the full id.
+  // The InvalidAccessKeyId we keep seeing in prod means whatever this
+  // logs is the AKID Vercel's actually loaded; compare to the local
+  // one (last 4 should match `6GMQ` if envs are aligned).
+  console.info("[s3] credential identity", {
+    accessKeyLast4: process.env.AWS_ACCESS_KEY_ID?.slice(-4) ?? "(missing)",
+    region: process.env.AWS_REGION ?? "(missing)",
+    bucket: process.env.AWS_S3_BUCKET ?? "(missing)",
+    vercelEnv: process.env.VERCEL_ENV ?? "(none)",
+  });
+
   let caller;
   try {
     caller = await verifyRequest(request);

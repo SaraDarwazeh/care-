@@ -6,6 +6,13 @@ import { DEFAULT_LOCALE, LOCALES } from "./config";
 // Adding a new namespace is a one-file change (create the JSON pair) —
 // no edits to this loader. Keep the list explicit so a missing file
 // fails the build instead of silently producing untranslated keys.
+//
+// HMR note: the dynamic import path below interpolates two variables
+// (`${locale}/${ns}`), which Turbopack/webpack treat as a dependency
+// pattern rather than a single module. JSON edits don't always
+// invalidate the cached promise — if you add a key to a JSON file and
+// the dev server still reports MISSING_MESSAGE, save this file (or
+// touch it) to force the request config to re-evaluate.
 const NAMESPACES = [
   "common",
   "nav",

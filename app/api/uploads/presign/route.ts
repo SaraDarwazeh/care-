@@ -174,6 +174,23 @@ export async function POST(request: NextRequest) {
     });
 
     const uploadUrl = await getSignedUrl(client, command, { expiresIn: PRESIGN_TTL_SECONDS });
+
+    // Server-side diagnostic — the signed URL's X-Amz-SignedHeaders tells
+    // us which request headers the browser PUT MUST echo back exactly.
+    // Should be `host;content-type` and nothing else; anything extra is
+    // an SDK middleware auto-injection that browser fetch can't replicate,
+    // which produces SignatureDoesNotMatch on the PUT.
+    try {
+      const signedHeaders = new URL(uploadUrl).searchParams.get("X-Amz-SignedHeaders");
+      console.info("[api/uploads/presign] signed headers", {
+        scope,
+        contentType,
+        signedHeaders,
+      });
+    } catch {
+      // URL parse failure isn't fatal — uploadUrl is still returned to caller.
+    }
+
     // Private scopes never expose a public URL — callers MUST read via
     // /api/uploads/read so we can enforce per-request authz.
     const publicUrl = PRIVATE_SCOPES.has(scope) ? undefined : buildPublicUrl(key);

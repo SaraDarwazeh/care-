@@ -100,7 +100,23 @@ export async function uploadFile(
   }
 
   if (!putRes.ok) {
-    throw new Error(`Upload failed (HTTP ${putRes.status})`);
+    // S3 always returns an XML error doc on a rejected upload with a
+    // <Code> + <Message> pair (SignatureDoesNotMatch, AccessDenied,
+    // BadDigest, etc.). Surface those instead of a bare status code so
+    // the next failure tells us exactly which signature element didn't
+    // line up. Regex is fine — the error doc shape is fixed and we
+    // don't want DOMParser pulled into the bundle for one error path.
+    const text = await putRes.text().catch(() => "");
+    const code = /<Code>([^<]+)<\/Code>/.exec(text)?.[1];
+    const message = /<Message>([^<]+)<\/Message>/.exec(text)?.[1];
+    if (code || message) {
+      throw new Error(
+        `Upload rejected by S3 (HTTP ${putRes.status}) — ${code ?? "Unknown"}: ${message ?? "(no message)"}`,
+      );
+    }
+    throw new Error(
+      `Upload failed (HTTP ${putRes.status}) — ${text.slice(0, 200) || "no body"}`,
+    );
   }
 
   return { url: publicUrl ?? "", key };

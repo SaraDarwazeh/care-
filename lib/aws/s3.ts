@@ -51,6 +51,26 @@ export function getS3Client(): S3Client {
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
   });
+
+  // Belt-and-suspenders: even with the option above, on SDK 3.1055 the
+  // flexible-checksums middleware still bakes x-amz-sdk-checksum-
+  // algorithm into the presigned URL's SignedHeaders for PutObject —
+  // the option suppresses the header value but not the middleware's
+  // contribution to the signing flow that getSignedUrl simulates.
+  // Removing the middleware outright guarantees SignedHeaders is
+  // exactly `host;content-type`, which the browser PUT can match.
+  // remove() is a no-op on miss (silent) — we log the post-removal
+  // stack so we'd notice if Amazon ever renames the middleware.
+  try {
+    cachedClient.middlewareStack.remove("flexibleChecksumsMiddleware");
+    console.info(
+      "[s3] middleware stack after flexibleChecksums removal:",
+      cachedClient.middlewareStack.identify(),
+    );
+  } catch (err) {
+    console.warn("[s3] could not remove flexibleChecksumsMiddleware", err);
+  }
+
   return cachedClient;
 }
 

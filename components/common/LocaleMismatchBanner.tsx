@@ -53,20 +53,20 @@ export default function LocaleMismatchBanner() {
   }
 
   return (
-    <div className="flex items-center justify-center gap-3 bg-sky-50 px-4 py-2 text-sm text-sky-800">
+    <div className="flex items-center justify-center gap-3 bg-brand-soft/30 px-4 py-2 text-sm text-brand-deep">
       <span>{t("mismatchBanner")}</span>
       <button
         type="button"
         onClick={accept}
         disabled={pending}
-        className="rounded-full bg-sky-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-sky-700 disabled:opacity-50"
+        className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white transition hover:bg-brand-deep disabled:opacity-50"
       >
         {t("mismatchAction")}
       </button>
       <button
         type="button"
         onClick={dismiss}
-        className="text-xs font-medium text-sky-700/80 hover:text-sky-900"
+        className="text-xs font-medium text-brand-deep/80 hover:text-brand-deep"
       >
         {t("mismatchDismiss")}
       </button>

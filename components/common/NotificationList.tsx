@@ -43,7 +43,7 @@ const TYPE_ICON: Record<NotificationType, typeof Bell> = {
 };
 
 const TYPE_ACCENT: Record<NotificationType, string> = {
-  booking_created: "bg-sky-50 text-sky-600 border-sky-100",
+  booking_created: "bg-brand-soft/30 text-brand border-brand-mist",
   booking_accepted: "bg-emerald-50 text-emerald-600 border-emerald-100",
   booking_rejected: "bg-rose-50 text-rose-600 border-rose-100",
   booking_completed: "bg-emerald-50 text-emerald-600 border-emerald-100",
@@ -52,7 +52,7 @@ const TYPE_ACCENT: Record<NotificationType, string> = {
   nurse_approved: "bg-emerald-50 text-emerald-600 border-emerald-100",
   nurse_rejected: "bg-rose-50 text-rose-600 border-rose-100",
   order_created: "bg-violet-50 text-violet-600 border-violet-100",
-  order_status_changed: "bg-sky-50 text-sky-600 border-sky-100",
+  order_status_changed: "bg-brand-soft/30 text-brand border-brand-mist",
   patient_id_verified: "bg-emerald-50 text-emerald-600 border-emerald-100",
   patient_id_rejected: "bg-rose-50 text-rose-600 border-rose-100",
   points_earned: "bg-amber-50 text-amber-600 border-amber-100",
@@ -205,7 +205,7 @@ export default function NotificationList({ userId }: { userId: string }) {
           const baseClasses = `block rounded-3xl border p-4 transition ${
             n.read
               ? "border-slate-100 bg-white hover:border-slate-200"
-              : "border-sky-100 bg-sky-50/40 hover:border-sky-200"
+              : "border-brand-mist bg-brand-soft/20 hover:border-brand-soft"
           }`;
 
           if (n.link) {

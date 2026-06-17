@@ -37,8 +37,8 @@ export default function BackLink({
 
   const base =
     tone === "prominent"
-      ? "inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
-      : "inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700";
+      ? "inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
+      : "inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-brand-deep";
 
   return (
     <Link href={href} className={`${base}${className ? ` ${className}` : ""}`}>

@@ -32,7 +32,7 @@ export default function NotificationBell({
 
   const display = unread > 99 ? "99+" : String(unread);
   const iconColor = variant === "dark" ? "text-slate-300" : "text-slate-500";
-  const hoverColor = variant === "dark" ? "hover:text-white" : "hover:text-sky-700";
+  const hoverColor = variant === "dark" ? "hover:text-white" : "hover:text-brand-deep";
   const ariaLabel = unread > 0 ? t("bellLabelWithUnread", { unread }) : t("bellLabel");
 
   return (

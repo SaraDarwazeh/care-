@@ -34,7 +34,7 @@ export default function CarePackagesPage() {
   return (
     <PlatformShell mode="service">
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] border border-sky-100 bg-white p-8 shadow-sm sm:p-10">
+        <section className="overflow-hidden rounded-[2rem] border border-brand-mist bg-white p-8 shadow-sm sm:p-10">
           <h1 className="text-3xl font-extrabold text-slate-900">{t("title")}</h1>
           <p className="mt-3 text-slate-600">{t("subtitle")}</p>
         </section>

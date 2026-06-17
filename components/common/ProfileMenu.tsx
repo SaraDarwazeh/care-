@@ -112,9 +112,9 @@ export default function ProfileMenu({ variant = "dropdown" }: ProfileMenuProps) 
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-sky-200 hover:shadow"
+        className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-brand-soft hover:shadow"
       >
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-sky-100 to-sky-200 text-xs font-bold text-sky-800">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-soft/50 to-brand-soft text-xs font-bold text-brand-deep">
           {initials}
         </div>
         <div className="hidden text-start sm:block">

@@ -30,7 +30,7 @@ export default function PendingApprovalPage() {
       <Card title={title} description={description}>
         <p className="text-sm text-slate-600">{body}</p>
         <div className="mt-4 flex items-center gap-4">
-          <Link href="/login" className="text-sm font-semibold text-sky-700 hover:underline">
+          <Link href="/login" className="text-sm font-semibold text-brand-deep hover:underline">
             {t("backToLogin")}
           </Link>
           <button

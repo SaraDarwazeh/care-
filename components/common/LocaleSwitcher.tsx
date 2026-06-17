@@ -55,7 +55,7 @@ export default function LocaleSwitcher({ variant = "pill" }: Props) {
         className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
       >
         <span>{t("current")}</span>
-        <span className="text-xs font-bold text-sky-600">→ {t("switchTo")}</span>
+        <span className="text-xs font-bold text-brand">→ {t("switchTo")}</span>
       </button>
     );
   }
@@ -66,7 +66,7 @@ export default function LocaleSwitcher({ variant = "pill" }: Props) {
       onClick={switchLocale}
       disabled={pending}
       aria-label={`Switch language to ${other === "ar" ? "Arabic" : "English"}`}
-      className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700 disabled:opacity-50"
+      className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-brand-soft hover:bg-brand-soft/30 hover:text-brand-deep disabled:opacity-50"
     >
       {t("switchTo")}
     </button>

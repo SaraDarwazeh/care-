@@ -37,7 +37,7 @@ export default function PriceBreakdown({ pricing }: { pricing?: BreakdownShape |
       {typeof pricing.tax === "number" && pricing.tax > 0 && (
         <div className="flex justify-between text-xs text-slate-500"><span>Tax</span><span>{money(pricing.tax)}</span></div>
       )}
-      <div className="mt-2 flex justify-between text-sm font-extrabold text-sky-700"><span>Total</span><span>{money(pricing.total)}</span></div>
+      <div className="mt-2 flex justify-between text-sm font-extrabold text-brand-deep"><span>Total</span><span>{money(pricing.total)}</span></div>
     </div>
   );
 }

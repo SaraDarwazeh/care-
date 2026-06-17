@@ -43,7 +43,7 @@ export default function RecordCard({ record }: { record: MedicalRecord }) {
 
       <Link
         href={`/patient/records/${record.id}`}
-        className="mt-auto inline-flex items-center gap-1 rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 hover:bg-sky-100 transition self-start"
+        className="mt-auto inline-flex items-center gap-1 rounded-xl border border-brand-soft bg-brand-soft/30 px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-brand-soft/50 transition self-start"
       >
         {t("viewDetails")}
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

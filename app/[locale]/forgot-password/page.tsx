@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
             {t("submit")}
           </Button>
 
-          <Link href="/login" className="inline-block text-sm text-sky-700 hover:underline">
+          <Link href="/login" className="inline-block text-sm text-brand-deep hover:underline">
             {t("backToLogin")}
           </Link>
         </form>

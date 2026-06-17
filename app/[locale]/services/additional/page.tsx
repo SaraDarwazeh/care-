@@ -46,7 +46,7 @@ export default function AdditionalServicesPage() {
     <PlatformShell mode="service">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-3 text-sm font-semibold text-slate-500">
-          <Link href="/services" className="inline-flex items-center gap-1.5 transition hover:text-sky-700">
+          <Link href="/services" className="inline-flex items-center gap-1.5 transition hover:text-brand-deep">
             <ChevronLeft className="h-4 w-4" /> {tBook("breadcrumb")}
           </Link>
           <span>/</span>
@@ -62,7 +62,7 @@ export default function AdditionalServicesPage() {
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
                 <Sparkles className="h-7 w-7" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-200">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/85">
                 {tCat("eyebrow")}
               </p>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl">
@@ -79,28 +79,28 @@ export default function AdditionalServicesPage() {
               {highlights.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700"
+                  className="rounded-full bg-brand-soft/40 px-3 py-1.5 text-xs font-bold text-brand-deep"
                 >
                   {item}
                 </span>
               ))}
             </div>
 
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm font-medium text-emerald-900">
+            <div className="rounded-2xl border border-brand-mist bg-brand-soft/25 px-4 py-3 text-sm font-medium text-brand-deep">
               {tAdditional("addOnNotice")}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/patient/nurses"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-hover"
               >
                 {tAdditional("startBooking")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/services"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
               >
                 {tAdditional("browseAll")}
               </Link>
@@ -119,13 +119,13 @@ export default function AdditionalServicesPage() {
                   className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-soft/50 text-brand-deep">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-slate-800">{tLocalized(service.label, locale)}</h3>
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                        <span className="rounded-full bg-brand-soft/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep">
                           {tAdditional("kindLabel")}
                         </span>
                       </div>
@@ -133,7 +133,7 @@ export default function AdditionalServicesPage() {
                         {tLocalized(service.description, locale)}
                       </p>
                       {typeof service.defaultPrice === "number" && service.defaultPrice > 0 ? (
-                        <p className="mt-2 text-xs font-bold text-emerald-700">
+                        <p className="mt-2 text-xs font-bold text-brand-deep">
                           {tAdditional("priceLabel", {
                             amount: fmtCurrency(service.defaultPrice, locale),
                           })}

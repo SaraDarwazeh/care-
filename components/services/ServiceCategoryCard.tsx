@@ -24,7 +24,7 @@ export default function ServiceCategoryCard({
       className={`group relative overflow-hidden rounded-[2rem] border transition-all duration-300 hover:-translate-y-1 ${
         dark
           ? "border-white/10 bg-white/5 text-white shadow-[0_18px_40px_rgba(15,23,42,0.18)] hover:border-white/20 hover:bg-white/8"
-          : "border-slate-200 bg-white text-slate-800 shadow-sm hover:border-sky-200 hover:shadow-lg"
+          : "border-slate-200 bg-white text-slate-800 shadow-sm hover:border-brand-soft hover:shadow-lg"
       }`}
     >
       <div className="relative h-36 w-full overflow-hidden">
@@ -42,11 +42,11 @@ export default function ServiceCategoryCard({
               : "bg-gradient-to-t from-slate-950/60 via-slate-950/10 to-transparent"
           }`}
         />
-        <div className="absolute start-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-md backdrop-blur">
+        <div className="absolute start-4 top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/90 text-brand-deep shadow-md backdrop-blur">
           <ServiceIcon slug={category.slug} className="h-5 w-5" />
         </div>
         <div className="absolute bottom-4 start-4 end-4">
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200/90">{tCat("eyebrow")}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/85">{tCat("eyebrow")}</p>
           <h3 className="mt-2 text-xl font-extrabold tracking-tight text-white">{tCat("title")}</h3>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function ServiceCategoryCard({
             <span
               key={item}
               className={`rounded-full px-3 py-1 text-xs font-bold ${
-                dark ? "bg-white/10 text-white" : "bg-sky-50 text-sky-700"
+                dark ? "bg-white/10 text-white" : "bg-brand-soft/30 text-brand-deep"
               }`}
             >
               {item}
@@ -75,12 +75,12 @@ export default function ServiceCategoryCard({
           }`}
         >
           <div>
-            <p className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-sky-200" : "text-slate-400"}`}>
+            <p className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-white/85" : "text-slate-400"}`}>
               {tCard("nextStep")}
             </p>
             <p className={`text-sm font-semibold ${dark ? "text-white" : "text-slate-800"}`}>{tCat("ctaLabel")}</p>
           </div>
-          <span className={`flex h-10 w-10 items-center justify-center rounded-full ${dark ? "bg-white text-sky-700" : "bg-sky-600 text-white"}`}>
+          <span className={`flex h-10 w-10 items-center justify-center rounded-full ${dark ? "bg-white text-brand-deep" : "bg-brand text-white"}`}>
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>

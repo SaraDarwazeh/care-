@@ -56,7 +56,7 @@ export const EDUCATION_ICONS: Record<string, typeof HelpCircle> = {
 export const EDUCATION_ICON_CHOICES = Object.keys(EDUCATION_ICONS);
 
 const ACCENT_CLASSES: Record<string, { tile: string; iconBg: string; iconText: string }> = {
-  sky:     { tile: "border-sky-100 hover:border-sky-200",         iconBg: "bg-sky-100",     iconText: "text-sky-700" },
+  sky:     { tile: "border-brand-mist hover:border-brand-soft",         iconBg: "bg-brand-soft/50",     iconText: "text-brand-deep" },
   emerald: { tile: "border-emerald-100 hover:border-emerald-200", iconBg: "bg-emerald-100", iconText: "text-emerald-700" },
   violet:  { tile: "border-violet-100 hover:border-violet-200",   iconBg: "bg-violet-100",  iconText: "text-violet-700" },
   amber:   { tile: "border-amber-100 hover:border-amber-200",     iconBg: "bg-amber-100",   iconText: "text-amber-700" },
@@ -137,7 +137,7 @@ export default function EducationSection() {
   return (
     <section id="learn" className="scroll-mt-20">
       <div className="mb-8 max-w-2xl">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">{t("kicker")}</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand">{t("kicker")}</p>
         <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{t("title")}</h2>
         <p className="mt-3 text-base leading-relaxed text-slate-500">{t("subtitle")}</p>
       </div>
@@ -153,14 +153,14 @@ export default function EducationSection() {
               onClick={() => setActiveKind(kind)}
               className={`rounded-2xl border px-4 py-2 text-sm font-bold transition ${
                 active
-                  ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-slate-700"
+                  ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft hover:text-slate-700"
               }`}
             >
               {t(`kinds.${KIND_TO_KEY[kind]}`)}
               <span
                 className={`ms-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  active ? "bg-sky-100 text-sky-700" : "bg-slate-100 text-slate-500"
+                  active ? "bg-brand-soft/50 text-brand-deep" : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {cardsByKind[kind].length}

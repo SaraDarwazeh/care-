@@ -20,7 +20,7 @@ export default function PlaceholderCards() {
     <div className="grid gap-4 md:grid-cols-3">
       {placeholders.map((item) => (
         <Card key={item.title} title={item.title} description={item.text}>
-          <div className="rounded-xl bg-sky-50 p-3 text-xs text-slate-600">
+          <div className="rounded-xl bg-brand-soft/30 p-3 text-xs text-slate-600">
             Placeholder block
           </div>
         </Card>

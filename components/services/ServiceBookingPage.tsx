@@ -19,7 +19,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center gap-3 text-sm font-semibold text-slate-500">
-        <Link href="/services" className="inline-flex items-center gap-1.5 transition hover:text-sky-700">
+        <Link href="/services" className="inline-flex items-center gap-1.5 transition hover:text-brand-deep">
           <ChevronLeft className="h-4 w-4" /> {tBook("breadcrumb")}
         </Link>
         <span>/</span>
@@ -35,7 +35,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
                 <ServiceIcon slug={category.slug} className="h-7 w-7" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-sky-200">{tCat("eyebrow")}</p>
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/85">{tCat("eyebrow")}</p>
               <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl">{tCat("title")}</h1>
               <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-100 sm:text-base">{tCat("description")}</p>
             </div>
@@ -44,7 +44,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
           <div className="space-y-4 p-6 sm:p-8">
             <div className="flex flex-wrap gap-2">
               {highlights.map((item) => (
-                <span key={item} className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700">
+                <span key={item} className="rounded-full bg-brand-soft/30 px-3 py-1.5 text-xs font-bold text-brand-deep">
                   {item}
                 </span>
               ))}
@@ -81,7 +81,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
                 <Card key={link.href} title={labels?.label ?? ""} description={labels?.description ?? ""}>
                   <Link
                     href={link.href}
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
                   >
                     {tBook("openBookingFlow")}
                     <ArrowRight className="h-4 w-4" />
@@ -94,9 +94,9 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
       </section>
 
       {isPackageCategory ? (
-        <section className="mt-8 rounded-[2rem] border border-sky-100 bg-white p-6 shadow-sm sm:p-8">
+        <section className="mt-8 rounded-[2rem] border border-brand-mist bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-sky-600">{tBook("packageStructureKicker")}</p>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-brand">{tBook("packageStructureKicker")}</p>
             <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900">{tBook("packageStructureTitle")}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">{tBook("packageStructureIntro")}</p>
           </div>
@@ -108,7 +108,7 @@ export default function ServiceBookingPage({ category }: { category: ServiceCate
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{plan.cadence}</p>
                   <Link
                     href={category.bookingLinks[i]?.href ?? "/patient/nurses"}
-                    className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-sky-700"
+                    className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-deep"
                   >
                     {tBook("startWithBundle")}
                     <ArrowRight className="h-4 w-4" />

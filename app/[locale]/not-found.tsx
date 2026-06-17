@@ -23,7 +23,7 @@ export default function LocaleNotFound() {
 
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-4 py-16 text-center">
-      <div className="mb-4 rounded-full bg-sky-50 p-4 text-sky-600">
+      <div className="mb-4 rounded-full bg-brand-soft/30 p-4 text-brand">
         <Compass className="h-10 w-10" />
       </div>
       <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">{t("title")}</h1>
@@ -31,7 +31,7 @@ export default function LocaleNotFound() {
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700"
+          className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-deep"
         >
           <Home className="h-4 w-4" />
           {t("goHome")}

@@ -16,9 +16,9 @@ export default function ServicesOverviewPage() {
   return (
     <PlatformShell mode="service">
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <section className="overflow-hidden rounded-[2rem] border border-sky-100 bg-white p-8 shadow-sm sm:p-10">
+        <section className="overflow-hidden rounded-[2rem] border border-brand-mist bg-white p-8 shadow-sm sm:p-10">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.25em] text-sky-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-mist bg-brand-soft/30 px-4 py-2 text-xs font-bold uppercase tracking-[0.25em] text-brand-deep">
               <ShieldCheck className="h-4 w-4" /> {t("badge")}
             </div>
             <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{t("title")}</h1>
@@ -26,7 +26,7 @@ export default function ServicesOverviewPage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/find-care"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-deep"
               >
                 <Sparkles className="h-4 w-4" />
                 {t("primaryCta")}
@@ -34,7 +34,7 @@ export default function ServicesOverviewPage() {
               </Link>
               <Link
                 href="/patient/nurses"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
               >
                 {t("browseNurses")}
               </Link>

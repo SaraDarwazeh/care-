@@ -93,7 +93,7 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                     onClick={() => setActiveImage(idx)}
                     className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-xl transition ${
                       idx === activeImage
-                        ? "ring-2 ring-sky-500 ring-offset-2"
+                        ? "ring-2 ring-brand ring-offset-2"
                         : "opacity-70 hover:opacity-100"
                     }`}
                     aria-label={`Show image ${idx + 1}`}
@@ -112,19 +112,19 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
 
               <div className="mt-6 flex flex-wrap gap-2 text-sm text-slate-600">
                 <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-                  <CalendarDays className="h-4 w-4 text-sky-600" />
+                  <CalendarDays className="h-4 w-4 text-brand" />
                   <strong className="font-semibold">{pkg.durationDays}</strong> days
                   {hasMultipleDurations && <span className="text-slate-400">· flexible</span>}
                 </span>
                 {pkg.shiftOptions && pkg.shiftOptions.length > 0 && (
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-                    <Clock className="h-4 w-4 text-sky-600" />
+                    <Clock className="h-4 w-4 text-brand" />
                     Shifts: <strong className="font-semibold">{pkg.shiftOptions.join(", ")}</strong>
                   </span>
                 )}
                 {targetAudience && (
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-3 py-1.5">
-                    <Users className="h-4 w-4 text-sky-600" />
+                    <Users className="h-4 w-4 text-brand" />
                     {targetAudience}
                   </span>
                 )}
@@ -153,14 +153,14 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
             {pkg.outcomes && pkg.outcomes.length > 0 && (
               <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
                 <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
-                  <Target className="h-4 w-4 text-sky-600" /> Expected outcomes
+                  <Target className="h-4 w-4 text-brand" /> Expected outcomes
                 </h2>
                 <ul className="mt-4 space-y-3">
                   {pkg.outcomes.map((o, i) => {
                     const label = tLocalized(o, locale);
                     return (
                       <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
-                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
                         <span>{label}</span>
                       </li>
                     );
@@ -175,13 +175,13 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
                 <CalendarDays className="h-4 w-4 text-violet-600" /> Care timeline
               </h2>
-              <ol className="mt-5 space-y-5 border-s-2 border-sky-100 ps-6">
+              <ol className="mt-5 space-y-5 border-s-2 border-brand-mist ps-6">
                 {pkg.careTimeline.map((step) => {
                   const stepTitle = tLocalized(step.title, locale);
                   const stepDesc = tLocalized(step.description, locale);
                   return (
                     <li key={`${step.day}-${stepTitle}`} className="relative">
-                      <span className="absolute -start-[1.85rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-sky-200 bg-white text-[10px] font-bold text-sky-700">
+                      <span className="absolute -start-[1.85rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-brand-soft bg-white text-[10px] font-bold text-brand-deep">
                         D{step.day}
                       </span>
                       <p className="text-base font-bold text-slate-800">{stepTitle}</p>
@@ -203,7 +203,7 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                   const label = tLocalized(r, locale);
                   return (
                     <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-soft/300" />
                       <span>{label}</span>
                     </li>
                   );
@@ -236,7 +236,7 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
 
         {/* PRICING SIDEBAR */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-brand-mist bg-white p-6 shadow-sm">
             {isFixed && pkg.basePricePerDay ? (
               <>
                 <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">
@@ -254,7 +254,7 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
               </>
             ) : (
               <>
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">From</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brand">From</p>
                 {pkg.basePricePerDay ? (
                   <p className="mt-1 text-3xl font-extrabold text-slate-900">
                     {fmtCurrency(pkg.basePricePerDay, locale, pkg.currency)}
@@ -312,13 +312,13 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
             </Link>
             <Link
               href="/services/packages"
-              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
             >
               Back to all packages
             </Link>
 
-            <div className="mt-5 flex items-start gap-2 rounded-xl bg-sky-50/60 p-3 text-xs text-slate-600">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
+            <div className="mt-5 flex items-start gap-2 rounded-xl bg-brand-soft/25 p-3 text-xs text-slate-600">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
               <p>
                 All nurses are verified by Care+. Cancel free up to 24h before your visit
                 starts.

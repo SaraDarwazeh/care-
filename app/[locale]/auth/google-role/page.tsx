@@ -89,7 +89,7 @@ function GoogleRolePageInner() {
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-4 py-16">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-soft/50 text-brand-deep">
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div>
@@ -105,10 +105,10 @@ function GoogleRolePageInner() {
             type="button"
             onClick={() => setRole("patient")}
             className={`w-full flex items-center gap-4 rounded-2xl border-2 p-4 text-start transition-all ${
-              role === "patient" ? "border-sky-500 bg-sky-50" : "border-slate-100 bg-white hover:border-sky-200"
+              role === "patient" ? "border-brand bg-brand-soft/30" : "border-slate-100 bg-white hover:border-brand-soft"
             }`}
           >
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${role === "patient" ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${role === "patient" ? "bg-brand-soft/300 text-white" : "bg-slate-100 text-slate-400"}`}>
               <UserCircle className="h-5 w-5" />
             </div>
             <div>
@@ -138,15 +138,15 @@ function GoogleRolePageInner() {
             type="checkbox"
             checked={consentAccepted}
             onChange={(e) => setConsentAccepted(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-brand-soft/50"
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand-soft/50"
           />
           <span className="text-xs leading-relaxed text-slate-600">
             {t("consentPrefix")}{" "}
-            <Link href="/terms" target="_blank" className="font-bold text-sky-600 hover:underline">
+            <Link href="/terms" target="_blank" className="font-bold text-brand hover:underline">
               {t("consentTerms")}
             </Link>{" "}
             {t("consentAnd")}{" "}
-            <Link href="/privacy" target="_blank" className="font-bold text-sky-600 hover:underline">
+            <Link href="/privacy" target="_blank" className="font-bold text-brand hover:underline">
               {t("consentPrivacy")}
             </Link>
             {t("consentTail")}
@@ -169,7 +169,7 @@ function GoogleRolePageInner() {
             type="button"
             onClick={handleSubmit}
             disabled={!consentAccepted || submitting}
-            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-700 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-brand-deep disabled:opacity-50"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
             {t("finish")}

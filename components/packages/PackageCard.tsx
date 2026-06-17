@@ -20,9 +20,9 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
   return (
     <Link
       href={`/services/packages/${pkg.slug ?? pkg.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-soft hover:shadow-lg"
     >
-      <div className="relative h-44 w-full overflow-hidden bg-gradient-to-br from-sky-100 to-sky-50">
+      <div className="relative h-44 w-full overflow-hidden bg-gradient-to-br from-brand-soft/50 to-brand-soft/30">
         {heroImage ? (
           <Image
             src={heroImage}
@@ -33,7 +33,7 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <CalendarDays className="h-12 w-12 text-sky-300" />
+            <CalendarDays className="h-12 w-12 text-brand-soft" />
           </div>
         )}
         {pkg.featured && (
@@ -58,7 +58,7 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
               return (
                 <li
                   key={`${label}-${i}`}
-                  className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700"
+                  className="rounded-full bg-brand-soft/30 px-2.5 py-1 text-[11px] font-semibold text-brand-deep"
                 >
                   {label}
                 </li>
@@ -90,7 +90,7 @@ export default function PackageCard({ pkg }: { pkg: CarePackage }) {
               {hasMultipleDurations && ` · ${t("flexible")}`}
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-xl bg-sky-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition group-hover:bg-sky-700">
+          <span className="inline-flex items-center gap-1 rounded-xl bg-brand px-3.5 py-2 text-xs font-bold text-white shadow-sm transition group-hover:bg-brand-deep">
             {t("view")}
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>

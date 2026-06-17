@@ -62,7 +62,7 @@
         "body": "Equipment and supplies delivered to your door."
       },
       "library": {
-        "title": "Library",
+        "title": "Health Hub",
         "body": "Short educational videos from our care team."
       },
       "community": {
@@ -161,9 +161,9 @@
         "cta": "Leave a review"
       },
       "library": {
-        "kicker": "From the Library",
+        "kicker": "From your Health Hub",
         "heading": "A short watch for you",
-        "browseAll": "Open Library"
+        "browseAll": "Open Health Hub"
       },
       "rewards": {
         "kicker": "Rewards",

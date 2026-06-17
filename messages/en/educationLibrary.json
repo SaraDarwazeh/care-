@@ -1,14 +1,14 @@
 {
   "feature": {
-    "name": "Education Library",
+    "name": "Health Hub",
     "tagline": "Short videos to help you live better."
   },
   "disabled": {
-    "title": "Library temporarily unavailable",
-    "body": "Our care team is updating the library. Please check back soon."
+    "title": "Health Hub temporarily unavailable",
+    "body": "Our care team is updating the Health Hub. Please check back soon."
   },
   "feed": {
-    "heading": "Education Library",
+    "heading": "Health Hub",
     "subtitle": "Short videos curated by our care team.",
     "savedCta": "Saved videos",
     "filters": {
@@ -29,7 +29,7 @@
     "loadError": "Couldn't load videos. Please try again."
   },
   "detail": {
-    "back": "Back to library",
+    "back": "Back to Health Hub",
     "saved": "Saved",
     "save": "Save",
     "saving": "Saving…",
@@ -41,7 +41,7 @@
     "notFound": {
       "title": "Video not found",
       "body": "This video may have been removed or unpublished.",
-      "cta": "Back to library"
+      "cta": "Back to Health Hub"
     },
     "loadError": "Couldn't load this video."
   },
@@ -51,7 +51,7 @@
     "empty": {
       "title": "Nothing saved yet",
       "body": "Tap the save icon on any video to keep it here.",
-      "cta": "Browse the library"
+      "cta": "Browse the Health Hub"
     },
     "loadError": "Couldn't load your saved videos."
   },

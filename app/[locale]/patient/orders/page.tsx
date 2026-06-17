@@ -24,7 +24,7 @@ import { tLocalized } from "@/lib/i18nContent";
 
 const ORDER_STATUS_COLORS: Record<StoreOrder["status"], string> = {
   pending: "bg-amber-100 text-amber-700 border-amber-200",
-  processing: "bg-sky-100 text-sky-700 border-sky-200",
+  processing: "bg-brand-soft/50 text-brand-deep border-brand-soft",
   shipped: "bg-indigo-100 text-indigo-700 border-indigo-200",
   delivered: "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
@@ -55,9 +55,9 @@ function StatusTimeline({ current }: { current: StoreOrder["status"] }) {
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
                   isCurrent
-                    ? "bg-sky-500 border-sky-500 text-white shadow-sm"
+                    ? "bg-brand-soft/300 border-brand text-white shadow-sm"
                     : reached
-                    ? "bg-sky-100 border-sky-200 text-sky-700"
+                    ? "bg-brand-soft/50 border-brand-soft text-brand-deep"
                     : "bg-white border-slate-200 text-slate-300"
                 }`}
               >
@@ -70,7 +70,7 @@ function StatusTimeline({ current }: { current: StoreOrder["status"] }) {
               <span
                 className={`text-[11px] font-bold leading-tight ${
                   isCurrent
-                    ? "text-sky-700"
+                    ? "text-brand-deep"
                     : reached
                     ? "text-slate-700"
                     : "text-slate-400"
@@ -106,15 +106,15 @@ function OrderCard({
   const itemCount = order.items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-sky-200 transition-all overflow-hidden">
+    <div className="rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-brand-soft transition-all overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="flex w-full items-start justify-between gap-4 p-6 text-start hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100">
-            <Package className="h-5 w-5 text-sky-600" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-soft/50">
+            <Package className="h-5 w-5 text-brand" />
           </div>
           <div>
             <p className="font-bold text-slate-800 text-lg">

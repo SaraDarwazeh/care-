@@ -126,7 +126,7 @@ export default function PatientEducationDetailPage({
         <div className="mt-6 text-center">
           <Link
             href="/patient/education"
-            className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-sky-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-deep"
           >
             {t("back")}
           </Link>
@@ -153,7 +153,7 @@ export default function PatientEducationDetailPage({
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       <Link
         href="/patient/education"
-        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-sky-700"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand-deep"
       >
         <ArrowLeft className="h-4 w-4" /> {t("back")}
       </Link>
@@ -172,7 +172,7 @@ export default function PatientEducationDetailPage({
 
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-700">
+          <span className="rounded-full bg-brand-soft/30 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-brand-deep">
             {tCat(video.category)}
           </span>
           {video.tags?.slice(0, 4).map((tag) => (
@@ -198,7 +198,7 @@ export default function PatientEducationDetailPage({
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-sky-300 hover:text-sky-700"
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-brand-soft hover:text-brand-deep"
           >
             <Share2 className="h-4 w-4" />
             {linkCopied ? t("linkCopied") : t("share")}

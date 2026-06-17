@@ -39,7 +39,7 @@ export default function PatientRecordsPage() {
         <Lock className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
         <p className="text-xs text-slate-500 leading-relaxed">
           {t("privacyNote")}
-          <Link href="/privacy" className="text-sky-600 hover:underline ms-1">{t("privacyLink")}</Link>
+          <Link href="/privacy" className="text-brand hover:underline ms-1">{t("privacyLink")}</Link>
         </p>
       </div>
       <div className="space-y-4">

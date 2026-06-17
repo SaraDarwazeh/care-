@@ -27,35 +27,30 @@ import StoreItemImage from "@/components/common/StoreItemImage";
 
 // Category keys map onto stored product.category values. Display labels
 // come from messages/{locale}/patient.store.categories.
+// All categories share the same brand teal lockup; differentiation
+// comes from the icon glyph. Pre-brand the catalogue used a rainbow
+// (violet / emerald / amber / rose) per category; the v2 brand pass
+// flattens that to a single visual rhythm so the store reads as one
+// Care+ surface instead of six tints.
+const CATEGORY_GRADIENT = "from-brand to-brand-deep";
+const CATEGORY_SOFT = "from-brand-soft/40 to-brand-soft/70";
+const CATEGORY_BADGE = "bg-brand-soft/40 text-brand-deep";
+
 const CATEGORIES = [
   { key: "all", value: "all", icon: LayoutGrid, color: "from-slate-400 to-slate-500" },
-  { key: "monitoring", value: "Monitoring", icon: Activity, color: "from-sky-400 to-sky-600" },
-  { key: "equipment", value: "Equipment", icon: Stethoscope, color: "from-violet-400 to-violet-600" },
-  { key: "recovery", value: "Recovery", icon: HeartPulse, color: "from-emerald-400 to-emerald-600" },
-  { key: "elderlySupport", value: "Elderly Support", icon: Accessibility, color: "from-amber-400 to-amber-600" },
-  { key: "masksProtection", value: "Masks & Protection", icon: Shield, color: "from-rose-400 to-rose-600" },
+  { key: "monitoring", value: "Monitoring", icon: Activity, color: CATEGORY_GRADIENT },
+  { key: "equipment", value: "Equipment", icon: Stethoscope, color: CATEGORY_GRADIENT },
+  { key: "recovery", value: "Recovery", icon: HeartPulse, color: CATEGORY_GRADIENT },
+  { key: "elderlySupport", value: "Elderly Support", icon: Accessibility, color: CATEGORY_GRADIENT },
+  { key: "masksProtection", value: "Masks & Protection", icon: Shield, color: CATEGORY_GRADIENT },
 ] as const;
 
-function getCategoryColor(category: string): string {
-  const map: Record<string, string> = {
-    Monitoring: "from-sky-100 to-sky-200",
-    Equipment: "from-violet-100 to-violet-200",
-    Recovery: "from-emerald-100 to-emerald-200",
-    "Elderly Support": "from-amber-100 to-amber-200",
-    "Masks & Protection": "from-rose-100 to-rose-200",
-  };
-  return map[category] ?? "from-slate-100 to-slate-200";
+function getCategoryColor(): string {
+  return CATEGORY_SOFT;
 }
 
-function getCategoryBadgeColor(category: string): string {
-  const map: Record<string, string> = {
-    Monitoring: "bg-sky-100 text-sky-700",
-    Equipment: "bg-violet-100 text-violet-700",
-    Recovery: "bg-emerald-100 to-emerald-700 text-emerald-700",
-    "Elderly Support": "bg-amber-100 text-amber-700",
-    "Masks & Protection": "bg-rose-100 text-rose-700",
-  };
-  return map[category] ?? "bg-slate-100 text-slate-600";
+function getCategoryBadgeColor(): string {
+  return CATEGORY_BADGE;
 }
 
 export default function StorePage() {
@@ -121,11 +116,11 @@ export default function StorePage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 to-fuchsia-600 p-6 shadow-[0_10px_40px_-20px_rgba(124,58,237,0.5)] text-white sm:p-10 flex justify-between items-center">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-deep to-brand p-6 shadow-[0_10px_40px_-20px_rgba(31,106,114,0.5)] text-white sm:p-10 flex justify-between items-center">
         <div className="relative z-10 max-w-xl">
-          <p className="text-xs font-semibold text-violet-100 uppercase tracking-wider sm:text-sm">{t("kicker")}</p>
+          <p className="text-xs font-semibold text-brand-soft uppercase tracking-wider sm:text-sm">{t("kicker")}</p>
           <h1 className="mt-2 text-xl font-extrabold tracking-tight sm:text-4xl">{t("title")}</h1>
-          <p className="mt-2 text-sm text-violet-100 sm:mt-4 sm:text-base sm:text-violet-50">{t("subtitle")}</p>
+          <p className="mt-2 text-sm text-white/85 sm:mt-4 sm:text-base">{t("subtitle")}</p>
         </div>
 
         <Link
@@ -154,7 +149,7 @@ export default function StorePage() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
             dir="auto"
-            className="w-full rounded-2xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 transition"
+            className="w-full rounded-2xl border border-slate-200 bg-white ps-11 pe-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-soft/40 transition"
           />
         </div>
 
@@ -184,7 +179,7 @@ export default function StorePage() {
       <SectionContainer title={sectionTitle} description={sectionDescription}>
         {loading ? (
           <div className="flex justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-soft border-t-brand" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -202,12 +197,12 @@ export default function StorePage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((item) => {
               const quantity = cart[item.id] || 0;
-              const gradientBg = getCategoryColor(item.category);
-              const badgeColor = getCategoryBadgeColor(item.category);
+              const gradientBg = getCategoryColor();
+              const badgeColor = getCategoryBadgeColor();
               return (
                 <div
                   key={item.id}
-                  className="flex flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:border-violet-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group"
+                  className="flex flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:border-brand-soft hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] group"
                 >
                   <div
                     className={`relative flex h-40 flex-col items-center justify-center overflow-hidden bg-gradient-to-br ${gradientBg} gap-2 transition-transform duration-300`}
@@ -229,23 +224,23 @@ export default function StorePage() {
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">{tLocalized(item.description, locale)}</p>
 
                     <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                      <span className="text-xl font-extrabold text-sky-600">
+                      <span className="text-xl font-extrabold text-brand">
                         {fmtCurrency(item.price, locale)}
                       </span>
 
                       {quantity > 0 ? (
-                        <div className="flex items-center gap-1 bg-violet-50 border border-violet-100 rounded-2xl p-1">
+                        <div className="flex items-center gap-1 bg-brand-soft/30 border border-brand-mist rounded-2xl p-1">
                           <button
                             onClick={() => removeFromCart(item.id)}
-                            className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-xl transition"
+                            className="p-1.5 text-brand hover:bg-brand-soft/50 rounded-xl transition"
                             aria-label={t("decreaseQty")}
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="font-bold text-violet-800 w-5 text-center text-sm">{quantity}</span>
+                          <span className="font-bold text-brand-deep w-5 text-center text-sm">{quantity}</span>
                           <button
                             onClick={() => addToCart(item.id)}
-                            className="p-1.5 text-violet-600 hover:bg-violet-100 rounded-xl transition"
+                            className="p-1.5 text-brand hover:bg-brand-soft/50 rounded-xl transition"
                             aria-label={t("increaseQty")}
                           >
                             <Plus className="h-3.5 w-3.5" />
@@ -276,7 +271,7 @@ export default function StorePage() {
         <div className="fixed bottom-6 inset-x-0 mx-auto max-w-md bg-slate-800 text-white p-4 rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-between border border-slate-700 z-50 animate-in slide-in-from-bottom-10">
           <div className="flex items-center gap-3">
             <div className="bg-slate-700 p-2 rounded-2xl">
-              <PackageOpen className="h-6 w-6 text-violet-300" />
+              <PackageOpen className="h-6 w-6 text-brand-soft" />
             </div>
             <div>
               <p className="font-bold">{t("itemsInCart", { n: totalItems })}</p>
@@ -285,7 +280,7 @@ export default function StorePage() {
           </div>
           <Link
             href="/patient/cart"
-            className="bg-violet-500 hover:bg-violet-600 transition px-6 py-2.5 rounded-2xl font-bold text-sm shadow-md"
+            className="bg-brand hover:bg-brand-hover transition px-6 py-2.5 rounded-2xl font-bold text-sm shadow-md"
           >
             {t("checkout")}
           </Link>

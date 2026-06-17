@@ -109,7 +109,7 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
           <p className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{error}</p>
         )}
 
-        <button type="submit" disabled={loading} className="w-full rounded-xl bg-sky-600 py-3 text-sm font-bold text-white hover:bg-sky-700 disabled:opacity-60 transition">
+        <button type="submit" disabled={loading} className="w-full rounded-xl bg-brand py-3 text-sm font-bold text-white hover:bg-brand-deep disabled:opacity-60 transition">
           {loading ? "Posting..." : "Post Donation"}
         </button>
       </div>

@@ -105,8 +105,8 @@ export default function MedicalConditionsField({
 
       {/* Selected chips */}
       {(selectedIds.length > 0 || customValues.length > 0) && (
-        <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-3">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-violet-700">
+        <div className="rounded-2xl border border-brand-mist bg-brand-soft/20 p-3">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-deep">
             {t("picker.selectedCount", { n: selectedIds.length + customValues.length })}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -116,14 +116,14 @@ export default function MedicalConditionsField({
               return (
                 <span
                   key={id}
-                  className="inline-flex items-center gap-1 rounded-full border border-violet-300 bg-white px-2.5 py-1 text-xs font-semibold text-violet-700"
+                  className="inline-flex items-center gap-1 rounded-full border border-brand-soft bg-white px-2.5 py-1 text-xs font-semibold text-brand-deep"
                 >
                   {label}
                   <button
                     type="button"
                     onClick={() => toggleId(id)}
                     aria-label={t("picker.removeChip")}
-                    className="ms-0.5 rounded-full p-0.5 text-violet-500 hover:bg-violet-100"
+                    className="ms-0.5 rounded-full p-0.5 text-brand hover:bg-brand-soft/50"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -160,7 +160,7 @@ export default function MedicalConditionsField({
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder={t("picker.search")}
           dir="auto"
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
         />
       </div>
 
@@ -205,8 +205,8 @@ export default function MedicalConditionsField({
                           aria-pressed={active}
                           className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                             active
-                              ? "border-violet-500 bg-violet-100 text-violet-700"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-violet-300"
+                              ? "border-brand bg-brand-soft/50 text-brand-deep"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-brand-soft"
                           }`}
                         >
                           {tLocalized(c.label, locale)}

@@ -340,7 +340,7 @@ function PatientNursesPageInner() {
           <button
             type="button"
             onClick={applyLastPreferences}
-            className="mt-3 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+            className="mt-3 inline-flex items-center gap-2 rounded-full border border-brand-soft bg-brand-soft/30 px-4 py-1.5 text-xs font-bold text-brand-deep transition hover:bg-brand-soft/50"
           >
             <History className="h-3.5 w-3.5" />
             {t("useLastPreferences")}
@@ -353,7 +353,7 @@ function PatientNursesPageInner() {
       </div>
 
       {activeRouteLabel ? (
-        <div className="mb-6 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-800">
+        <div className="mb-6 rounded-2xl border border-brand-mist bg-brand-soft/30 px-4 py-3 text-sm font-medium text-brand-deep">
           {t("preFilteredFor", { label: activeRouteLabel })}
         </div>
       ) : null}
@@ -372,14 +372,14 @@ function PatientNursesPageInner() {
             type="button"
           >
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-5 w-5 text-sky-600" /> {t("mobileFiltersLabel")}
+              <SlidersHorizontal className="h-5 w-5 text-brand" /> {t("mobileFiltersLabel")}
               {activeFilterCount > 0 && (
-                <span className="rounded-full bg-sky-600 px-2 py-0.5 text-xs font-bold text-white">
+                <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">
                   {activeFilterCount}
                 </span>
               )}
             </div>
-            <span className="text-sm font-normal text-sky-600">{showFilters ? t("hide") : t("show")}</span>
+            <span className="text-sm font-normal text-brand">{showFilters ? t("hide") : t("show")}</span>
           </button>
 
           <div className={`mt-4 lg:mt-0 ${showFilters ? "block" : "hidden lg:block"}`}>
@@ -416,7 +416,7 @@ function PatientNursesPageInner() {
               <button
                 type="button"
                 onClick={() => setFilters(EMPTY_FILTERS)}
-                className="mt-4 text-sm font-semibold text-sky-600 hover:underline"
+                className="mt-4 text-sm font-semibold text-brand hover:underline"
               >
                 {t("clearAllFilters")}
               </button>

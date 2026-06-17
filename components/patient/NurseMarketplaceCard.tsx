@@ -73,7 +73,7 @@ export default function NurseMarketplaceCard({
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-xl font-bold tracking-tight line-clamp-1">{nurse.fullName}</h3>
-                <BadgeCheck className="h-5 w-5 text-sky-400 shrink-0" />
+                <BadgeCheck className="h-5 w-5 text-brand-soft shrink-0" />
                 {/* Provider-kind chip — physio only. Nurses are the
                     historical default and stay unbadged to keep the
                     card visually identical to its pre-physio form. */}
@@ -127,7 +127,7 @@ export default function NurseMarketplaceCard({
               {nurse.certificates!.slice(0, 2).map((cert) => (
                 <span
                   key={cert.id}
-                  className="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700 border border-sky-100"
+                  className="inline-flex items-center rounded-full bg-brand-soft/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep border border-brand-mist"
                 >
                   {cert.name}
                 </span>
@@ -154,7 +154,7 @@ export default function NurseMarketplaceCard({
                 <span className="text-sm font-medium text-slate-500">{t(unitKey)}</span>
               </p>
             </div>
-            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-500 group-hover:text-white">
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-soft/30 text-brand transition-colors group-hover:bg-brand-soft/300 group-hover:text-white">
               <ChevronRight className="h-5 w-5 ms-0.5" />
             </div>
           </div>

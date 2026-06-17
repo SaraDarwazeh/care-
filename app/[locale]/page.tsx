@@ -100,9 +100,9 @@ export default function Home() {
       icon: HomeIcon,
       situation: t("why.parent.situation"),
       description: t("why.parent.description"),
-      bg: "bg-sky-50",
-      border: "border-sky-100",
-      iconColor: "text-sky-600 bg-sky-100",
+      bg: "bg-brand-soft/30",
+      border: "border-brand-mist",
+      iconColor: "text-brand bg-brand-soft/50",
     },
     {
       icon: HeartHandshake,
@@ -203,7 +203,7 @@ export default function Home() {
             </div>
 
             <div className="relative">
-              <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 shadow-2xl shadow-sky-200/60">
+              <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-100 shadow-2xl shadow-brand-soft/60">
                 <div className="relative aspect-[4/5] w-full sm:aspect-[5/6]">
                   <Image
                     src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80"
@@ -236,7 +236,7 @@ export default function Home() {
         {/* ══ WHY HOME CARE ══ */}
         <section id="why" className="scroll-mt-20">
           <div className="mb-8 max-w-2xl">
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-sky-600">{t("why.kicker")}</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand">{t("why.kicker")}</p>
             <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{t("why.title")}</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -328,7 +328,7 @@ export default function Home() {
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-100 to-sky-100 text-violet-600">
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-100 to-brand-soft/50 text-violet-600">
                         <PlayCircle className="h-12 w-12" />
                       </div>
                     )}

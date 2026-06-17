@@ -19,7 +19,7 @@ import type { Locale } from "@/i18n/config";
 const STATUS_STYLES: Record<BookingWithParticipants["status"], string> = {
   pending: "bg-amber-100 text-amber-700",
   accepted: "bg-emerald-100 text-emerald-700",
-  completed: "bg-sky-100 text-sky-700",
+  completed: "bg-brand-soft/50 text-brand-deep",
   rejected: "bg-rose-100 text-rose-700",
   cancelled: "bg-slate-100 text-slate-600",
 };
@@ -58,7 +58,7 @@ function BookingCard({
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 shrink-0 sm:h-12 sm:w-12">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-soft/30 text-brand shrink-0 sm:h-12 sm:w-12">
             <CalendarClock className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="min-w-0">
@@ -132,7 +132,7 @@ function BookingCard({
       {booking.status === "completed" && recordId && (
         <Link
           href={`/patient/records/${recordId}`}
-          className="flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-bold text-sky-700 transition hover:bg-sky-100"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-brand-soft bg-brand-soft/30 px-4 py-2.5 text-sm font-bold text-brand-deep transition hover:bg-brand-soft/50"
         >
           <FileText className="h-4 w-4" />
           {tCard("viewVisitNotes")}
@@ -259,7 +259,7 @@ export default function PatientAppointmentsPage() {
         </div>
         <Link
           href="/patient/nurses"
-          className="hidden sm:flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-sky-700 transition"
+          className="hidden sm:flex items-center gap-2 rounded-2xl bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-deep transition"
         >
           {t("bookNurse")} <ChevronRight className="h-4 w-4" />
         </Link>
@@ -284,7 +284,7 @@ export default function PatientAppointmentsPage() {
           <p className="text-slate-400 text-sm mb-6">{t("emptyBody")}</p>
           <Link
             href="/patient/nurses"
-            className="rounded-2xl bg-sky-600 px-6 py-3 text-sm font-bold text-white hover:bg-sky-700 transition"
+            className="rounded-2xl bg-brand px-6 py-3 text-sm font-bold text-white hover:bg-brand-deep transition"
           >
             {t("findNurse")}
           </Link>
@@ -312,7 +312,7 @@ export default function PatientAppointmentsPage() {
 
       <Link
         href="/patient/nurses"
-        className="sm:hidden flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-sky-700 transition"
+        className="sm:hidden flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-brand-deep transition"
       >
         {t("bookNewNurse")} <ChevronRight className="h-4 w-4" />
       </Link>
@@ -327,7 +327,7 @@ export default function PatientAppointmentsPage() {
           <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">{tModal("kicker")}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brand">{tModal("kicker")}</p>
                 <h2 className="text-lg font-bold text-slate-800">{reviewingBooking.nurseName}</h2>
               </div>
               <button

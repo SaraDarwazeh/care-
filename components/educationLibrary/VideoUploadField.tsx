@@ -99,7 +99,7 @@ export default function VideoUploadField({ value, onChange, helperText }: VideoU
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-sky-50 hover:text-sky-700 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-brand-soft/30 hover:text-brand-deep disabled:opacity-50"
           >
             {uploading ? (
               <>

@@ -111,10 +111,14 @@ function ChipMultiSelect({
 }) {
   if (options.length === 0) return null;
 
+  // All chip-group accents collapse to brand. The pre-brand surface
+  // assigned different colours to different filter categories
+  // (skills/services/specialties); v2 unifies on a single visual rule
+  // so the filter panel reads as one consistent UI surface.
   const accentClasses = {
     sky: "border-brand bg-brand-soft/30 text-brand-deep",
-    violet: "border-violet-500 bg-violet-50 text-violet-700",
-    emerald: "border-emerald-500 bg-emerald-50 text-emerald-700",
+    violet: "border-brand bg-brand-soft/30 text-brand-deep",
+    emerald: "border-brand bg-brand-soft/30 text-brand-deep",
   }[accent];
 
   return (

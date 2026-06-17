@@ -57,7 +57,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
 
         <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-5">
           <div>
-            <span className="inline-block rounded-lg bg-sky-50 border border-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+            <span className="inline-block rounded-lg bg-brand-soft/30 border border-brand-mist px-3 py-1 text-xs font-semibold text-brand-deep">
               {categoryLabel}
             </span>
           </div>
@@ -99,7 +99,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               {post.contact.email && (
                 <p className="text-sm">
                   <span className="font-medium text-slate-500">{t("detail.email")} </span>
-                  <a href={`mailto:${post.contact.email}`} className="text-sky-600 font-semibold hover:underline" dir="ltr">
+                  <a href={`mailto:${post.contact.email}`} className="text-brand font-semibold hover:underline" dir="ltr">
                     {post.contact.email}
                   </a>
                 </p>
@@ -107,7 +107,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               {post.contact.phone && (
                 <p className="text-sm">
                   <span className="font-medium text-slate-500">{t("detail.phone")} </span>
-                  <a href={`tel:${post.contact.phone}`} className="text-sky-600 font-semibold hover:underline" dir="ltr">
+                  <a href={`tel:${post.contact.phone}`} className="text-brand font-semibold hover:underline" dir="ltr">
                     {post.contact.phone}
                   </a>
                 </p>
@@ -120,7 +120,7 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
               {post.contact.email && (
                 <a
                   href={`mailto:${post.contact.email}`}
-                  className="flex-1 rounded-xl bg-sky-600 py-2.5 text-center text-sm font-bold text-white hover:bg-sky-700 transition"
+                  className="flex-1 rounded-xl bg-brand py-2.5 text-center text-sm font-bold text-white hover:bg-brand-deep transition"
                 >
                   {t("detail.sendEmail")}
                 </a>

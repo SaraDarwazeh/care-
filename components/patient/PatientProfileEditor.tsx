@@ -240,7 +240,7 @@ function IdDocumentUploader({
 
   return (
     <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-4">
-      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-sky-50 hover:text-sky-700">
+      <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-brand-soft/30 hover:text-brand-deep">
         <input
           ref={inputRef}
           type="file"
@@ -286,9 +286,9 @@ function TagInput({
   const [draft, setDraft] = useState("");
 
   const accentClasses = {
-    sky: "bg-sky-50 text-sky-700 border-sky-100",
+    sky: "bg-brand-soft/30 text-brand-deep border-brand-mist",
     rose: "bg-rose-50 text-rose-700 border-rose-100",
-    violet: "bg-violet-50 text-violet-700 border-violet-100",
+    violet: "bg-brand-soft/30 text-brand-deep border-brand-mist",
   }[accent];
 
   function add() {
@@ -393,7 +393,7 @@ function LocationsEditor({
         <button
           type="button"
           onClick={add}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-sky-700"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-brand-deep"
         >
           <Plus className="h-4 w-4" /> {t("addAddress")}
         </button>
@@ -407,7 +407,7 @@ function LocationsEditor({
         <div
           key={loc.id || index}
           className={`rounded-2xl border p-4 transition ${
-            loc.isDefault ? "border-sky-200 bg-sky-50/40" : "border-slate-200 bg-white"
+            loc.isDefault ? "border-brand-soft bg-brand-soft/20" : "border-slate-200 bg-white"
           }`}
         >
           <div className="flex items-start justify-between gap-3">
@@ -438,14 +438,14 @@ function LocationsEditor({
               </div>
               <div className="flex items-center gap-3 text-xs">
                 {loc.isDefault ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 font-bold text-sky-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-soft/50 px-2.5 py-1 font-bold text-brand-deep">
                     <CheckCircle2 className="h-3 w-3" /> {t("defaultAddress")}
                   </span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => makeDefault(index)}
-                    className="font-bold text-slate-500 hover:text-sky-700"
+                    className="font-bold text-slate-500 hover:text-brand-deep"
                   >
                     {t("setDefault")}
                   </button>
@@ -466,7 +466,7 @@ function LocationsEditor({
       <button
         type="button"
         onClick={add}
-        className="flex items-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm font-bold text-slate-600 hover:border-sky-300 hover:text-sky-700"
+        className="flex items-center gap-1.5 rounded-2xl border border-dashed border-slate-300 px-4 py-3 text-sm font-bold text-slate-600 hover:border-brand-soft hover:text-brand-deep"
       >
         <Plus className="h-4 w-4" /> {t("addAnother")}
       </button>
@@ -497,8 +497,8 @@ function SectionTabButton({
       onClick={onClick}
       className={`group flex items-center gap-2 whitespace-nowrap rounded-2xl border px-4 py-2.5 text-sm font-bold transition-all ${
         active
-          ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
-          : "border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-slate-700"
+          ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+          : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft hover:text-slate-700"
       }`}
     >
       <Icon className="h-4 w-4" />
@@ -598,7 +598,7 @@ export default function PatientProfileEditor({
   if (loading) {
     return (
       <div className="flex justify-center p-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-200 border-t-sky-600"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-soft border-t-brand"></div>
       </div>
     );
   }
@@ -607,7 +607,7 @@ export default function PatientProfileEditor({
     return (
       <div className="space-y-6">
         <div className="rounded-3xl bg-white shadow-sm overflow-hidden flex items-center p-6 gap-6">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-sky-100 text-3xl font-extrabold text-sky-700 ring-4 ring-slate-50">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-brand-soft/50 text-3xl font-extrabold text-brand-deep ring-4 ring-slate-50">
             {appUser?.name.substring(0, 2).toUpperCase()}
           </div>
           <div className="flex-1">
@@ -616,7 +616,7 @@ export default function PatientProfileEditor({
           </div>
           <button
             onClick={() => setIsEditing(true)}
-            className="hidden sm:flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-2 text-sm font-bold text-sky-700 hover:bg-sky-100 transition"
+            className="hidden sm:flex items-center gap-2 rounded-2xl bg-brand-soft/30 px-4 py-2 text-sm font-bold text-brand-deep hover:bg-brand-soft/50 transition"
           >
             <Edit2 className="h-4 w-4" /> {t("editProfile")}
           </button>
@@ -673,14 +673,14 @@ export default function PatientProfileEditor({
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                <MapPin className="h-4 w-4 text-sky-600" /> {t("savedAddresses")}
+                <MapPin className="h-4 w-4 text-brand" /> {t("savedAddresses")}
               </h3>
               <button
                 onClick={() => {
                   setActiveSection("locations");
                   setIsEditing(true);
                 }}
-                className="text-xs font-bold text-sky-600 hover:text-sky-700"
+                className="text-xs font-bold text-brand hover:text-brand-deep"
               >
                 {t("manage")}
               </button>
@@ -698,7 +698,7 @@ export default function PatientProfileEditor({
                       <p className="text-sm font-bold text-slate-700">
                         {loc.label}
                         {loc.isDefault && (
-                          <span className="ms-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                          <span className="ms-2 rounded-full bg-brand-soft/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep">
                             {t("defaultBadge")}
                           </span>
                         )}
@@ -717,10 +717,10 @@ export default function PatientProfileEditor({
             { id: "account", labelKey: "account", icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50", onClick: () => { setActiveSection("personal"); setIsEditing(true); } },
             { id: "medical", labelKey: "medical", icon: Activity, color: "text-rose-500", bg: "bg-rose-50", onClick: () => { setActiveSection("medical"); setIsEditing(true); } },
             { id: "bookings", labelKey: "bookings", icon: CalendarClock, color: "text-emerald-500", bg: "bg-emerald-50", href: "/patient/appointments" },
-            { id: "payment", labelKey: "payment", icon: CreditCard, color: "text-violet-500", bg: "bg-violet-50", onClick: () => { setActiveSection("payment"); setIsEditing(true); } },
+            { id: "payment", labelKey: "payment", icon: CreditCard, color: "text-brand", bg: "bg-brand-soft/30", onClick: () => { setActiveSection("payment"); setIsEditing(true); } },
             { id: "reviews", labelKey: "reviews", icon: Star, color: "text-amber-500", bg: "bg-amber-50", href: "#" },
             { id: "settings", labelKey: "settings", icon: Settings, color: "text-slate-500", bg: "bg-slate-100", href: "#" },
-            { id: "support", labelKey: "support", icon: HelpCircle, color: "text-sky-500", bg: "bg-sky-50", href: "#" },
+            { id: "support", labelKey: "support", icon: HelpCircle, color: "text-brand", bg: "bg-brand-soft/30", href: "#" },
           ].map((item) => {
             const content = (
               <div className="flex items-center justify-between p-5 hover:bg-slate-50 transition cursor-pointer group">
@@ -728,9 +728,9 @@ export default function PatientProfileEditor({
                   <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} ${item.color}`}>
                     <item.icon className="h-6 w-6" />
                   </div>
-                  <span className="font-bold text-slate-800 text-lg group-hover:text-sky-700 transition">{t(`menu.${item.labelKey}`)}</span>
+                  <span className="font-bold text-slate-800 text-lg group-hover:text-brand-deep transition">{t(`menu.${item.labelKey}`)}</span>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-sky-600 transition group-hover:translate-x-1" />
+                <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-brand transition group-hover:translate-x-1" />
               </div>
             );
 
@@ -819,8 +819,8 @@ export default function PatientProfileEditor({
           {activeSection === "personal" && (
             <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
-                  <Phone className="h-5 w-5 text-sky-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+                  <Phone className="h-5 w-5 text-brand" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">{t("personal.title")}</h3>
@@ -886,8 +886,8 @@ export default function PatientProfileEditor({
           {activeSection === "locations" && (
             <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
-                  <MapPin className="h-5 w-5 text-sky-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+                  <MapPin className="h-5 w-5 text-brand" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">{t("locations.title")}</h3>
@@ -904,8 +904,8 @@ export default function PatientProfileEditor({
           {activeSection === "medical" && (
             <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
-                  <Pill className="h-5 w-5 text-violet-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+                  <Pill className="h-5 w-5 text-brand-deep" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">{t("medical.title")}</h3>
@@ -1021,8 +1021,8 @@ export default function PatientProfileEditor({
           {activeSection === "identity" && (
             <section className="animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
               <header className="mb-4 flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100">
-                  <ShieldAlert className="h-5 w-5 text-sky-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-soft/50">
+                  <ShieldAlert className="h-5 w-5 text-brand" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">{t("identity.title")}</h3>
@@ -1101,7 +1101,7 @@ export default function PatientProfileEditor({
                     key={option.id}
                     className={`flex cursor-pointer items-center justify-center rounded-2xl border-2 px-6 py-3 text-sm font-bold transition-all ${
                       form.paymentMethods.includes(option.id)
-                        ? "border-sky-500 bg-sky-50 text-sky-700 shadow-sm"
+                        ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
                         : "border-slate-200 text-slate-500 hover:border-slate-300 bg-white"
                     }`}
                   >
@@ -1153,7 +1153,7 @@ export default function PatientProfileEditor({
               <PatientButton
                 type="submit"
                 loading={saving}
-                className="px-8 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
+                className="px-8 py-3 rounded-2xl bg-brand hover:bg-brand-deep text-base shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]"
               >
                 {saving ? t("saving") : t("save")}
               </PatientButton>

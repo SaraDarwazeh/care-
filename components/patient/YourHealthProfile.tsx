@@ -38,9 +38,9 @@ export default function YourHealthProfile({ profile }: YourHealthProfileProps) {
   const remaining = remainingCanonical + remainingCustom;
 
   return (
-    <section className="rounded-3xl border border-violet-100 bg-violet-50/50 p-5 shadow-sm">
+    <section className="rounded-3xl border border-brand-mist bg-brand-soft/25 p-5 shadow-sm">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-soft/60 text-brand-deep">
           <HeartPulse className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -53,7 +53,7 @@ export default function YourHealthProfile({ profile }: YourHealthProfileProps) {
             </div>
             <Link
               href="/patient/profile?section=medical"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-white px-3 py-1.5 text-xs font-bold text-violet-700 hover:bg-violet-100"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-brand-soft bg-white px-3 py-1.5 text-xs font-bold text-brand-deep hover:bg-brand-soft/50"
             >
               <Pencil className="h-3 w-3" /> {t("edit")}
             </Link>
@@ -63,7 +63,7 @@ export default function YourHealthProfile({ profile }: YourHealthProfileProps) {
             {visibleCanonical.map((c) => (
               <span
                 key={c.id}
-                className="rounded-full border border-violet-300 bg-white px-2.5 py-1 text-xs font-semibold text-violet-700"
+                className="rounded-full border border-brand-soft bg-white px-2.5 py-1 text-xs font-semibold text-brand-deep"
               >
                 {tLocalized(c.label, locale)}
               </span>

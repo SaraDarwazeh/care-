@@ -81,7 +81,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
           <li key={review.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3 min-w-0">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft/50 text-xs font-bold text-brand-deep">
                   {(review.patientName ?? "P").substring(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">

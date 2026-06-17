@@ -93,7 +93,7 @@ function NurseProfilePageInner() {
   if (!nurse) {
     return (
       <div className="mx-auto max-w-3xl p-8 text-center">
-        <div className="rounded-3xl border border-sky-100 bg-white p-12 text-slate-500">
+        <div className="rounded-3xl border border-brand-mist bg-white p-12 text-slate-500">
           {t("notFound")}
         </div>
       </div>
@@ -123,10 +123,10 @@ function NurseProfilePageInner() {
         <div className="space-y-8 lg:col-span-2">
 
           <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-            <div className="h-32 bg-gradient-to-r from-sky-50 to-emerald-50 sm:h-40" />
+            <div className="h-32 bg-gradient-to-r from-brand-soft/30 to-emerald-50 sm:h-40" />
             <div className="px-6 pb-6 sm:px-8">
               <div className="relative -mt-16 mb-4 flex justify-between sm:-mt-20">
-                <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-sky-100 text-4xl font-bold text-sky-700 shadow-md sm:h-40 sm:w-40">
+                <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-brand-soft/50 text-4xl font-bold text-brand-deep shadow-md sm:h-40 sm:w-40">
                   {nurse.profileImage ? (
                     <Image
                       src={nurse.profileImage}
@@ -149,7 +149,7 @@ function NurseProfilePageInner() {
 
               <div className="space-y-2">
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">{nurse.fullName}</h1>
-                <p className="text-lg font-medium text-sky-600">{nurse.specialization}</p>
+                <p className="text-lg font-medium text-brand">{nurse.specialization}</p>
                 <p className="mt-2 text-base text-slate-600 leading-relaxed">
                   {nurse.bio || t("fallbackBio")}
                 </p>
@@ -178,9 +178,9 @@ function NurseProfilePageInner() {
           </div>
 
           {nurse.carePhilosophy && (
-            <div className="rounded-3xl border border-sky-100 bg-sky-50/40 p-6 shadow-sm sm:p-8">
+            <div className="rounded-3xl border border-brand-mist bg-brand-soft/20 p-6 shadow-sm sm:p-8">
               <div className="mb-3 flex items-center gap-2">
-                <Quote className="h-5 w-5 text-sky-600" />
+                <Quote className="h-5 w-5 text-brand" />
                 <h2 className="text-xl font-bold text-slate-800">{t("carePhilosophy")}</h2>
               </div>
               <p className="text-base leading-relaxed text-slate-700 whitespace-pre-line">
@@ -195,10 +195,10 @@ function NurseProfilePageInner() {
               {nurse.services.map((service) => (
                 <div
                   key={`${nurse.userId}-${service.name}`}
-                  className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:border-sky-200 hover:bg-white"
+                  className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:border-brand-soft hover:bg-white"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft/50 text-brand">
                       <Pill className="h-5 w-5" />
                     </div>
                     <span className="font-semibold text-slate-700">{service.name}</span>
@@ -214,7 +214,7 @@ function NurseProfilePageInner() {
               <h2 className="mb-4 text-xl font-bold text-slate-800">{t("availability")}</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Calendar className="mt-0.5 h-5 w-5 text-sky-500" />
+                  <Calendar className="mt-0.5 h-5 w-5 text-brand" />
                   <div>
                     <p className="text-sm font-semibold text-slate-700">{t("availableDays")}</p>
                     <p className="text-sm text-slate-500">{daysLabel}</p>
@@ -238,7 +238,7 @@ function NurseProfilePageInner() {
                 {nurse.skills.map((skill) => (
                   <span
                     key={`${nurse.userId}-${skill}`}
-                    className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700"
+                    className="rounded-full bg-brand-soft/30 px-3 py-1.5 text-xs font-semibold text-brand-deep"
                   >
                     {skill}
                   </span>
@@ -269,7 +269,7 @@ function NurseProfilePageInner() {
           {gallery.length > 0 && (
             <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-4 flex items-center gap-2">
-                <Camera className="h-5 w-5 text-sky-600" />
+                <Camera className="h-5 w-5 text-brand" />
                 <h2 className="text-xl font-bold text-slate-800">{t("gallery")}</h2>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -368,19 +368,19 @@ function NurseProfilePageInner() {
               initialBookingType={initialBookingType}
             />
           ) : (
-            <div className="rounded-3xl border border-sky-100 bg-white p-8 shadow-sm">
+            <div className="rounded-3xl border border-brand-mist bg-white p-8 shadow-sm">
               <h2 className="text-xl font-bold text-slate-800">{t("bookNow")}</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{t("guestPrompt")}</p>
               <div className="mt-6 flex flex-col gap-3">
                 <Link
                   href="/login"
-                  className="rounded-2xl bg-sky-600 px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-700"
+                  className="rounded-2xl bg-brand px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-brand-deep"
                 >
                   {t("loginToBook")}
                 </Link>
                 <Link
                   href="/register"
-                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-center text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
                 >
                   {t("createAccount")}
                 </Link>

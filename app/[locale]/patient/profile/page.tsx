@@ -49,16 +49,16 @@ function PatientProfilePageInner() {
       <BackLink href="/patient" labelKey="common.actions.backToDashboard" />
 
       {isOnboarding && missingLabels && missingLabels.length > 0 && (
-        <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 p-5">
+        <div className="mb-6 rounded-2xl border border-brand-soft bg-brand-soft/30 p-5">
           <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" />
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
             <div className="flex-1">
-              <p className="font-bold text-sky-800">{t("onboardingWelcome")}</p>
-              <p className="mt-1 text-sm text-sky-700">{t("onboardingPrompt")}</p>
-              <ul className="mt-2 space-y-1 text-sm text-sky-700">
+              <p className="font-bold text-brand-deep">{t("onboardingWelcome")}</p>
+              <p className="mt-1 text-sm text-brand-deep">{t("onboardingPrompt")}</p>
+              <ul className="mt-2 space-y-1 text-sm text-brand-deep">
                 {missingLabels.map((label) => (
                   <li key={label} className="flex items-center gap-1.5">
-                    <span className="h-1 w-1 rounded-full bg-sky-500" />
+                    <span className="h-1 w-1 rounded-full bg-brand-soft/300" />
                     {label}
                   </li>
                 ))}

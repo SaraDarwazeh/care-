@@ -118,7 +118,7 @@ export default function PatientNavbar() {
                   key={item.href}
                   href={item.href}
                   className={`text-sm font-bold transition-colors ${
-                    active ? "text-sky-700" : "text-slate-500 hover:text-sky-700"
+                    active ? "text-brand-deep" : "text-slate-500 hover:text-brand-deep"
                   }`}
                 >
                   {tNav(item.key)}
@@ -135,8 +135,8 @@ export default function PatientNavbar() {
                 aria-expanded={browseOpen}
                 className={`flex items-center gap-1 text-sm font-bold transition-colors ${
                   browseIsActive || browseOpen
-                    ? "text-sky-700"
-                    : "text-slate-500 hover:text-sky-700"
+                    ? "text-brand-deep"
+                    : "text-slate-500 hover:text-brand-deep"
                 }`}
               >
                 {tNav("browse")}
@@ -154,7 +154,7 @@ export default function PatientNavbar() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setBrowseOpen(false)}
-                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700"
+                        className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-brand-soft/30 hover:text-brand-deep"
                       >
                         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                           <Icon className="h-4 w-4" />
@@ -175,7 +175,7 @@ export default function PatientNavbar() {
             <NotificationBell href="/patient/notifications" />
             <Link
               href="/patient/cart"
-              className="relative p-2 text-slate-500 hover:text-sky-700 transition group"
+              className="relative p-2 text-slate-500 hover:text-brand-deep transition group"
               aria-label={tPatient("viewCart")}
             >
               <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
@@ -206,7 +206,7 @@ export default function PatientNavbar() {
 
         {/* Mobile sheet */}
         {mobileOpen && (
-          <div className="mt-4 border-t border-sky-100 pt-4 lg:hidden">
+          <div className="mt-4 border-t border-brand-mist pt-4 lg:hidden">
             <div className="mb-2 px-2">
               <LocaleSwitcher variant="menu" />
             </div>
@@ -219,7 +219,7 @@ export default function PatientNavbar() {
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={`rounded-xl px-4 py-3 text-sm font-bold transition ${
-                      active ? "bg-sky-50 text-sky-700" : "text-slate-700 hover:bg-slate-50"
+                      active ? "bg-brand-soft/30 text-brand-deep" : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     {tNav(item.key)}

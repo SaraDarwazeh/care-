@@ -42,7 +42,7 @@ export default function VideoCard({ video, showSave = true, initiallySaved }: Vi
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-sky-100 to-indigo-100 text-sky-600">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-soft/50 to-indigo-100 text-brand">
               <PlaySquare className="h-12 w-12" />
             </div>
           )}
@@ -56,7 +56,7 @@ export default function VideoCard({ video, showSave = true, initiallySaved }: Vi
           )}
 
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-sky-600 shadow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-brand shadow">
               <Play className="h-4 w-4 fill-current" />
             </div>
             {showSave && (
@@ -68,12 +68,12 @@ export default function VideoCard({ video, showSave = true, initiallySaved }: Vi
         </div>
       </Link>
       <div className="p-4">
-        <span className="inline-block rounded-full bg-sky-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+        <span className="inline-block rounded-full bg-brand-soft/30 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep">
           {tCat(video.category)}
         </span>
         <Link
           href={`/patient/education/${video.id}`}
-          className="mt-2 block font-bold text-slate-800 hover:text-sky-700 line-clamp-2"
+          className="mt-2 block font-bold text-slate-800 hover:text-brand-deep line-clamp-2"
         >
           {tLocalized(video.title, locale)}
         </Link>

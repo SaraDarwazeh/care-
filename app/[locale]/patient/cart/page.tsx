@@ -146,7 +146,7 @@ export default function CartPage() {
 
       {loading ? (
         <div className="flex justify-center p-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-soft border-t-brand" />
         </div>
       ) : totalItems === 0 ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-16 text-center shadow-sm">
@@ -176,7 +176,7 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0 text-center sm:text-start">
                   <h4 className="font-bold text-slate-800 leading-tight">{tLocalized(item.name, locale)}</h4>
                   <p className="text-xs text-slate-400 mt-0.5">{item.category}</p>
-                  <p className="mt-1.5 font-bold text-sky-600">
+                  <p className="mt-1.5 font-bold text-brand">
                     {fmtCurrency(item.price, locale)}{" "}
                     <span className="text-xs font-normal text-slate-400">{t("each")}</span>
                   </p>
@@ -240,7 +240,7 @@ export default function CartPage() {
                 )}
                 <div className="flex justify-between border-t border-slate-100 pt-3 text-base">
                   <span className="font-bold text-slate-800">{t("total")}</span>
-                  <span className="font-extrabold text-xl text-sky-600">{fmtCurrency(total, locale)}</span>
+                  <span className="font-extrabold text-xl text-brand">{fmtCurrency(total, locale)}</span>
                 </div>
               </div>
 
@@ -251,7 +251,7 @@ export default function CartPage() {
               <PatientButton
                 onClick={handleCheckout}
                 loading={checkingOut}
-                className="w-full justify-center rounded-2xl py-3.5 text-base font-bold bg-violet-600 hover:bg-violet-700 shadow-[0_8px_20px_-8px_rgba(124,58,237,0.6)]"
+                className="w-full justify-center rounded-2xl py-3.5 text-base font-bold bg-brand hover:bg-brand-hover shadow-[0_8px_20px_-8px_rgba(31,106,114,0.5)]"
               >
                 {t("placeOrder")}
               </PatientButton>

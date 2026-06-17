@@ -98,25 +98,25 @@ export default function FindCareWizard() {
         <div className="flex flex-wrap gap-1.5">
           <Link
             href="/services/one-time"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.one-time")}
           </Link>
           <Link
             href="/services/shifts"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.shifts")}
           </Link>
           <Link
             href="/services/packages"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.packages")}
           </Link>
           <Link
             href="/services/additional"
-            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
           >
             {t("alreadyKnow.options.additional")}
           </Link>
@@ -240,7 +240,7 @@ export default function FindCareWizard() {
           <button
             type="button"
             onClick={() => setCoordinatorOpen(true)}
-            className="text-sm font-semibold text-sky-700 hover:text-sky-800"
+            className="text-sm font-semibold text-brand-deep hover:text-brand-deep"
           >
             {t("actions.talkToCoordinator")}
           </button>
@@ -287,7 +287,7 @@ function QuestionCard({
       <button
         type="button"
         onClick={onEdit}
-        className="w-full rounded-3xl border border-slate-200 bg-white p-4 text-start shadow-sm transition hover:border-sky-200 hover:bg-sky-50"
+        className="w-full rounded-3xl border border-slate-200 bg-white p-4 text-start shadow-sm transition hover:border-brand-soft hover:bg-brand-soft/30"
       >
         <div className="flex items-center gap-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-extrabold text-emerald-700">
@@ -297,16 +297,16 @@ function QuestionCard({
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
             <p className="mt-0.5 truncate font-bold text-slate-800">{summary}</p>
           </div>
-          <span className="text-xs font-semibold text-sky-600">Edit</span>
+          <span className="text-xs font-semibold text-brand">Edit</span>
         </div>
       </button>
     );
   }
 
   return (
-    <section className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-brand-mist bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-600 text-sm font-extrabold text-white">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white">
           {index}
         </span>
         <div>
@@ -350,8 +350,8 @@ function OptionButton({
       aria-pressed={selected}
       className={`rounded-2xl border px-4 py-3 text-start text-sm font-semibold transition ${
         selected
-          ? "border-sky-500 bg-sky-50 text-sky-800 shadow-sm"
-          : "border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50/40"
+          ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+          : "border-slate-200 bg-white text-slate-700 hover:border-brand-soft hover:bg-brand-soft/20"
       }`}
     >
       {label}

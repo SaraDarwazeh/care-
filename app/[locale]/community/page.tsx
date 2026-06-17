@@ -80,7 +80,7 @@ export default function CommunityPage() {
           <button
             type="button"
             onClick={() => setPostModalOpen(true)}
-            className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-sm shadow-sky-500/20 transition hover:bg-sky-700"
+            className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-sm shadow-brand/20 transition hover:bg-brand-deep"
           >
             <Plus className="h-4 w-4" /> {t("page.postCta")}
           </button>
@@ -108,8 +108,8 @@ export default function CommunityPage() {
                 onClick={() => setActiveCategory(catKey)}
                 className={`rounded-xl px-4 py-1.5 text-sm font-semibold transition ${
                   activeCategory === catKey
-                    ? "bg-sky-600 text-white shadow-sm"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-700"
+                    ? "bg-brand text-white shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:border-brand-soft hover:text-brand-deep"
                 }`}
               >
                 {t(`categories.${catKey}`)}
@@ -152,7 +152,7 @@ export default function CommunityPage() {
           <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-3xl bg-slate-50 shadow-2xl sm:rounded-3xl">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">{t("page.modal.kicker")}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brand">{t("page.modal.kicker")}</p>
                 <h2 className="text-lg font-bold text-slate-800">{t("page.modal.title")}</h2>
               </div>
               <button

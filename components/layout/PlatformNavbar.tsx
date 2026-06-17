@@ -84,7 +84,7 @@ export default function PlatformNavbar() {
         {/* Logo */}
         <Link
           href={appUser ? dashboardHref(appUser.role) : "/"}
-          className="flex shrink-0 items-center gap-2 text-sky-700 transition-opacity hover:opacity-75"
+          className="flex shrink-0 items-center gap-2 text-brand-deep transition-opacity hover:opacity-75"
         >
           <ShieldCheck className="h-6 w-6" />
           <span className="text-lg font-extrabold tracking-tight">Care+</span>
@@ -118,7 +118,7 @@ export default function PlatformNavbar() {
               </Link>
               <Link
                 href="/register"
-                className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700 hover:shadow"
+                className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-brand-deep hover:shadow"
               >
                 {t("getStarted")}
               </Link>
@@ -192,7 +192,7 @@ export default function PlatformNavbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-xl bg-sky-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-sky-700"
+                  className="rounded-xl bg-brand px-4 py-3 text-center text-sm font-bold text-white hover:bg-brand-deep"
                 >
                   {t("getStarted")}
                 </Link>

@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import type { DonationPost } from "@/lib/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  wheelchairs: "bg-sky-100 text-sky-700",
+  wheelchairs: "bg-brand-soft/50 text-brand-deep",
   walkers: "bg-emerald-100 text-emerald-700",
   beds: "bg-violet-100 text-violet-700",
   equipment: "bg-amber-100 text-amber-700",
@@ -66,7 +66,7 @@ export default function CommunityCard({ post }: { post: DonationPost }) {
         <div className="flex items-center gap-2 mt-auto">
           <Link
             href={`/community/${post.id}`}
-            className="flex-1 rounded-xl bg-sky-600 py-2 text-center text-sm font-bold text-white hover:bg-sky-700 transition"
+            className="flex-1 rounded-xl bg-brand py-2 text-center text-sm font-bold text-white hover:bg-brand-deep transition"
           >
             {t("card.viewDetails")}
           </Link>

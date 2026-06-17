@@ -51,7 +51,7 @@ export default function RecommendedForYou({
     return (
       <section className="space-y-3">
         <header className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-violet-500" />
+          <Sparkles className="h-5 w-5 text-brand-sand-strong" />
           <h2 className="text-xl font-extrabold tracking-tight text-slate-800">{t("heading")}</h2>
         </header>
         <EmptyState
@@ -73,7 +73,7 @@ export default function RecommendedForYou({
     <section className="space-y-4">
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-violet-500" />
+          <Sparkles className="h-5 w-5 text-brand-sand-strong" />
           <h2 className="text-xl font-extrabold tracking-tight text-slate-800">{t("heading")}</h2>
         </div>
         <p className="hidden text-sm text-slate-500 sm:block">{t("subtitle")}</p>
@@ -118,7 +118,7 @@ function ServicesRail({ items }: { items: ScoredService[] }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <Stethoscope className="h-4 w-4 text-sky-600" />
+        <Stethoscope className="h-4 w-4 text-brand" />
         <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-700">
           {t("servicesTitle")}
         </h3>
@@ -130,9 +130,9 @@ function ServicesRail({ items }: { items: ScoredService[] }) {
             <Link
               key={s.service.id}
               href={href}
-              className="group flex h-full flex-col rounded-2xl border border-sky-100 bg-sky-50/40 p-4 transition hover:border-sky-300 hover:bg-sky-50"
+              className="group flex h-full flex-col rounded-2xl border border-brand-mist bg-brand-soft/20 p-4 transition hover:border-brand-soft hover:bg-brand-soft/30"
             >
-              <p className="text-sm font-bold text-slate-800 group-hover:text-sky-700">
+              <p className="text-sm font-bold text-slate-800 group-hover:text-brand-deep">
                 {tLocalized(s.service.label, locale)}
               </p>
               <p className="mt-1 line-clamp-2 flex-1 text-xs leading-relaxed text-slate-500">

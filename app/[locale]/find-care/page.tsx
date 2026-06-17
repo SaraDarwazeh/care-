@@ -21,7 +21,7 @@ export default function FindCarePage() {
     <PlatformShell mode="service">
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <header className="mb-8">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-deep">
             {t("kicker")}
           </p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">

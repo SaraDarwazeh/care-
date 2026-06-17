@@ -152,22 +152,22 @@ export default function PatientHomePage() {
     // gated action is the booking itself.
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-12">
-        <section id="home" className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-sm">
-          <div className="bg-gradient-to-br from-sky-50 to-emerald-50 p-8 sm:p-12">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-sky-600">{t("guestKicker")}</p>
+        <section id="home" className="overflow-hidden rounded-3xl border border-brand-mist bg-white shadow-sm">
+          <div className="bg-gradient-to-br from-brand-soft/35 to-brand-sand/20 p-8 sm:p-12">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-brand">{t("guestKicker")}</p>
             <h1 className="mt-3 text-xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{t("guestTitle")}</h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">{t("guestSubtitle")}</p>
             <p className="mt-2 text-xs text-slate-500">{t("guestBrowseFree")}</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/find-care"
-                className="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700"
+                className="rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-deep"
               >
                 {t("guestCtaServices")}
               </Link>
               <Link
                 href="/patient/nurses"
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-brand-soft hover:text-brand-deep"
               >
                 {t("guestCtaNurses")}
               </Link>
@@ -178,19 +178,19 @@ export default function PatientHomePage() {
               guest dashboard the de-facto sitemap of public-facing
               content — the audit found that visitors couldn't tell
               Library / Community existed otherwise. */}
-          <div className="grid gap-2 border-t border-sky-100 bg-white p-4 sm:grid-cols-2 sm:gap-3 sm:p-6 lg:grid-cols-3">
+          <div className="grid gap-2 border-t border-brand-mist bg-white p-4 sm:grid-cols-2 sm:gap-3 sm:p-6 lg:grid-cols-3">
             {[
-              { href: "/services/packages", labelKey: "guestExplore.packages", color: "text-emerald-600 bg-emerald-50 border-emerald-100", hover: "hover:border-emerald-300" },
-              { href: "/patient/nurses", labelKey: "guestExplore.nurses", color: "text-sky-600 bg-sky-50 border-sky-100", hover: "hover:border-sky-300" },
-              { href: "/patient/store", labelKey: "guestExplore.store", color: "text-violet-600 bg-violet-50 border-violet-100", hover: "hover:border-violet-300" },
-              { href: "/patient/education", labelKey: "guestExplore.library", color: "text-rose-600 bg-rose-50 border-rose-100", hover: "hover:border-rose-300" },
-              { href: "/community", labelKey: "guestExplore.community", color: "text-amber-600 bg-amber-50 border-amber-100", hover: "hover:border-amber-300" },
-              { href: "/services", labelKey: "guestExplore.services", color: "text-slate-600 bg-slate-50 border-slate-100", hover: "hover:border-slate-300" },
+              { href: "/services/packages", labelKey: "guestExplore.packages" },
+              { href: "/patient/nurses", labelKey: "guestExplore.nurses" },
+              { href: "/patient/store", labelKey: "guestExplore.store" },
+              { href: "/patient/education", labelKey: "guestExplore.library" },
+              { href: "/community", labelKey: "guestExplore.community" },
+              { href: "/services", labelKey: "guestExplore.services" },
             ].map((tile) => (
               <Link
                 key={tile.href}
                 href={tile.href}
-                className={`group flex items-start gap-3 rounded-2xl border bg-white p-4 transition ${tile.hover} ${tile.color.split(" ").filter(c => c.startsWith("border-")).join(" ")}`}
+                className="group flex items-start gap-3 rounded-2xl border border-brand-mist bg-white p-4 transition hover:border-brand-soft"
               >
                 <div className="flex-1">
                   <p className="text-sm font-bold text-slate-800 group-hover:text-slate-900">
@@ -214,16 +214,16 @@ export default function PatientHomePage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-8 sm:space-y-12 sm:pb-12">
       {/* 1. Welcome card */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 to-sky-800 p-6 shadow-[0_20px_40px_-15px_rgba(2,132,199,0.5)] text-white sm:p-12">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 shadow-[0_20px_40px_-15px_rgba(2,132,199,0.5)] text-white sm:p-12">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md mb-3 sm:text-sm sm:mb-4">
               <HeartPulse className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> {t("welcomeKicker")}
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-5xl mb-2">{t("welcomeTitle", { name: firstName })}</h1>
-            <p className="max-w-xl text-sm text-sky-100 font-medium sm:text-lg">{t("welcomeSubtitle")}</p>
+            <p className="max-w-xl text-sm text-white/85 font-medium sm:text-lg">{t("welcomeSubtitle")}</p>
             <div className="mt-5 sm:mt-8">
-              <Link href="/patient/nurses" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-sky-700 hover:bg-slate-50 transition shadow-lg hover:-translate-y-0.5 sm:px-6 sm:py-3.5 sm:text-base">
+              <Link href="/patient/nurses" className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-brand-deep hover:bg-slate-50 transition shadow-lg hover:-translate-y-0.5 sm:px-6 sm:py-3.5 sm:text-base">
                 {t("findNurseCta")} <ChevronRight className="h-5 w-5" />
               </Link>
             </div>
@@ -233,8 +233,8 @@ export default function PatientHomePage() {
             <ShieldCheck className="absolute inset-0 m-auto h-24 w-24 text-white/80" />
           </div>
         </div>
-        <div className="absolute -end-20 -top-20 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl" />
-        <div className="absolute -start-20 -bottom-20 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="absolute -end-20 -top-20 h-96 w-96 rounded-full bg-brand-soft/30 blur-3xl" />
+        <div className="absolute -start-20 -bottom-20 h-64 w-64 rounded-full bg-brand-soft/25 blur-3xl" />
       </section>
 
       {/* 2. Profile completeness banner */}
@@ -280,17 +280,17 @@ export default function PatientHomePage() {
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { labelKey: "bookNurseLabel", descKey: "bookNurseDesc", href: "/patient/nurses",     icon: Stethoscope, color: "bg-sky-50 text-sky-600 border-sky-100",         iconBg: "bg-sky-100" },
-            { labelKey: "recordsLabel",   descKey: "recordsDesc",   href: "/patient/records",    icon: BookOpen,    color: "bg-emerald-50 text-emerald-600 border-emerald-100", iconBg: "bg-emerald-100" },
-            { labelKey: "packagesLabel",  descKey: "packagesDesc",  href: "/services/packages",  icon: Package,     color: "bg-violet-50 text-violet-600 border-violet-100",     iconBg: "bg-violet-100" },
-            { labelKey: "storeLabel",     descKey: "storeDesc",     href: "/patient/store",      icon: Store,       color: "bg-amber-50 text-amber-600 border-amber-100",         iconBg: "bg-amber-100" },
+            { labelKey: "bookNurseLabel", descKey: "bookNurseDesc", href: "/patient/nurses",     icon: Stethoscope },
+            { labelKey: "recordsLabel",   descKey: "recordsDesc",   href: "/patient/records",    icon: BookOpen },
+            { labelKey: "packagesLabel",  descKey: "packagesDesc",  href: "/services/packages",  icon: Package },
+            { labelKey: "storeLabel",     descKey: "storeDesc",     href: "/patient/store",      icon: Store },
           ].map((action) => (
             <Link
               key={action.href}
               href={action.href}
-              className={`rounded-3xl bg-white border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex flex-col gap-3 ${action.color}`}
+              className="rounded-3xl bg-white border border-brand-mist shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-brand-soft transition-all p-5 flex flex-col gap-3"
             >
-              <div className={`w-10 h-10 flex items-center justify-center rounded-2xl ${action.iconBg}`}>
+              <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-brand-soft/40 text-brand-deep">
                 <action.icon className="h-5 w-5" />
               </div>
               <div>
@@ -309,7 +309,7 @@ export default function PatientHomePage() {
             <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("upcomingTitle")}</h2>
             <p className="text-slate-500 font-medium">{t("upcomingSubtitle")}</p>
           </div>
-          <Link href="/patient/appointments" className="flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700 transition">
+          <Link href="/patient/appointments" className="flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep transition">
             {t("viewAll")} <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
@@ -330,7 +330,7 @@ export default function PatientHomePage() {
             {upcomingBookings.map((booking) => (
               <div key={booking.id} className="flex flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-md transition">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-600">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft/30 text-brand">
                     <CalendarClock className="h-6 w-6" />
                   </div>
                   <div className="min-w-0">
@@ -364,15 +364,15 @@ export default function PatientHomePage() {
               <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t("activeCarePlansTitle")}</h2>
               <p className="text-slate-500 font-medium">{t("activeCarePlansSubtitle")}</p>
             </div>
-            <Link href="/services/packages" className="hidden sm:flex items-center gap-1 text-sm font-bold text-violet-600 hover:text-violet-700 transition">
+            <Link href="/services/packages" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep transition">
               {t("browsePackages")} <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {activeCarePlans.map((plan) => (
-              <div key={plan.booking.id} className="rounded-3xl border border-violet-100 bg-violet-50/40 p-5 shadow-sm">
+              <div key={plan.booking.id} className="rounded-3xl border border-brand-mist bg-brand-soft/20 p-5 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-soft/50 text-brand-deep shrink-0">
                     <HeartHandshake className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -393,7 +393,7 @@ export default function PatientHomePage() {
                   </div>
                   <div>
                     <p className="font-bold text-slate-400 uppercase tracking-wider">{t("remaining")}</p>
-                    <p className="mt-0.5 text-sm font-semibold text-violet-700">{t("daysShort", { n: plan.daysRemaining })}</p>
+                    <p className="mt-0.5 text-sm font-semibold text-brand-deep">{t("daysShort", { n: plan.daysRemaining })}</p>
                   </div>
                 </div>
               </div>

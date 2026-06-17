@@ -16,9 +16,9 @@ export default function TopNav() {
   }
 
   return (
-    <header className="border-b border-sky-100 bg-white/90 backdrop-blur">
+    <header className="border-b border-brand-mist bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-lg font-bold text-sky-700">
+        <Link href="/" className="text-lg font-bold text-brand-deep">
           Care+
         </Link>
         <div className="flex items-center gap-3">
@@ -34,7 +34,7 @@ export default function TopNav() {
           ) : (
             <Link
               href="/login"
-              className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white"
+              className="rounded-xl bg-brand px-3 py-2 text-sm font-semibold text-white"
             >
               Login
             </Link>

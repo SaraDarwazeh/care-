@@ -166,7 +166,7 @@ export default function PatientEducationFeedPage() {
         {appUser?.role === "patient" && (
           <Link
             href="/patient/education/saved"
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:border-sky-300 hover:text-sky-700"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm hover:border-brand-soft hover:text-brand-deep"
           >
             <Bookmark className="h-4 w-4" /> {t("savedCta")}
           </Link>
@@ -180,8 +180,8 @@ export default function PatientEducationFeedPage() {
           onClick={() => selectCategory(null)}
           className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${
             category === null
-              ? "border-sky-500 bg-sky-600 text-white"
-              : "border-slate-200 bg-white text-slate-600 hover:border-sky-300"
+              ? "border-brand bg-brand text-white"
+              : "border-slate-200 bg-white text-slate-600 hover:border-brand-soft"
           }`}
         >
           {t("filters.all")}
@@ -196,8 +196,8 @@ export default function PatientEducationFeedPage() {
               onClick={() => selectCategory(c)}
               className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${
                 active
-                  ? "border-sky-500 bg-sky-600 text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-sky-300"
+                  ? "border-brand bg-brand text-white"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-brand-soft"
               }`}
             >
               {tCat(c)}

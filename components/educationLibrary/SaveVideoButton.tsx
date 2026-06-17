@@ -77,14 +77,14 @@ export default function SaveVideoButton({
         type="button"
         onClick={handleClick}
         disabled={busy || isLocked || !hydrated}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-600 shadow-sm transition hover:text-sky-600 disabled:opacity-50"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-600 shadow-sm transition hover:text-brand disabled:opacity-50"
         aria-label={saved ? t("saved") : t("save")}
         aria-pressed={saved}
       >
         {busy ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : saved ? (
-          <BookmarkCheck className="h-4 w-4 text-sky-600" />
+          <BookmarkCheck className="h-4 w-4 text-brand" />
         ) : (
           <Bookmark className="h-4 w-4" />
         )}
@@ -99,8 +99,8 @@ export default function SaveVideoButton({
       disabled={busy || isLocked || !hydrated}
       className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition disabled:opacity-50 ${
         saved
-          ? "bg-sky-600 text-white shadow-md shadow-sky-600/20 hover:bg-sky-700"
-          : "bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:text-sky-700"
+          ? "bg-brand text-white shadow-md shadow-brand/20 hover:bg-brand-deep"
+          : "bg-white text-slate-700 border border-slate-200 hover:border-brand-soft hover:text-brand-deep"
       }`}
       aria-pressed={saved}
     >

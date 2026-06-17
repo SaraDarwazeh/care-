@@ -72,11 +72,11 @@ export default function CoordinatorPanel({ open, onClose }: CoordinatorPanelProp
               <a
                 key={channel.kind}
                 href={hrefFor(channel)}
-                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-sky-300 hover:bg-sky-50"
+                className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-brand-soft hover:bg-brand-soft/30"
                 target={channel.kind === "whatsapp" || channel.kind === "telegram" ? "_blank" : undefined}
                 rel={channel.kind === "whatsapp" || channel.kind === "telegram" ? "noopener noreferrer" : undefined}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft/50 text-brand-deep">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="flex-1">

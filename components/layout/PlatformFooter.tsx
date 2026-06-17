@@ -52,7 +52,7 @@ export default function PlatformFooter() {
   return (
     <footer className="border-t border-slate-200 bg-white px-4 py-12 sm:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-col items-center gap-3 text-sky-700">
+        <div className="mb-8 flex flex-col items-center gap-3 text-brand-deep">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-6 w-6" />
             <span className="text-lg font-extrabold">Care+</span>
@@ -71,7 +71,7 @@ export default function PlatformFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm font-medium text-slate-600 hover:text-sky-600 transition"
+                      className="text-sm font-medium text-slate-600 hover:text-brand transition"
                     >
                       {t(`links.${link.key}`)}
                     </Link>

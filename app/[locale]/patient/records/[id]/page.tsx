@@ -148,7 +148,7 @@ export default function RecordDetail({ params }: { params: Promise<{ id: string 
                 {fmtDate(record.createdAt, locale, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
               </p>
             </div>
-            <span className="shrink-0 rounded-2xl bg-sky-50 border border-sky-100 px-3 py-1.5 text-xs font-bold text-sky-700">
+            <span className="shrink-0 rounded-2xl bg-brand-soft/30 border border-brand-mist px-3 py-1.5 text-xs font-bold text-brand-deep">
               {tDetail("observationCount", { n: observations.length })}
             </span>
           </div>
@@ -249,7 +249,7 @@ export default function RecordDetail({ params }: { params: Promise<{ id: string 
                 type="button"
                 disabled={actionBusy}
                 onClick={() => withBusy(() => submitMedicalRecord(record.id))}
-                className="flex items-center gap-2 rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-sky-700 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-brand-deep disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
                 {status === "disputed"
@@ -359,7 +359,7 @@ export default function RecordDetail({ params }: { params: Promise<{ id: string 
           <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-600">{tModal("kicker")}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brand">{tModal("kicker")}</p>
                 <h2 className="text-lg font-bold text-slate-800">{record.summary ?? tModal("visitFallback")}</h2>
               </div>
               <button

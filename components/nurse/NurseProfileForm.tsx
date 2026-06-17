@@ -340,7 +340,7 @@ export default function NurseProfileForm({
   ];
 
   return (
-    <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm sm:p-8">
+    <div className="rounded-3xl border border-brand-mist bg-white p-6 shadow-sm sm:p-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-800">{t("hubTitle")}</h2>
@@ -383,8 +383,8 @@ export default function NurseProfileForm({
               onClick={() => setActiveSection(section.id)}
               className={`flex items-center gap-2 whitespace-nowrap rounded-2xl border px-4 py-2.5 text-sm font-bold transition ${
                 active
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-emerald-200 hover:text-slate-700"
+                  ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-brand-soft hover:text-slate-700"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -409,7 +409,7 @@ export default function NurseProfileForm({
                     required
                     dir="auto"
                     placeholder={tIdentity("fullNamePlaceholder")}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   />
                 </div>
                 <ImageUploadField
@@ -429,7 +429,7 @@ export default function NurseProfileForm({
                     required
                     placeholder={tIdentity("locationPlaceholder")}
                     dir="auto"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   />
                 </div>
                 <div>
@@ -438,7 +438,7 @@ export default function NurseProfileForm({
                     value={gender}
                     onChange={(e) => setGender(e.target.value as "male" | "female" | "other" | "")}
                     required
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   >
                     <option value="" disabled>{tIdentity("selectGender")}</option>
                     <option value="female">{tIdentity("female")}</option>
@@ -454,7 +454,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setBio(e.target.value)}
                   required
                   dir="auto"
-                  className="min-h-[120px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="min-h-[120px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   placeholder={tIdentity("bioPlaceholder")}
                 />
               </div>
@@ -465,7 +465,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setLanguages(e.target.value)}
                   placeholder={tIdentity("languagesPlaceholder")}
                   dir="auto"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                 />
               </div>
             </div>
@@ -484,7 +484,7 @@ export default function NurseProfileForm({
                     required
                     placeholder={tServices("specializationPlaceholder")}
                     dir="auto"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   />
                   {/* Localized suggestion vocabulary — free-text entries still accepted */}
                   <datalist id="nurse-spec-suggestions">
@@ -502,7 +502,7 @@ export default function NurseProfileForm({
                     onChange={(e) => setExperienceYears(Number(e.target.value))}
                     required
                     min="0"
-                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                   />
                 </div>
               </div>
@@ -515,7 +515,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setPricePerHour(e.target.value ? Number(e.target.value) : undefined)}
                   min="0"
                   placeholder={tServices("hourlyRatePlaceholder")}
-                  className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                 />
               </div>
 
@@ -536,7 +536,7 @@ export default function NurseProfileForm({
                         onChange={(e) => setter(e.target.value ? Number(e.target.value) : undefined)}
                         min="0"
                         placeholder={tServices("perShiftPlaceholder")}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                       />
                     </div>
                   ))}
@@ -554,7 +554,7 @@ export default function NurseProfileForm({
                   <button
                     type="button"
                     onClick={() => setServices([...services, { name: "", price: 0 }])}
-                    className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700"
+                    className="flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep"
                   >
                     <Plus className="h-4 w-4" /> {tServices("addService")}
                   </button>
@@ -597,7 +597,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setSkills(e.target.value)}
                   placeholder={tServices("skillsPlaceholder")}
                   dir="auto"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                 />
               </div>
             </div>
@@ -606,7 +606,7 @@ export default function NurseProfileForm({
           {/* ADDITIONAL SERVICES */}
           {activeSection === "additional" && (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
-              <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4 text-sm text-slate-700">
+              <div className="rounded-2xl border border-brand-mist bg-brand-soft/20 p-4 text-sm text-slate-700">
                 <p className="font-bold text-slate-800">{tAdditional("intro.title")}</p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-600">{tAdditional("intro.body")}</p>
               </div>
@@ -622,7 +622,7 @@ export default function NurseProfileForm({
                   <button
                     type="button"
                     onClick={() => setAdditionalServices([...additionalServices, { name: "", price: 0 }])}
-                    className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700"
+                    className="flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-deep"
                   >
                     <Plus className="h-4 w-4" /> {tAdditional("addAddon")}
                   </button>
@@ -675,7 +675,7 @@ export default function NurseProfileForm({
                       key={s.id}
                       className={`flex cursor-pointer items-center justify-center rounded-xl border p-3 text-sm font-semibold transition-all ${
                         availableShifts.includes(s.id)
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                          ? "border-brand bg-brand-soft/30 text-brand-deep"
                           : "border-slate-200 text-slate-600 hover:border-slate-300"
                       }`}
                     >
@@ -700,7 +700,7 @@ export default function NurseProfileForm({
                       type="button"
                       onClick={() => toggleDay(day)}
                       className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-                        availableDays.includes(day) ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        availableDays.includes(day) ? "bg-brand text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
                       {tDays(day)}
@@ -714,7 +714,7 @@ export default function NurseProfileForm({
                   type="checkbox"
                   checked={acceptsOvernight}
                   onChange={(e) => setAcceptsOvernight(e.target.checked)}
-                  className="h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-600"
+                  className="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand"
                 />
                 <span className="font-semibold text-slate-700">{tAvail("acceptOvernight")}</span>
               </label>
@@ -759,17 +759,17 @@ export default function NurseProfileForm({
           {/* CREDENTIALS & GALLERY */}
           {activeSection === "credentials" && (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-2 rtl:slide-in-from-left-2">
-              <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 p-6">
+              <div className="rounded-2xl border-2 border-dashed border-brand-soft bg-brand-soft/30 p-6">
                 <div className="mb-3 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-sky-600" />
-                  <p className="text-sm font-bold text-sky-800">{tCreds("title")}</p>
+                  <FileText className="h-5 w-5 text-brand" />
+                  <p className="text-sm font-bold text-brand-deep">{tCreds("title")}</p>
                 </div>
-                <p className="mb-3 text-xs text-sky-700/80">{tCreds("intro")}</p>
+                <p className="mb-3 text-xs text-brand-deep/80">{tCreds("intro")}</p>
                 <button
                   type="button"
                   onClick={() => certInputRef.current?.click()}
                   disabled={uploadingCert}
-                  className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-deep disabled:opacity-50"
                 >
                   {uploadingCert ? (
                     <>
@@ -812,7 +812,7 @@ export default function NurseProfileForm({
                               href={cert.url}
                               target="_blank"
                               rel="noreferrer noopener"
-                              className="text-xs font-semibold text-sky-600 hover:underline"
+                              className="text-xs font-semibold text-brand hover:underline"
                             >
                               {tCreds("viewFile")}
                             </a>
@@ -840,7 +840,7 @@ export default function NurseProfileForm({
                   onChange={(e) => setCarePhilosophy(e.target.value)}
                   placeholder={tCreds("carePhilosophyPlaceholder")}
                   dir="auto"
-                  className="min-h-[100px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="min-h-[100px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-1 focus:ring-brand-soft/50"
                 />
               </div>
 

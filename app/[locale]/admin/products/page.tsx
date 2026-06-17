@@ -154,12 +154,12 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("nameEn")} *</label>
                 <input required value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} dir="ltr"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="Blood Pressure Monitor" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="Blood Pressure Monitor" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("nameAr")}</label>
                 <input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} dir="rtl"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="جهاز قياس ضغط الدم" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="جهاز قياس ضغط الدم" />
               </div>
             </div>
 
@@ -167,12 +167,12 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("price")} *</label>
                 <input required type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="0.00" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="0.00" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("category")} *</label>
                 <input required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="Equipment" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="Equipment" />
               </div>
             </div>
             <ImageUploadField
@@ -200,12 +200,12 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("descriptionEn")} *</label>
                 <textarea required value={form.descriptionEn} onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })} dir="ltr"
-                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" />
+                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">{t("descriptionAr")}</label>
                 <textarea value={form.descriptionAr} onChange={(e) => setForm({ ...form, descriptionAr: e.target.value })} dir="rtl"
-                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" />
+                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" />
               </div>
             </div>
 

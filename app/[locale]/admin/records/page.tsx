@@ -198,7 +198,7 @@ function AdminRecordsPageInner() {
             placeholder="Search by patient, nurse, summary, or dispute note…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-brand focus:outline-none"
           />
         </div>
       </div>

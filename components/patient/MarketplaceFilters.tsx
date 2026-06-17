@@ -112,7 +112,7 @@ function ChipMultiSelect({
   if (options.length === 0) return null;
 
   const accentClasses = {
-    sky: "border-sky-500 bg-sky-50 text-sky-700",
+    sky: "border-brand bg-brand-soft/30 text-brand-deep",
     violet: "border-violet-500 bg-violet-50 text-violet-700",
     emerald: "border-emerald-500 bg-emerald-50 text-emerald-700",
   }[accent];
@@ -176,9 +176,9 @@ export default function MarketplaceFilters({
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-5 flex items-center gap-2 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-        <Filter className="h-5 w-5 text-sky-600" /> {t("title")}
+        <Filter className="h-5 w-5 text-brand" /> {t("title")}
         {activeCount > 0 && (
-          <span className="ms-auto rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-bold text-sky-700">
+          <span className="ms-auto rounded-full bg-brand-soft/50 px-2.5 py-0.5 text-xs font-bold text-brand-deep">
             {t("activeCount", { n: activeCount })}
           </span>
         )}
@@ -195,7 +195,7 @@ export default function MarketplaceFilters({
               value={values.query}
               onChange={(e) => patch({ query: e.target.value })}
               dir="auto"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
             />
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function MarketplaceFilters({
               value={values.location}
               onChange={(e) => patch({ location: e.target.value })}
               dir="auto"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 ps-9 pe-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
             />
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function MarketplaceFilters({
                     type="button"
                     onClick={() => patch({ providerKind: opt })}
                     className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-colors ${
-                      active ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                      active ? "bg-white text-brand-deep shadow-sm" : "text-slate-500 hover:text-slate-700"
                     }`}
                   >
                     {tProviderFilter(`options.${opt}`)}
@@ -244,14 +244,14 @@ export default function MarketplaceFilters({
         )}
 
         {availableServices.length > 0 && (
-          <div className="rounded-2xl border border-sky-100 bg-sky-50/40 p-3">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-700">
+          <div className="rounded-2xl border border-brand-mist bg-brand-soft/30/40 p-3">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-deep">
               <Stethoscope className="h-3.5 w-3.5" /> {t("medicalServices")}
             </p>
             <select
               value={values.service}
               onChange={(e) => patch({ service: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none"
             >
               <option value="">{t("anyMedicalService")}</option>
               {availableServices.map((service) => (
@@ -297,7 +297,7 @@ export default function MarketplaceFilters({
           <select
             value={values.shift || "any"}
             onChange={(e) => patch({ shift: e.target.value === "any" ? "" : e.target.value })}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-brand focus:outline-none"
           >
             <option value="any">{t("anyShift")}</option>
             <option value="a">{t("shiftAFull")}</option>
@@ -320,7 +320,7 @@ export default function MarketplaceFilters({
             step={1}
             value={values.minExperience}
             onChange={(e) => patch({ minExperience: Number(e.target.value) })}
-            className="w-full accent-sky-600"
+            className="w-full accent-brand"
           />
         </div>
 
@@ -333,7 +333,7 @@ export default function MarketplaceFilters({
               type="checkbox"
               checked={values.availableToday}
               onChange={(e) => patch({ availableToday: e.target.checked })}
-              className="h-4 w-4 rounded text-sky-600 focus:ring-sky-500"
+              className="h-4 w-4 rounded text-brand focus:ring-brand-soft/50"
             />
           </label>
           <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
@@ -344,7 +344,7 @@ export default function MarketplaceFilters({
               type="checkbox"
               checked={values.transportAvailable}
               onChange={(e) => patch({ transportAvailable: e.target.checked })}
-              className="h-4 w-4 rounded text-sky-600 focus:ring-sky-500"
+              className="h-4 w-4 rounded text-brand focus:ring-brand-soft/50"
             />
           </label>
         </div>
@@ -363,7 +363,7 @@ export default function MarketplaceFilters({
                 onClick={() => patch({ overnight: option.value })}
                 className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${
                   values.overnight === option.value
-                    ? "bg-white text-sky-700 shadow-sm"
+                    ? "bg-white text-brand-deep shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -378,7 +378,7 @@ export default function MarketplaceFilters({
           <select
             value={values.gender || "any"}
             onChange={(e) => patch({ gender: e.target.value === "any" ? "" : e.target.value })}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-brand focus:outline-none"
           >
             <option value="any">{t("noPreference")}</option>
             <option value="female">{tGender("female")}</option>
@@ -408,7 +408,7 @@ export default function MarketplaceFilters({
           <select
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortKey)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-brand focus:outline-none"
           >
             <option value="rating">{t("sortHighestRated")}</option>
             <option value="price_low">{t("sortLowestPrice")}</option>

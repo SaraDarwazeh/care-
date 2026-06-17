@@ -507,17 +507,17 @@ export default function BookingForm({
 
   return (
     <>
-    <div className="rounded-3xl border border-sky-100 bg-white p-6 pb-24 lg:pb-6 shadow-sm">
+    <div className="rounded-3xl border border-brand-mist bg-white p-6 pb-24 lg:pb-6 shadow-sm">
       {/* Prominent running-total banner. Per the 2026-06-17 audit, the
           old header showed the estimated total in a small text-end pill
           which patients consistently missed until the final step. The
           larger, separated panel keeps pricing visible from step 1 and
           surfaces the base + add-on breakdown inline so a patient never
           has to guess how the total was calculated. */}
-      <div className="mb-6 rounded-2xl bg-gradient-to-br from-sky-600 to-sky-700 p-5 text-white shadow-sm">
+      <div className="mb-6 rounded-2xl bg-gradient-to-br from-brand to-brand-deep p-5 text-white shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-100">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/80">
               {t("estimatedTotal")}
             </p>
             <p className="mt-1 text-3xl font-extrabold leading-none tracking-tight">
@@ -525,13 +525,13 @@ export default function BookingForm({
             </p>
           </div>
           <div className="text-end">
-            <p className="text-xs font-bold text-sky-100">{t("step", { current: step, total: totalSteps })}</p>
-            <p className="mt-0.5 text-xs font-medium text-sky-200">{t("title")}</p>
+            <p className="text-xs font-bold text-white/80">{t("step", { current: step, total: totalSteps })}</p>
+            <p className="mt-0.5 text-xs font-medium text-white/75">{t("title")}</p>
           </div>
         </div>
         {pricing.base > 0 && (
-          <div className="mt-4 grid gap-1.5 border-t border-sky-400/40 pt-3 text-xs">
-            <div className="flex items-center justify-between text-sky-50">
+          <div className="mt-4 grid gap-1.5 border-t border-white/30 pt-3 text-xs">
+            <div className="flex items-center justify-between text-white/90">
               <span>{tS5("base")}</span>
               <span className="font-semibold">{fmtCurrency(pricing.base, locale)}</span>
             </div>
@@ -540,7 +540,7 @@ export default function BookingForm({
                 const catalog = findCatalogService(a.id);
                 const label = catalog ? tLocalized(catalog.label, locale) : a.name;
                 return (
-                  <div key={a.id} className="flex items-center justify-between text-sky-50">
+                  <div key={a.id} className="flex items-center justify-between text-white/90">
                     <span>+ {label}</span>
                     <span className="font-semibold">{fmtCurrency(a.price, locale)}</span>
                   </div>
@@ -551,12 +551,12 @@ export default function BookingForm({
       </div>
 
       {bookingType === "package" && selectedPackage && (
-        <div className="mb-6 rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
+        <div className="mb-6 rounded-2xl border border-brand-mist bg-brand-soft/30/60 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-2.5">
-              <HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" />
+              <HeartHandshake className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-sky-700">{tBanner("kicker")}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brand-deep">{tBanner("kicker")}</p>
                 <p className="mt-0.5 text-base font-bold leading-tight text-slate-800">{tLocalized(selectedPackage.title, locale)}</p>
                 <p className="mt-1 text-sm leading-relaxed text-slate-600">{tLocalized(selectedPackage.summary, locale)}</p>
               </div>
@@ -564,7 +564,7 @@ export default function BookingForm({
             <Link
               href={`/services/packages/${selectedPackage.slug ?? selectedPackage.id}`}
               target="_blank"
-              className="shrink-0 text-xs font-bold text-sky-700 underline-offset-2 hover:underline"
+              className="shrink-0 text-xs font-bold text-brand-deep underline-offset-2 hover:underline"
             >
               {tBanner("fullDetails")}
             </Link>
@@ -608,7 +608,7 @@ export default function BookingForm({
                   const label = tLocalized(svc, locale);
                   return (
                     <li key={`${label}-${i}`} className="flex items-start gap-1.5">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-sky-500" />
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-soft/300" />
                       <span>{label}</span>
                     </li>
                   );
@@ -623,7 +623,7 @@ export default function BookingForm({
           mobile only. Desktop renders the full form linearly. */}
       <div className="lg:hidden mb-8 flex gap-2">
         {Array.from({ length: totalSteps }).map((_, i) => (
-          <div key={i} className={`h-2 flex-1 rounded-full ${i + 1 <= step ? "bg-sky-600" : "bg-sky-100"}`} />
+          <div key={i} className={`h-2 flex-1 rounded-full ${i + 1 <= step ? "bg-brand" : "bg-brand-soft/50"}`} />
         ))}
       </div>
 
@@ -635,7 +635,7 @@ export default function BookingForm({
           </div>
           <div className="h-1.5 w-full rounded-full bg-slate-100">
             <div
-              className="h-1.5 rounded-full bg-sky-500 transition-all duration-500"
+              className="h-1.5 rounded-full bg-brand-soft/300 transition-all duration-500"
               style={{ width: `${(step / totalSteps) * 100}%` }}
             />
           </div>
@@ -643,7 +643,7 @@ export default function BookingForm({
             {stepLabelOrder.map((labelKey, i) => (
               <span
                 key={labelKey}
-                className={`text-[10px] sm:text-xs font-medium ${i + 1 <= step ? "text-sky-600" : "text-slate-300"}`}
+                className={`text-[10px] sm:text-xs font-medium ${i + 1 <= step ? "text-brand" : "text-slate-300"}`}
               >
                 {tLabels(labelKey)}
               </span>
@@ -653,17 +653,17 @@ export default function BookingForm({
 
         <div className="min-h-[250px]">
           <div className={`${sectionVis(1)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
-              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Stethoscope className="h-5 w-5 text-sky-600"/> {tS1("title")}</h3>
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Stethoscope className="h-5 w-5 text-brand"/> {tS1("title")}</h3>
               <div className="mb-3">
                 <label className="mb-2 block text-sm font-medium text-slate-700">{tS1("bookingType")}</label>
                 <div className="grid grid-cols-3 gap-2">
-                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "one-time" ? "border-sky-500 bg-sky-50 text-sky-800" : "border-slate-200 text-slate-600"}`}>
+                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "one-time" ? "border-brand bg-brand-soft/30 text-brand-deep" : "border-slate-200 text-slate-600"}`}>
                     <input type="radio" name="bookingType" value="one-time" checked={bookingType === "one-time"} onChange={() => setBookingType("one-time")} className="sr-only" /> {tS1("oneTime")}
                   </label>
-                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "shift" ? "border-sky-500 bg-sky-50 text-sky-800" : "border-slate-200 text-slate-600"}`}>
+                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "shift" ? "border-brand bg-brand-soft/30 text-brand-deep" : "border-slate-200 text-slate-600"}`}>
                     <input type="radio" name="bookingType" value="shift" checked={bookingType === "shift"} onChange={() => setBookingType("shift")} className="sr-only" /> {tS1("shift")}
                   </label>
-                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "package" ? "border-sky-500 bg-sky-50 text-sky-800" : "border-slate-200 text-slate-600"}`}>
+                  <label className={`cursor-pointer rounded-xl border px-2 py-2.5 text-sm text-center font-medium transition-all ${bookingType === "package" ? "border-brand bg-brand-soft/30 text-brand-deep" : "border-slate-200 text-slate-600"}`}>
                     <input
                       type="radio"
                       name="bookingType"
@@ -710,7 +710,7 @@ export default function BookingForm({
               )}
               <div className="grid gap-3">
                 {serviceOptions.map((item) => (
-                  <label key={item.name} className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${service === item.name ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200 hover:border-sky-300"}`}>
+                  <label key={item.name} className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${service === item.name ? "border-brand bg-brand-soft/30 shadow-sm" : "border-slate-200 hover:border-brand-soft"}`}>
                     <div className="flex items-center gap-3">
                       <input
                         type="radio"
@@ -718,7 +718,7 @@ export default function BookingForm({
                         value={item.name}
                         checked={service === item.name}
                         onChange={() => setService(item.name)}
-                        className="h-4 w-4 text-sky-600 focus:ring-sky-600"
+                        className="h-4 w-4 text-brand focus:ring-brand"
                       />
                       <span className="font-medium text-slate-700">{item.name}</span>
                     </div>
@@ -729,7 +729,7 @@ export default function BookingForm({
             </div>
 
           <div className={`${sectionVis(2)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
-              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Clock className="h-5 w-5 text-sky-600"/> {bookingType === "shift" ? tS2("selectShift") : tS2("visitTiming")}</h3>
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Clock className="h-5 w-5 text-brand"/> {bookingType === "shift" ? tS2("selectShift") : tS2("visitTiming")}</h3>
               {bookingType === "shift" ? (
                 <div className="grid gap-3">
                   {(["A", "B", "C"] as const).map((id) => {
@@ -738,18 +738,18 @@ export default function BookingForm({
                     const fallbackPrice = selectedPrice * shiftBilledHours;
                     const displayPrice = hasFlat ? flat : fallbackPrice;
                     return (
-                      <label key={id} className={`flex cursor-pointer items-center rounded-xl border p-4 transition-all ${shift === id ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200 hover:border-sky-300"}`}>
+                      <label key={id} className={`flex cursor-pointer items-center rounded-xl border p-4 transition-all ${shift === id ? "border-brand bg-brand-soft/30 shadow-sm" : "border-slate-200 hover:border-brand-soft"}`}>
                         <input
                           type="radio"
                           name="shift"
                           value={id}
                           checked={shift === id}
                           onChange={() => setShift(id)}
-                          className="h-4 w-4 text-sky-600 focus:ring-sky-600 me-3"
+                          className="h-4 w-4 text-brand focus:ring-brand me-3"
                         />
                         <span className="flex-1 font-medium text-slate-700">{SHIFT_LABELS[id]}</span>
                         {displayPrice > 0 && (
-                          <span className="text-sm font-bold text-sky-700">{fmtCurrency(displayPrice, locale)}</span>
+                          <span className="text-sm font-bold text-brand-deep">{fmtCurrency(displayPrice, locale)}</span>
                         )}
                       </label>
                     );
@@ -759,7 +759,7 @@ export default function BookingForm({
                 <div className="space-y-3">
                   <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">{tS2("packageFullDayNote")}</p>
                   {selectedPackage?.shiftOptions && selectedPackage.shiftOptions.length > 0 && (
-                    <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-4 text-sm text-slate-700">
+                    <div className="rounded-xl border border-brand-mist bg-brand-soft/30/60 p-4 text-sm text-slate-700">
                       <p className="font-semibold text-slate-800">
                         {tS2("coveragePrefix", {
                           value: selectedPackage.shiftOptions.length === 3
@@ -779,7 +779,7 @@ export default function BookingForm({
             </div>
 
           <div className={`${sectionVis(3)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
-              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Calendar className="h-5 w-5 text-sky-600"/> {tS3("title")}</h3>
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><Calendar className="h-5 w-5 text-brand"/> {tS3("title")}</h3>
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">{bookingType === "package" ? tS3("startDate") : tS3("dateOfVisit")}</label>
                 <input
@@ -787,7 +787,7 @@ export default function BookingForm({
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                 />
               </div>
               {bookingType === "one-time" && (
@@ -798,7 +798,7 @@ export default function BookingForm({
                     required
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                   />
                   <p className="mt-1 text-xs text-slate-500">{tS3("timeHelper")}</p>
                 </div>
@@ -807,7 +807,7 @@ export default function BookingForm({
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">{tS3("packageDuration")}</label>
                   {isFixedPackage ? (
-                    <div className="rounded-xl border border-sky-100 bg-sky-50/60 p-4">
+                    <div className="rounded-xl border border-brand-mist bg-brand-soft/30/60 p-4">
                       <p className="text-sm font-bold text-slate-800">{tS3("fixedBundleTitle", { n: selectedPackage?.durationDays ?? 0 })}</p>
                       <p className="mt-1 text-xs text-slate-600">{tS3("fixedBundleBody")}</p>
                     </div>
@@ -818,8 +818,8 @@ export default function BookingForm({
                           key={opt.days}
                           className={`flex cursor-pointer flex-col items-start rounded-xl border px-3 py-3 text-sm transition-all ${
                             durationDays === opt.days
-                              ? "border-sky-500 bg-sky-50 text-sky-800 shadow-sm"
-                              : "border-slate-200 text-slate-600 hover:border-sky-300"
+                              ? "border-brand bg-brand-soft/30 text-brand-deep shadow-sm"
+                              : "border-slate-200 text-slate-600 hover:border-brand-soft"
                           }`}
                         >
                           <input
@@ -848,7 +848,7 @@ export default function BookingForm({
                       min={1}
                       value={durationDays}
                       onChange={(e) => setDurationDays(Math.max(1, Number(e.target.value) || 1))}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                     />
                   )}
                 </div>
@@ -856,7 +856,7 @@ export default function BookingForm({
             </div>
 
           <div className={`${sectionVis(4)} space-y-4 animate-in fade-in slide-in-from-right-4 rtl:slide-in-from-left-4`}>
-              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><MapPin className="h-5 w-5 text-sky-600"/> {tS4("title")}</h3>
+              <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800"><MapPin className="h-5 w-5 text-brand"/> {tS4("title")}</h3>
               {savedLocations.length > 0 && !useCustomLocation && (
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-slate-700">{tS4("pickSaved")}</label>
@@ -866,8 +866,8 @@ export default function BookingForm({
                         key={loc.id}
                         className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
                           selectedLocationId === loc.id
-                            ? "border-sky-500 bg-sky-50 shadow-sm"
-                            : "border-slate-200 hover:border-sky-300"
+                            ? "border-brand bg-brand-soft/30 shadow-sm"
+                            : "border-slate-200 hover:border-brand-soft"
                         }`}
                       >
                         <input
@@ -876,13 +876,13 @@ export default function BookingForm({
                           value={loc.id}
                           checked={selectedLocationId === loc.id}
                           onChange={() => pickSavedLocation(loc.id)}
-                          className="mt-1 h-4 w-4 text-sky-600 focus:ring-sky-600"
+                          className="mt-1 h-4 w-4 text-brand focus:ring-brand"
                         />
                         <div>
                           <p className="text-sm font-bold text-slate-700">
                             {loc.label}
                             {loc.isDefault && (
-                              <span className="ms-2 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-700">
+                              <span className="ms-2 rounded-full bg-brand-soft/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand-deep">
                                 {tS4("defaultLabel")}
                               </span>
                             )}
@@ -895,7 +895,7 @@ export default function BookingForm({
                   <button
                     type="button"
                     onClick={switchToCustomLocation}
-                    className="text-xs font-bold text-sky-600 hover:text-sky-700"
+                    className="text-xs font-bold text-brand hover:text-brand-deep"
                   >
                     {tS4("useDifferent")}
                   </button>
@@ -909,7 +909,7 @@ export default function BookingForm({
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     dir="auto"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                     placeholder={tS4("addressPlaceholder")}
                   />
                   {savedLocations.length > 0 && (
@@ -919,7 +919,7 @@ export default function BookingForm({
                         const preferred = savedLocations.find((l) => l.isDefault) ?? savedLocations[0];
                         if (preferred) pickSavedLocation(preferred.id);
                       }}
-                      className="mt-2 text-xs font-bold text-sky-600 hover:text-sky-700"
+                      className="mt-2 text-xs font-bold text-brand hover:text-brand-deep"
                     >
                       {tS4("useSavedInstead")}
                     </button>
@@ -928,7 +928,7 @@ export default function BookingForm({
                     <p className="mt-2 text-xs text-slate-500">
                       {tS4.rich("tipSaveAddresses", {
                         profileLink: (chunks) => (
-                          <Link href="/patient/profile" className="font-bold text-sky-600 hover:underline">{chunks}</Link>
+                          <Link href="/patient/profile" className="font-bold text-brand hover:underline">{chunks}</Link>
                         ),
                       })}
                     </p>
@@ -1015,7 +1015,7 @@ export default function BookingForm({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   dir="auto"
-                  className="min-h-28 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="min-h-28 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                   placeholder={tS5("notesPlaceholder")}
                 />
               </div>
@@ -1025,10 +1025,10 @@ export default function BookingForm({
                   id="tnc-accept"
                   checked={tncAccepted}
                   onChange={(e) => setTncAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                 />
                 <label htmlFor="tnc-accept" className="text-xs text-slate-600 leading-relaxed">
-                  {tS5("tncIntro")} <Link href="/terms" className="text-sky-600 hover:underline" target="_blank">{tS5("tncTerms")}</Link> {tS5("tncAnd")} <Link href="/privacy" className="text-sky-600 hover:underline" target="_blank">{tS5("tncPrivacy")}</Link>{tS5("tncTail")}
+                  {tS5("tncIntro")} <Link href="/terms" className="text-brand hover:underline" target="_blank">{tS5("tncTerms")}</Link> {tS5("tncAnd")} <Link href="/privacy" className="text-brand hover:underline" target="_blank">{tS5("tncPrivacy")}</Link>{tS5("tncTail")}
                 </label>
               </div>
             </div>

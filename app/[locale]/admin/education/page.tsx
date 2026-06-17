@@ -324,7 +324,7 @@ export default function AdminEducationPage() {
                 <select
                   value={form.kind}
                   onChange={(e) => setForm({ ...form, kind: e.target.value as EducationCardKind })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 >
                   <option value="why">Why home care</option>
                   <option value="what-to-expect">What to expect</option>
@@ -341,7 +341,7 @@ export default function AdminEducationPage() {
                       accent: (e.target.value || "") as EducationCard["accent"] | "",
                     })
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 >
                   <option value="">Default (sky)</option>
                   {EDUCATION_ACCENTS.map((a) => (
@@ -365,7 +365,7 @@ export default function AdminEducationPage() {
                   value={form.titleEn}
                   onChange={(e) => setForm({ ...form, titleEn: e.target.value })}
                   dir="ltr"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                   placeholder="e.g. Recovery happens better at home"
                 />
               </div>
@@ -378,7 +378,7 @@ export default function AdminEducationPage() {
                   value={form.titleAr}
                   onChange={(e) => setForm({ ...form, titleAr: e.target.value })}
                   dir="rtl"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                   placeholder="مثلًا: التعافي أسرع في المنزل"
                 />
               </div>
@@ -396,7 +396,7 @@ export default function AdminEducationPage() {
                   value={form.bodyEn}
                   onChange={(e) => setForm({ ...form, bodyEn: e.target.value })}
                   dir="ltr"
-                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                   placeholder="One or two short sentences. Patients scan, they don't read."
                 />
               </div>
@@ -409,7 +409,7 @@ export default function AdminEducationPage() {
                   value={form.bodyAr}
                   onChange={(e) => setForm({ ...form, bodyAr: e.target.value })}
                   dir="rtl"
-                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full min-h-[100px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                   placeholder="جملة أو جملتان قصيرتان. المرضى يتصفّحون لا يقرؤون."
                 />
               </div>
@@ -445,7 +445,7 @@ export default function AdminEducationPage() {
                 type="checkbox"
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                className="h-4 w-4 rounded text-sky-600 focus:ring-sky-500"
+                className="h-4 w-4 rounded text-sky-600 focus:ring-brand-soft/50"
               />
               Active (visible on the homepage)
             </label>

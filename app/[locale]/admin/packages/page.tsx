@@ -287,20 +287,20 @@ function BiPair({
         </label>
         {multiline ? (
           <textarea required={required} value={valueEn} onChange={(e) => onChangeEn(e.target.value)} dir="ltr"
-            className="w-full min-h-[80px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder={placeholderEn} />
+            className="w-full min-h-[80px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder={placeholderEn} />
         ) : (
           <input required={required} value={valueEn} onChange={(e) => onChangeEn(e.target.value)} dir="ltr"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder={placeholderEn} />
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder={placeholderEn} />
         )}
       </div>
       <div>
         <label className="block text-sm font-bold text-slate-700 mb-1.5">{labelAr}</label>
         {multiline ? (
           <textarea value={valueAr} onChange={(e) => onChangeAr(e.target.value)} dir="rtl"
-            className="w-full min-h-[80px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder={placeholderAr} />
+            className="w-full min-h-[80px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder={placeholderAr} />
         ) : (
           <input value={valueAr} onChange={(e) => onChangeAr(e.target.value)} dir="rtl"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder={placeholderAr} />
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder={placeholderAr} />
         )}
       </div>
     </div>
@@ -432,12 +432,12 @@ export default function AdminPackagesPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Slug (optional)</label>
                 <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="elderly-companion (defaults to ID)" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="elderly-companion (defaults to ID)" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Duration (days) *</label>
                 <input required type="number" min="1" value={form.durationDays} onChange={(e) => setForm({ ...form, durationDays: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" />
               </div>
             </div>
 
@@ -479,14 +479,14 @@ export default function AdminPackagesPage() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Shifts (comma-separated)</label>
                 <input value={form.shiftOptions} onChange={(e) => setForm({ ...form, shiftOptions: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none" placeholder="A, B, C" />
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none" placeholder="A, B, C" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">
                   Base price / day {form.pricingMode === "fixed" ? <span className="text-rose-500">*</span> : <span className="font-normal text-slate-400">(optional)</span>}
                 </label>
                 <input type="number" min="0" step="0.01" value={form.basePricePerDay} onChange={(e) => setForm({ ...form, basePricePerDay: e.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                   placeholder={form.pricingMode === "fixed" ? "Required" : "leave empty to use nurse hourly rate"} />
               </div>
             </div>
@@ -501,7 +501,7 @@ export default function AdminPackagesPage() {
                   const active = form.pricingMode === opt.id;
                   return (
                     <label key={opt.id} className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${active ? "border-sky-500 bg-sky-50 shadow-sm" : "border-slate-200 bg-white hover:border-sky-200"}`}>
-                      <input type="radio" name="pricingMode" value={opt.id} checked={active} onChange={() => setForm({ ...form, pricingMode: opt.id })} className="mt-1 h-4 w-4 text-sky-600 focus:ring-sky-600" />
+                      <input type="radio" name="pricingMode" value={opt.id} checked={active} onChange={() => setForm({ ...form, pricingMode: opt.id })} className="mt-1 h-4 w-4 text-sky-600 focus:ring-brand" />
                       <div>
                         <p className="text-sm font-bold text-slate-800">{opt.title}</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{opt.desc}</p>
@@ -632,7 +632,7 @@ export default function AdminPackagesPage() {
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="h-4 w-4 rounded text-sky-600 focus:ring-sky-500" />
+                <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} className="h-4 w-4 rounded text-sky-600 focus:ring-brand-soft/50" />
                 Active (visible to patients)
               </label>
               <label className="flex items-center gap-2 text-sm font-medium text-slate-600">

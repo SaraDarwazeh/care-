@@ -21,7 +21,7 @@ interface VisitCompletionModalProps {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-soft/40";
 const labelClass = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1";
 
 function doneTitleKey(gender?: string): "doneTitleFemale" | "doneTitleMale" | "doneTitleNeutral" {

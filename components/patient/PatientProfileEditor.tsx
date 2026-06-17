@@ -317,7 +317,7 @@ function TagInput({
           }}
           placeholder={placeholder}
           dir="auto"
-          className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+          className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
         />
         <button
           type="button"
@@ -420,7 +420,7 @@ function LocationsEditor({
                     onChange={(e) => update(index, { label: e.target.value })}
                     placeholder={t("labelPlaceholder")}
                     dir="auto"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 outline-none"
                   />
                 </div>
                 <div>
@@ -432,7 +432,7 @@ function LocationsEditor({
                     onChange={(e) => update(index, { address: e.target.value })}
                     placeholder={t("addressPlaceholder")}
                     dir="auto"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 outline-none"
                   />
                 </div>
               </div>
@@ -838,7 +838,7 @@ export default function PatientProfileEditor({
                     dir="auto"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                     placeholder={t("personal.namePlaceholder")}
                   />
                 </div>
@@ -852,7 +852,7 @@ export default function PatientProfileEditor({
                     dir="ltr"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                     placeholder={t("personal.phonePlaceholder")}
                   />
                 </div>
@@ -862,7 +862,7 @@ export default function PatientProfileEditor({
                     type="date"
                     value={form.dateOfBirth}
                     onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                   />
                 </div>
                 <div>
@@ -870,7 +870,7 @@ export default function PatientProfileEditor({
                   <select
                     value={form.bloodType}
                     onChange={(e) => setForm({ ...form, bloodType: e.target.value })}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                   >
                     {BLOOD_TYPES.map((bt) => (
                       <option key={bt || "unset"} value={bt}>
@@ -941,7 +941,7 @@ export default function PatientProfileEditor({
                       value={form.medicalHistory}
                       onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
                       dir="auto"
-                      className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                      className="min-h-[112px] w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                       placeholder={t("medical.notesPlaceholder")}
                     />
                   </div>

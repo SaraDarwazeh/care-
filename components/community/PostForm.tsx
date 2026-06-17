@@ -44,7 +44,7 @@ export default function PostForm({ onCreated }: { onCreated?: (p: DonationPost) 
     }
   }
 
-  const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100";
+  const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-soft/40";
   const labelClass = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1";
 
   return (

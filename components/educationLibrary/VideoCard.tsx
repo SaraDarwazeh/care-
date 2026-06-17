@@ -31,7 +31,7 @@ export default function VideoCard({ video, showSave = true, initiallySaved }: Vi
     <article className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <Link
         href={`/patient/education/${video.id}`}
-        className="block focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        className="block focus:outline-none focus:ring-2 focus:ring-brand-soft/50 focus:ring-offset-2"
       >
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 sm:aspect-video">
           {video.thumbnailUrl ? (

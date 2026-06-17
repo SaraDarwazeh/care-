@@ -640,7 +640,7 @@ export default function AdminPatientsPage() {
           <Users className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input type="text" placeholder={t("searchPlaceholder")} value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-sky-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 ps-9 pe-3 text-sm focus:border-brand focus:outline-none"
           />
         </div>
       </div>

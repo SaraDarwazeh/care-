@@ -138,7 +138,7 @@ function GoogleRolePageInner() {
             type="checkbox"
             checked={consentAccepted}
             onChange={(e) => setConsentAccepted(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-brand-soft/50"
           />
           <span className="text-xs leading-relaxed text-slate-600">
             {t("consentPrefix")}{" "}

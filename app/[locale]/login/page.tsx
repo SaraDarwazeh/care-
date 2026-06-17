@@ -154,7 +154,7 @@ export default function LoginPage() {
                     dir="ltr"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                     placeholder={t("emailPlaceholder")}
                   />
                 </div>
@@ -172,7 +172,7 @@ export default function LoginPage() {
                     dir="ltr"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-200 transition-all outline-none"
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand-soft/60 transition-all outline-none"
                     placeholder={t("passwordPlaceholder")}
                   />
                 </div>
@@ -181,7 +181,7 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="rounded text-sky-600 focus:ring-sky-500 w-4 h-4" />
+                <input type="checkbox" className="rounded text-sky-600 focus:ring-brand-soft/50 w-4 h-4" />
                 <span className="text-sm font-medium text-slate-600">{t("rememberMe")}</span>
               </label>
               <Link href="/forgot-password" className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline">

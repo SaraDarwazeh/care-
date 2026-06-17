@@ -98,7 +98,7 @@ export default function CommunityPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("page.searchPlaceholder")}
-              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 ps-10 pe-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-soft/40"
             />
           </div>
           <div className="flex flex-wrap gap-2">

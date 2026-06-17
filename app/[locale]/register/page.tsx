@@ -230,7 +230,7 @@ export default function RegisterPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("namePlaceholder")}
                       />
@@ -250,7 +250,7 @@ export default function RegisterPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("emailPlaceholder")}
                       />
@@ -271,7 +271,7 @@ export default function RegisterPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-brand focus:ring-brand-soft/60" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("passwordPlaceholder")}
                       />
@@ -293,7 +293,7 @@ export default function RegisterPage() {
                     type="checkbox"
                     checked={consentAccepted}
                     onChange={(e) => setConsentAccepted(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-brand-soft/50"
                   />
                   <span className="text-xs leading-relaxed text-slate-600">
                     {t("consentPrefix")}{" "}

@@ -360,7 +360,7 @@ export default function AdminEducationLibraryPage() {
                   value={form.titleEn}
                   onChange={(e) => setForm({ ...form, titleEn: e.target.value })}
                   dir="ltr"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 />
               </div>
               <div>
@@ -375,7 +375,7 @@ export default function AdminEducationLibraryPage() {
                   value={form.titleAr}
                   onChange={(e) => setForm({ ...form, titleAr: e.target.value })}
                   dir="rtl"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 />
               </div>
             </div>
@@ -394,7 +394,7 @@ export default function AdminEducationLibraryPage() {
                   value={form.descEn}
                   onChange={(e) => setForm({ ...form, descEn: e.target.value })}
                   dir="ltr"
-                  className="w-full min-h-[110px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full min-h-[110px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 />
               </div>
               <div>
@@ -409,7 +409,7 @@ export default function AdminEducationLibraryPage() {
                   value={form.descAr}
                   onChange={(e) => setForm({ ...form, descAr: e.target.value })}
                   dir="rtl"
-                  className="w-full min-h-[110px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full min-h-[110px] rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 />
               </div>
             </div>
@@ -424,7 +424,7 @@ export default function AdminEducationLibraryPage() {
                   onChange={(e) =>
                     setForm({ ...form, category: e.target.value as EducationVideoCategory })
                   }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 >
                   {EDUCATION_VIDEO_CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -441,7 +441,7 @@ export default function AdminEducationLibraryPage() {
                   value={form.tagsCsv}
                   onChange={(e) => setForm({ ...form, tagsCsv: e.target.value })}
                   placeholder="diabetes, hypertension"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-brand focus:outline-none"
                 />
                 <p className="mt-1 text-xs text-slate-500">{tForm("tagsHelp")}</p>
               </div>
@@ -453,7 +453,7 @@ export default function AdminEducationLibraryPage() {
                   type="checkbox"
                   checked={form.published}
                   onChange={(e) => setForm({ ...form, published: e.target.checked })}
-                  className="h-4 w-4 rounded text-sky-600 focus:ring-sky-500"
+                  className="h-4 w-4 rounded text-sky-600 focus:ring-brand-soft/50"
                 />
                 {tForm("published")}
                 <span className="text-xs font-normal text-slate-500">{tForm("publishedHelp")}</span>

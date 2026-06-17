@@ -14,6 +14,8 @@ import { createUserProfile, getUserProfile } from "@/services/userService";
 export async function registerWithEmail(input: {
   name: string;
   email: string;
+  phone: string;
+  phoneCountry: "PS" | "IL";
   password: string;
   role: Exclude<UserRole, "admin">;
   // When role === "nurse" the caller may pass providerKind to
@@ -32,6 +34,8 @@ export async function registerWithEmail(input: {
       id: credential.user.uid,
       name: input.name,
       email: input.email,
+      phone: input.phone,
+      phoneCountry: input.phoneCountry,
       role: input.role,
       providerKind: input.providerKind,
       consent: input.consent,
@@ -123,14 +127,20 @@ export async function completeGoogleSignup(input: {
   uid: string;
   name: string;
   email: string;
+  phone: string;
+  phoneCountry: "PS" | "IL";
   role: Exclude<UserRole, "admin">;
+  providerKind?: ProviderKind;
   consent: UserConsent;
 }) {
   await createUserProfile({
     id: input.uid,
     name: input.name,
     email: input.email,
+    phone: input.phone,
+    phoneCountry: input.phoneCountry,
     role: input.role,
+    providerKind: input.providerKind,
     consent: input.consent,
     provider: "google",
   });

@@ -220,6 +220,15 @@ export interface AppUser {
   id: string;
   name: string;
   email: string;
+  // E.164-formatted phone (e.g. "+970599100201"). Required for every
+  // user — collected at registration and via the /auth/phone-required
+  // backfill gate for any pre-rollout account that lacks one.
+  phone?: string;
+  // Denormalised country code from the picker (PS | IL) so the
+  // editor can re-open in the original state without having to
+  // guess the country from the E.164 prefix. Optional only for
+  // legacy records that pre-date the phone-required gate.
+  phoneCountry?: "PS" | "IL";
   role: UserRole;
   // Provider kind for users with role === "nurse". Carries the choice
   // from registration to the profile-setup form so a physiotherapist

@@ -40,5 +40,12 @@
     "body": "الصفحة التي تبحث عنها انتقلت أو لم تكن موجودة أصلًا.",
     "goHome": "الذهاب إلى الرئيسية",
     "goToDashboard": "الذهاب إلى لوحة التحكم"
+  },
+  "phone": {
+    "countryLabel": "رمز الدولة",
+    "localNumberPlaceholder": "رقم الهاتف",
+    "errorTooShort": "يرجى إدخال رقم هاتف صحيح.",
+    "errorTooLong": "رقم الهاتف طويل جدًا.",
+    "errorRequired": "رقم الهاتف مطلوب."
   }
 }

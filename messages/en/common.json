@@ -40,5 +40,12 @@
     "body": "The page you were looking for has moved or never existed.",
     "goHome": "Go home",
     "goToDashboard": "Go to my dashboard"
+  },
+  "phone": {
+    "countryLabel": "Country code",
+    "localNumberPlaceholder": "Phone number",
+    "errorTooShort": "Please enter a valid phone number.",
+    "errorTooLong": "Phone number is too long.",
+    "errorRequired": "Phone number is required."
   }
 }

@@ -12,6 +12,8 @@ import { ensureClientFirebase } from "@/lib/firebase/config";
 import { completeGoogleSignup, logoutUser } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
+import PhoneInput from "@/components/common/PhoneInput";
+import { validatePhone } from "@/lib/phone";
 
 // Interstitial shown after a first-time Google sign-in. The Google
 // credential is already created (auth.currentUser is set), but no
@@ -28,6 +30,8 @@ function GoogleRolePageInner() {
   const [consentAccepted, setConsentAccepted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<"PS" | "IL">("PS");
+  const [phoneLocal, setPhoneLocal] = useState("");
   // Subscribe to the auth state so we pick up the Google credential the
   // moment Firebase finishes restoring it on mount. Linting-friendly:
   // setState only fires inside the subscription callback, never
@@ -52,6 +56,11 @@ function GoogleRolePageInner() {
 
   async function handleSubmit() {
     if (!user || !consentAccepted) return;
+    const phoneCheck = validatePhone(phoneCountry, phoneLocal);
+    if (!phoneCheck.valid) {
+      setError(t("phoneRequired"));
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
@@ -59,6 +68,8 @@ function GoogleRolePageInner() {
         uid: user.uid,
         name: user.name,
         email: user.email,
+        phone: phoneCheck.e164,
+        phoneCountry,
         role,
         consent: {
           termsVersion: TERMS_VERSION,
@@ -133,6 +144,20 @@ function GoogleRolePageInner() {
           </button>
         </div>
 
+        <div className="mt-5">
+          <label className="mb-1.5 block text-sm font-bold text-slate-700">
+            {t("phoneLabel")}
+          </label>
+          <PhoneInput
+            countryCode={phoneCountry}
+            onCountryChange={setPhoneCountry}
+            localNumber={phoneLocal}
+            onLocalNumberChange={setPhoneLocal}
+            required
+            id="google-role-phone"
+          />
+        </div>
+
         <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <input
             type="checkbox"
@@ -168,7 +193,7 @@ function GoogleRolePageInner() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!consentAccepted || submitting}
+            disabled={!consentAccepted || submitting || !validatePhone(phoneCountry, phoneLocal).valid}
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-brand-deep disabled:opacity-50"
           >
             {submitting && <Loader2 className="h-4 w-4 animate-spin" />}

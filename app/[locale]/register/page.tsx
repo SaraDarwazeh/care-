@@ -8,6 +8,8 @@ import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Activity, ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import Logo from "@/components/common/Logo";
+import PhoneInput from "@/components/common/PhoneInput";
+import { validatePhone } from "@/lib/phone";
 import { registerWithEmail } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
@@ -22,6 +24,8 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState<"PS" | "IL">("PS");
+  const [phoneLocal, setPhoneLocal] = useState("");
   // pickedRole is the UI-level choice. "physio" is mapped to role
   // "nurse" + providerKind "physio" before being sent to the auth
   // layer — physios use the nurse infrastructure under the hood.
@@ -48,6 +52,11 @@ export default function RegisterPage() {
       setError(t("consentRequired"));
       return;
     }
+    const phoneCheck = validatePhone(phoneCountry, phoneLocal);
+    if (!phoneCheck.valid) {
+      setError(t("phoneRequired"));
+      return;
+    }
     setLoading(true);
 
     try {
@@ -57,6 +66,8 @@ export default function RegisterPage() {
       const user = await registerWithEmail({
         name,
         email,
+        phone: phoneCheck.e164,
+        phoneCountry,
         password,
         role,
         providerKind,
@@ -266,6 +277,18 @@ export default function RegisterPage() {
                         placeholder={t("emailPlaceholder")}
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-bold text-slate-700">{t("phoneLabel")}</label>
+                    <PhoneInput
+                      countryCode={phoneCountry}
+                      onCountryChange={setPhoneCountry}
+                      localNumber={phoneLocal}
+                      onLocalNumberChange={setPhoneLocal}
+                      required
+                      id="register-phone"
+                    />
                   </div>
 
                   <div>

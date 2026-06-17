@@ -83,6 +83,8 @@ export async function createUserProfile(input: {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  phoneCountry?: "PS" | "IL";
   role: Exclude<UserRole, "admin">;
   // When role is "nurse", optionally specifies whether this provider
   // is a nurse or a physiotherapist. Both go through the same nurse
@@ -122,6 +124,8 @@ export async function createUserProfile(input: {
     // capture stay readable without this field.
     ...(input.consent ? { consent: input.consent } : {}),
     ...(providerKind ? { providerKind } : {}),
+    ...(input.phone ? { phone: input.phone } : {}),
+    ...(input.phoneCountry ? { phoneCountry: input.phoneCountry } : {}),
   });
 
   if (input.role === "nurse") {

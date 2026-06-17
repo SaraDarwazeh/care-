@@ -26,7 +26,7 @@ function dayOfWeekForIso(iso: string): NurseDay {
   return WEEKDAYS[localDateFromIso(iso).getDay()];
 }
 
-function isPastDate(dateStr: string) {
+export function isPastDate(dateStr: string) {
   try {
     const d = new Date(dateStr);
     const now = new Date();
@@ -35,6 +35,21 @@ function isPastDate(dateStr: string) {
   } catch {
     return false;
   }
+}
+
+// Firestore Web SDK rejects every `undefined` field with "Unsupported
+// field value: undefined". The booking payload mixes form-supplied
+// fields (packageId / durationDays / shift are conditionally undefined
+// per booking type) with name-snapshot fields that fall back to
+// undefined when the participant doc is missing or unparsed. Drop
+// every undefined before writing so we don't trip the SDK. Same shape
+// as the helper in nurseService.ts:99–107.
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) (out as Record<string, unknown>)[key] = value;
+  }
+  return out;
 }
 
 type RawBooking = Record<string, unknown>;
@@ -223,7 +238,7 @@ export async function createBooking(input: Omit<Booking, "id" | "status" | "crea
   const patientData = patientSnap.exists() ? (patientSnap.data() as Record<string, unknown>) : {};
   const nurseData = nurseSnap.exists() ? (nurseSnap.data() as Record<string, unknown>) : {};
 
-  const payload = {
+  const payload = stripUndefined({
     ...input,
     status: "pending" as BookingStatus,
     createdAt: new Date().toISOString(),
@@ -234,10 +249,10 @@ export async function createBooking(input: Omit<Booking, "id" | "status" | "crea
       typeof nurseData.specialization === "string" ? nurseData.specialization : undefined,
     nurseProfileImageSnapshot:
       typeof nurseData.profileImage === "string" ? nurseData.profileImage : undefined,
-  };
+  });
 
   const ref = await addDoc(collection(db, "bookings"), payload);
-  const booking: Booking = { id: ref.id, ...payload };
+  const booking: Booking = { id: ref.id, ...payload } as Booking;
 
   // Best-effort notification. Helper itself swallows errors so booking success
   // is never blocked by a notification glitch.

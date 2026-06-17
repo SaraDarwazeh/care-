@@ -388,6 +388,7 @@
       "selectPackage": "Please pick a care package before continuing.",
       "selectShift": "Please pick a shift (A, B, or C) before continuing.",
       "selectDate": "Please pick a date for the visit.",
+      "selectDatePast": "Please pick a date in the future — past dates aren't bookable.",
       "selectTime": "Please pick a start time.",
       "selectLocation": "Please enter the visit address.",
       "acceptTerms": "Please accept the booking terms before confirming.",

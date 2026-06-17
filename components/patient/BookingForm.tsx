@@ -8,7 +8,7 @@ import { CheckCircle2, ChevronRight, ChevronLeft, MapPin, Calendar, Clock, Steth
 import PatientButton from "@/components/patient/PatientButton";
 import type { Booking, CarePackage, NurseMarketplaceProfile, PatientLocation } from "@/lib/types";
 import AddOnItem from "@/components/common/AddOnItem";
-import { createBooking } from "@/services/bookingService";
+import { createBooking, isPastDate } from "@/services/bookingService";
 import {
   FIELD_TO_SECTION,
   getFieldTranslationKey,
@@ -490,6 +490,7 @@ export default function BookingForm({
     }
     if (n === 3) {
       if (!date) return "selectDate";
+      if (isPastDate(date)) return "selectDatePast";
       if (bookingType === "one-time" && !time) return "selectTime";
       return null;
     }
@@ -887,6 +888,7 @@ export default function BookingForm({
                   type="date"
                   required
                   value={date}
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand-soft/60"
                 />

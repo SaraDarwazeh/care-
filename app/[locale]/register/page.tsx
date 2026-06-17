@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Activity, ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import Logo from "@/components/common/Logo";
 import { registerWithEmail } from "@/services/authService";
@@ -24,7 +25,17 @@ export default function RegisterPage() {
   // pickedRole is the UI-level choice. "physio" is mapped to role
   // "nurse" + providerKind "physio" before being sent to the auth
   // layer — physios use the nurse infrastructure under the hood.
-  const [pickedRole, setPickedRole] = useState<"patient" | "nurse" | "physio">("patient");
+  // Preselect the role from the URL so deep links from the landing
+  // hero / navbar ("Join as Nurse" → /register?role=nurse) land on
+  // the correct pill without an extra click. Lazy initialiser runs
+  // once on mount — switching roles later still works normally
+  // through setPickedRole.
+  const searchParams = useSearchParams();
+  const [pickedRole, setPickedRole] = useState<"patient" | "nurse" | "physio">(() => {
+    const role = searchParams.get("role");
+    if (role === "nurse" || role === "physio") return role;
+    return "patient";
+  });
   const [consentAccepted, setConsentAccepted] = useState(false);
   const physiotherapyEnabled = usePhysiotherapyEnabled();
   const [loading, setLoading] = useState(false);

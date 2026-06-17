@@ -36,6 +36,19 @@ export function getS3Client(): S3Client {
     );
   }
 
+  // Permanent diagnostic — print the LAST 4 chars of the access key
+  // the server has loaded. Comparing this between environments (local
+  // dev vs Vercel preview vs Vercel production) tells you instantly
+  // whether prod is on a different IAM key from what you tested
+  // locally — the most common reason for InvalidAccessKeyId in
+  // production. Never print the secret or the full key id.
+  console.info("[s3] credential identity:", {
+    accessKeyIdLast4: accessKeyId.slice(-4),
+    region,
+    bucket: getS3Bucket(),
+    vercelEnv: process.env.VERCEL_ENV ?? "(none)",
+  });
+
   cachedClient = new S3Client({
     region,
     credentials: { accessKeyId, secretAccessKey },

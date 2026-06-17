@@ -21,9 +21,10 @@ const SECTIONS: FooterSection[] = [
   {
     titleKey: "care",
     links: [
-      { key: "services", href: "/services" },
-      { key: "carePackages", href: "/services/packages" },
+      { key: "findCare", href: "/find-care" },
       { key: "findANurse", href: "/patient/nurses" },
+      { key: "carePackages", href: "/services/packages" },
+      { key: "services", href: "/services" },
     ],
   },
   {
@@ -32,7 +33,10 @@ const SECTIONS: FooterSection[] = [
   },
   {
     titleKey: "connect",
-    links: [{ key: "community", href: "/community" }],
+    links: [
+      { key: "healthHub", href: "/patient/education" },
+      { key: "community", href: "/community" },
+    ],
   },
   {
     titleKey: "account",

@@ -9,15 +9,20 @@ import PlatformFooter from "@/components/layout/PlatformFooter";
 import {
   ArrowRight,
   BadgeCheck,
+  BookOpen,
   CalendarCheck,
   HandHeart,
   Heart,
   HeartHandshake,
   Home as HomeIcon,
   MessageCircle,
+  Package,
   PlayCircle,
   Search,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Users,
 } from "lucide-react";
 import { getPublicStats, type PublicStats } from "@/services/publicStats";
 import { listPublishedVideos } from "@/services/educationLibraryService";
@@ -233,6 +238,55 @@ export default function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-20 px-4 py-12 sm:px-8 sm:space-y-24 sm:py-16">
+        {/* ══ EXPLORE ══
+            Always-on surface map. The hero focuses conversion onto a
+            single CTA; this section restores discoverability for every
+            other guest destination so the IA matches what the navbar
+            advertises. Library + Community get their own data-driven
+            previews further down — these tiles guarantee Find Care,
+            Browse Nurses, Packages, Health Hub, Community, and Store
+            are all one click from the homepage even when the previews
+            collapse on an empty install. */}
+        <section id="explore" className="scroll-mt-20">
+          <div className="mb-8 max-w-2xl">
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-brand">
+              {t("pillars.kicker")}
+            </p>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+              {t("pillars.title")}
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {([
+              { key: "findCare", href: "/find-care", Icon: Sparkles },
+              { key: "findNurse", href: "/patient/nurses", Icon: Users },
+              { key: "carePackages", href: "/services/packages", Icon: Package },
+              { key: "healthHub", href: "/patient/education", Icon: BookOpen },
+              { key: "community", href: "/community", Icon: HandHeart },
+              { key: "medicalStore", href: "/patient/store", Icon: ShoppingBag },
+            ] as const).map(({ key, href, Icon }) => (
+              <Link
+                key={key}
+                href={href}
+                className="group flex items-start gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-soft hover:shadow-md"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft/40 text-brand-deep transition group-hover:bg-brand group-hover:text-white">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1.5 font-bold text-slate-800 group-hover:text-brand-deep">
+                    {t(`pillars.${key}.title`)}
+                    <ArrowRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                    {t(`pillars.${key}.body`)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* ══ WHY HOME CARE ══ */}
         <section id="why" className="scroll-mt-20">
           <div className="mb-8 max-w-2xl">

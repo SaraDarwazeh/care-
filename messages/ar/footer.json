@@ -6,11 +6,13 @@
     "account": "الحساب"
   },
   "links": {
+    "findCare": "ابدأ الرعاية",
     "services": "الخدمات",
     "carePackages": "باقات الرعاية",
     "findANurse": "ابحث عن ممرض",
     "medicalStore": "المتجر الطبي",
     "community": "المجتمع",
+    "healthHub": "مركز الصحة",
     "signIn": "تسجيل الدخول",
     "createAccount": "إنشاء حساب",
     "joinAsNurse": "انضم كممرض"

@@ -6,11 +6,13 @@
     "account": "Account"
   },
   "links": {
+    "findCare": "Find Care",
     "services": "Services",
     "carePackages": "Care Packages",
     "findANurse": "Find a Nurse",
     "medicalStore": "Medical Store",
     "community": "Community",
+    "healthHub": "Health Hub",
     "signIn": "Sign in",
     "createAccount": "Create account",
     "joinAsNurse": "Join as nurse"

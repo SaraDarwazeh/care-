@@ -20,24 +20,32 @@
     "imageAlt": "A nurse providing compassionate home care"
   },
   "pillars": {
-    "kicker": "What Care+ offers",
-    "title": "Four ways we support your family",
+    "kicker": "Explore Care+",
+    "title": "Every way Care+ supports your family",
     "explore": "Explore",
+    "findCare": {
+      "title": "Find Care",
+      "body": "Answer three quick questions and we'll match you with the right care path."
+    },
     "findNurse": {
-      "title": "Find a Nurse",
-      "body": "One-time visits or shift care — book a verified nurse for what you need."
+      "title": "Browse Nurses",
+      "body": "Skip the wizard — explore verified nurses and physiotherapists directly."
     },
     "carePackages": {
       "title": "Care Packages",
       "body": "Multi-day plans for recovery, elderly support, palliative, and more."
     },
-    "medicalStore": {
-      "title": "Medical Store",
-      "body": "Equipment, supplies, and home-care essentials delivered to your door."
+    "healthHub": {
+      "title": "Health Hub",
+      "body": "Short videos from our care team on prevention, recovery, and daily wellness."
     },
     "community": {
       "title": "Community",
       "body": "Donate or receive medical equipment from families nearby."
+    },
+    "medicalStore": {
+      "title": "Medical Store",
+      "body": "Equipment, supplies, and home-care essentials delivered to your door."
     }
   },
   "why": {

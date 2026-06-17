@@ -16,23 +16,30 @@ interface NavItem {
   href: string;
 }
 
-// Public navigation. Per the 2026-06-17 audit, the centered nav was
-// trimmed to keep first-impression focus on the patient conversion
-// path. "Find Care" routes to the new /find-care diagnostic instead of
-// the billing-mode /services grid (which stays alive for SEO + direct
-// links). Nurse recruitment stays as the single dual-sided CTA.
+// Public navigation. The list intentionally surfaces every guest-
+// accessible surface (Find Care wizard, marketplace, packages,
+// community, Health Hub, store) so visitors can discover the platform
+// without typing URLs. "Home" is dropped — the logo already routes
+// there. Nurse recruitment lives in the hero + register flow, not in
+// the inline nav, to keep this list patient-facing.
 const GUEST_NAV: NavItem[] = [
-  { key: "home", href: "/" },
   { key: "findCare", href: "/find-care" },
-  { key: "joinAsNurse", href: "/register?role=nurse" },
+  { key: "findANurse", href: "/patient/nurses" },
+  { key: "carePackages", href: "/services/packages" },
+  { key: "library", href: "/patient/education" },
+  { key: "community", href: "/community" },
+  { key: "medicalStore", href: "/patient/store" },
 ];
 
-// Mirrors the signed-in patient navbar so a patient briefly bouncing
-// through the public shell sees the same surface map.
+// Mirrors the guest map so a signed-in patient sees the same surface
+// breadth in the same order. Dashboard + My Visits move under the
+// profile dropdown so the inline row stays exploration-focused.
 const PATIENT_NAV: NavItem[] = [
-  { key: "dashboard", href: "/patient" },
-  { key: "myVisits", href: "/patient/appointments" },
   { key: "findCare", href: "/find-care" },
+  { key: "findANurse", href: "/patient/nurses" },
+  { key: "carePackages", href: "/services/packages" },
+  { key: "library", href: "/patient/education" },
+  { key: "community", href: "/community" },
   { key: "medicalStore", href: "/patient/store" },
 ];
 
@@ -90,13 +97,16 @@ export default function PlatformNavbar() {
           <span className="text-lg font-extrabold tracking-tight">Care+</span>
         </Link>
 
-        {/* Centered nav — desktop only */}
-        <nav className="hidden items-center gap-1 lg:flex">
+        {/* Centered nav — desktop only. Six surfaces is intentional:
+            every guest-discoverable destination is one click from the
+            top bar so visitors never have to guess a URL. The tighter
+            padding keeps the row from wrapping at lg. */}
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              className="whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
               {t(item.key)}
             </Link>

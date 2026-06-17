@@ -1,9 +1,8 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ChevronLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { dirFor, type Locale } from "@/i18n/config";
 
 interface BackLinkProps {
   /** Destination href. Locale-prefix is handled by next-intl's Link. */
@@ -20,28 +19,21 @@ interface BackLinkProps {
   className?: string;
 }
 
-// Shared "back to parent" link used across every leaf page. The icon
-// flips for RTL — ChevronLeft on LTR locales, ChevronRight on RTL — so
-// the visual direction always matches "previous page" regardless of
-// the user's reading order.
-//
-// Previously the codebase had 9 inline implementations of this exact
-// pattern with two icon variants (ChevronLeft vs ArrowLeft) and slight
-// styling drift. Standardising on one component gives us a single
-// place to evolve the affordance later (history-aware back, focus
-// outline, etc.).
+// Shared "back to parent" link used across every leaf page. The chevron
+// renders as ChevronLeft in both locales — the global CSS rule in
+// globals.css scaleX-flips every directional lucide icon under
+// html[dir="rtl"], so manually swapping for ChevronRight here would
+// double-flip and end up pointing the wrong way. Trust the CSS.
 export default function BackLink({
   href,
   labelKey = "common.actions.back",
   tone = "muted",
   className,
 }: BackLinkProps) {
-  const locale = useLocale() as Locale;
   // Root-scope translator so callers pass fully-qualified keys
   // (e.g. "common.actions.back", "patient.dashboard.backToDashboard")
   // without having to thread a namespace prop.
   const t = useTranslations();
-  const Icon = dirFor(locale) === "rtl" ? ChevronRight : ChevronLeft;
 
   const base =
     tone === "prominent"
@@ -50,7 +42,7 @@ export default function BackLink({
 
   return (
     <Link href={href} className={`${base}${className ? ` ${className}` : ""}`}>
-      <Icon className="h-3.5 w-3.5" />
+      <ChevronLeft className="h-3.5 w-3.5" />
       {t(labelKey)}
     </Link>
   );

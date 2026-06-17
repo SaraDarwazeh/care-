@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { ArrowLeft, ArrowRight, PlaySquare, Share2 } from "lucide-react";
+import { ArrowLeft, PlaySquare, Share2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
 import EmptyState from "@/components/common/EmptyState";
@@ -17,7 +17,7 @@ import {
   listRelatedVideos,
   listSavedVideoIds,
 } from "@/services/educationLibraryService";
-import { dirFor, type Locale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
 import { tLocalized } from "@/lib/i18nContent";
 import type { EducationVideo } from "@/lib/types";
 
@@ -149,15 +149,13 @@ export default function PatientEducationDetailPage({
     );
   }
 
-  const BackIcon = dirFor(locale) === "rtl" ? ArrowRight : ArrowLeft;
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       <Link
         href="/patient/education"
         className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-sky-700"
       >
-        <BackIcon className="h-4 w-4" /> {t("back")}
+        <ArrowLeft className="h-4 w-4" /> {t("back")}
       </Link>
 
       <div className="overflow-hidden rounded-3xl bg-black shadow-lg">

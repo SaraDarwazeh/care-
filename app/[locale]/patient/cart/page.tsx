@@ -4,14 +4,12 @@ import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
-  ArrowRight,
   Plus,
   Minus,
   CheckCircle2,
   Trash2,
   ShoppingBag,
 } from "lucide-react";
-import { dirFor } from "@/i18n/config";
 import PatientButton from "@/components/patient/PatientButton";
 import { useCart } from "@/components/patient/CartContext";
 import { getProducts, createOrder } from "@/services/storeService";
@@ -34,7 +32,6 @@ export default function CartPage() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const BackArrow = dirFor(locale) === "rtl" ? ArrowRight : ArrowLeft;
 
   useEffect(() => {
     let active = true;
@@ -137,7 +134,7 @@ export default function CartPage() {
           className="p-2 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
           aria-label={t("backToStore")}
         >
-          <BackArrow className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">{t("pageTitle")}</h1>
@@ -266,7 +263,7 @@ export default function CartPage() {
                   href="/patient/store"
                   className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition"
                 >
-                  <BackArrow className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4" />
                   {t("continueShopping")}
                 </Link>
               </div>

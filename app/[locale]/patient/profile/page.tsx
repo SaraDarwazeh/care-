@@ -3,11 +3,11 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import BackLink from "@/components/common/BackLink";
+import { Link } from "@/i18n/navigation";
 import PatientProfileEditor from "@/components/patient/PatientProfileEditor";
-import RewardsSection from "@/components/patient/RewardsSection";
 import { useAuth } from "@/hooks/useAuth";
 import { getMissingFieldLabels, getPatientProfile } from "@/services/patientService";
 
@@ -73,13 +73,24 @@ function PatientProfilePageInner() {
         <p className="mt-2 text-slate-600">{t("pageSubtitle")}</p>
       </div>
 
-      {/* Rewards card is promoted above the editor so points + recent
-          activity are visible the moment the profile page loads —
-          previously buried below a long editor, where most patients
-          never scrolled to discover it. */}
-      <RewardsSection />
-
       <PatientProfileEditor userId={appUser.id} initialSection={initialSection} />
+
+      {/* Rewards lives in two intentional places: the navbar balance
+          pill (1-tap context from anywhere) and the dashboard warmth
+          rail (full ledger when patients want to browse). The profile
+          page is for transactional editing — putting the full Rewards
+          card here forced every profile-editing flow to scroll past
+          it. A subtle "View rewards" link keeps the path discoverable
+          without re-conflating priorities. */}
+      <div className="flex items-center justify-end">
+        <Link
+          href="/patient"
+          className="inline-flex items-center gap-1 text-xs font-bold text-brand-deep transition hover:text-brand"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {t("viewRewards")} <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
     </div>
   );
 }

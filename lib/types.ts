@@ -214,6 +214,12 @@ export interface AppUser {
   name: string;
   email: string;
   role: UserRole;
+  // Provider kind for users with role === "nurse". Carries the choice
+  // from registration to the profile-setup form so a physiotherapist
+  // sees physio-appropriate specializations + service options on first
+  // load. Always undefined for patients and admins. Missing on legacy
+  // nurse records → treated as "nurse" by readers.
+  providerKind?: ProviderKind;
   status: UserStatus;
   createdAt: string;
   consent?: UserConsent;

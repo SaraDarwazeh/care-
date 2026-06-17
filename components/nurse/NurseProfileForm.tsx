@@ -100,7 +100,7 @@ export default function NurseProfileForm({
   const tErr = useTranslations("nurse.errors");
   const locale = useLocale() as Locale;
   const [activeSection, setActiveSection] = useState<SectionId>("identity");
-  const { refreshProfile } = useAuth();
+  const { appUser, refreshProfile } = useAuth();
 
   // Identity & Bio
   const [fullNameDraft, setFullNameDraft] = useState(fullName);
@@ -268,8 +268,13 @@ export default function NurseProfileForm({
     setSavedFlash(false);
 
     const trimmedFullName = fullNameDraft.trim() || fullName;
+    // Carry the provider kind from the user doc through to the
+    // profile doc so the marketplace + admin lists can discriminate
+    // nurses from physiotherapists at read time.
+    const providerKind = appUser?.providerKind ?? "nurse";
     const payload: Omit<NurseProfile, "rating" | "reviewCount"> = {
       userId,
+      providerKind,
       fullName: trimmedFullName,
       profileImage,
       bio,

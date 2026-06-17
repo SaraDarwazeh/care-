@@ -5,11 +5,12 @@ import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
-import { ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { Activity, ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { registerWithEmail } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
+import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,8 +20,12 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"patient" | "nurse">("patient");
+  // pickedRole is the UI-level choice. "physio" is mapped to role
+  // "nurse" + providerKind "physio" before being sent to the auth
+  // layer — physios use the nurse infrastructure under the hood.
+  const [pickedRole, setPickedRole] = useState<"patient" | "nurse" | "physio">("patient");
   const [consentAccepted, setConsentAccepted] = useState(false);
+  const physiotherapyEnabled = usePhysiotherapyEnabled();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,11 +39,15 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // Map the UI choice: physios use role="nurse" + providerKind="physio".
+      const role: "patient" | "nurse" = pickedRole === "patient" ? "patient" : "nurse";
+      const providerKind = pickedRole === "physio" ? "physio" : undefined;
       const user = await registerWithEmail({
         name,
         email,
         password,
         role,
+        providerKind,
         consent: {
           termsVersion: TERMS_VERSION,
           privacyVersion: PRIVACY_VERSION,
@@ -121,42 +130,65 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 <button
                   type="button"
-                  onClick={() => setRole("patient")}
+                  onClick={() => setPickedRole("patient")}
                   className={`w-full flex items-center gap-4 rounded-3xl border-2 p-4 sm:gap-5 sm:p-6 transition-all text-start ${
-                    role === "patient" ? "border-sky-500 bg-sky-50 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.3)]" : "border-slate-100 bg-white hover:border-sky-200"
+                    pickedRole === "patient" ? "border-sky-500 bg-sky-50 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.3)]" : "border-slate-100 bg-white hover:border-sky-200"
                   }`}
                 >
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${role === "patient" ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${pickedRole === "patient" ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
                     <UserCircle className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
                   <div>
-                    <h3 className={`text-base font-bold sm:text-lg ${role === "patient" ? "text-sky-900" : "text-slate-700"}`}>{t("roles.patient.title")}</h3>
-                    <p className={`text-sm ${role === "patient" ? "text-sky-700" : "text-slate-500"}`}>{t("roles.patient.description")}</p>
+                    <h3 className={`text-base font-bold sm:text-lg ${pickedRole === "patient" ? "text-sky-900" : "text-slate-700"}`}>{t("roles.patient.title")}</h3>
+                    <p className={`text-sm ${pickedRole === "patient" ? "text-sky-700" : "text-slate-500"}`}>{t("roles.patient.description")}</p>
                   </div>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setRole("nurse")}
+                  onClick={() => setPickedRole("nurse")}
                   className={`w-full flex items-center gap-4 rounded-3xl border-2 p-4 sm:gap-5 sm:p-6 transition-all text-start ${
-                    role === "nurse" ? "border-emerald-500 bg-emerald-50 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.3)]" : "border-slate-100 bg-white hover:border-emerald-200"
+                    pickedRole === "nurse" ? "border-emerald-500 bg-emerald-50 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.3)]" : "border-slate-100 bg-white hover:border-emerald-200"
                   }`}
                 >
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${role === "nurse" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${pickedRole === "nurse" ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"}`}>
                     <Stethoscope className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
                   <div>
-                    <h3 className={`text-base font-bold sm:text-lg ${role === "nurse" ? "text-emerald-900" : "text-slate-700"}`}>{t("roles.nurse.title")}</h3>
-                    <p className={`text-sm ${role === "nurse" ? "text-emerald-700" : "text-slate-500"}`}>{t("roles.nurse.description")}</p>
+                    <h3 className={`text-base font-bold sm:text-lg ${pickedRole === "nurse" ? "text-emerald-900" : "text-slate-700"}`}>{t("roles.nurse.title")}</h3>
+                    <p className={`text-sm ${pickedRole === "nurse" ? "text-emerald-700" : "text-slate-500"}`}>{t("roles.nurse.description")}</p>
                   </div>
                 </button>
+
+                {/* Physiotherapist role — gated on the admin
+                    physiotherapyEnabled flag. When the flag is off, the
+                    third button doesn't render and the registration
+                    flow looks exactly like the original two-role
+                    experience. */}
+                {physiotherapyEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPickedRole("physio")}
+                    className={`w-full flex items-center gap-4 rounded-3xl border-2 p-4 sm:gap-5 sm:p-6 transition-all text-start ${
+                      pickedRole === "physio" ? "border-violet-500 bg-violet-50 shadow-[0_8px_20px_-8px_rgba(139,92,246,0.3)]" : "border-slate-100 bg-white hover:border-violet-200"
+                    }`}
+                  >
+                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${pickedRole === "physio" ? "bg-violet-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                      <Activity className="h-6 w-6 sm:h-7 sm:w-7" />
+                    </div>
+                    <div>
+                      <h3 className={`text-base font-bold sm:text-lg ${pickedRole === "physio" ? "text-violet-900" : "text-slate-700"}`}>{t("roles.physio.title")}</h3>
+                      <p className={`text-sm ${pickedRole === "physio" ? "text-violet-700" : "text-slate-500"}`}>{t("roles.physio.description")}</p>
+                    </div>
+                  </button>
+                )}
               </div>
 
               <div className="mt-10">
                 <button
                   onClick={() => setStep(2)}
                   className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 ${
-                    role === "patient" ? "bg-gradient-to-r from-sky-500 to-sky-600 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
+                    pickedRole === "patient" ? "bg-gradient-to-r from-sky-500 to-sky-600 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
                   }`}
                 >
                   {t("continue")} <ArrowRight className="h-5 w-5" />
@@ -175,7 +207,11 @@ export default function RegisterPage() {
               <div className="mb-10">
                 <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{t("step2Title")}</h2>
                 <p className="mt-2 text-slate-500 font-medium">
-                  {role === "patient" ? t("step2SubtitlePatient") : t("step2SubtitleNurse")}
+                  {pickedRole === "patient"
+                    ? t("step2SubtitlePatient")
+                    : pickedRole === "physio"
+                      ? t("step2SubtitlePhysio")
+                      : t("step2SubtitleNurse")}
                 </p>
               </div>
 
@@ -194,7 +230,7 @@ export default function RegisterPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          role === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("namePlaceholder")}
                       />
@@ -214,7 +250,7 @@ export default function RegisterPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          role === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("emailPlaceholder")}
                       />
@@ -235,7 +271,7 @@ export default function RegisterPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className={`w-full rounded-2xl border border-slate-200 bg-slate-50 ps-11 pe-4 py-3.5 text-sm focus:bg-white focus:ring-2 transition-all outline-none ${
-                          role === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
+                          pickedRole === "patient" ? "focus:border-sky-500 focus:ring-sky-200" : "focus:border-emerald-500 focus:ring-emerald-200"
                         }`}
                         placeholder={t("passwordPlaceholder")}
                       />
@@ -243,7 +279,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {role === "nurse" && (
+                {pickedRole === "nurse" && (
                   <div className="rounded-xl bg-amber-50 p-4 border border-amber-100 flex items-start gap-3 mt-4">
                     <ShieldCheck className="h-5 w-5 shrink-0 text-amber-600 mt-0.5" />
                     <p className="text-xs text-amber-700 font-medium">{t("nurseNotice")}</p>
@@ -285,7 +321,7 @@ export default function RegisterPage() {
                   type="submit"
                   disabled={loading || !consentAccepted}
                   className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:-translate-y-0 disabled:cursor-not-allowed mt-8 ${
-                    role === "patient" ? "bg-gradient-to-r from-sky-500 to-sky-600 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
+                    pickedRole === "patient" ? "bg-gradient-to-r from-sky-500 to-sky-600 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
                   }`}
                 >
                   {loading ? (

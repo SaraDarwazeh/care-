@@ -8,7 +8,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { UserConsent, UserRole } from "@/lib/types";
+import { ProviderKind, UserConsent, UserRole } from "@/lib/types";
 import { createUserProfile, getUserProfile } from "@/services/userService";
 
 export async function registerWithEmail(input: {
@@ -16,6 +16,11 @@ export async function registerWithEmail(input: {
   email: string;
   password: string;
   role: Exclude<UserRole, "admin">;
+  // When role === "nurse" the caller may pass providerKind to
+  // distinguish nurses from physiotherapists. Both kinds use the nurse
+  // role + nurse-side infrastructure; only the kind discriminator
+  // changes downstream.
+  providerKind?: ProviderKind;
   consent: UserConsent;
 }) {
   const { auth } = ensureClientFirebase();
@@ -28,12 +33,14 @@ export async function registerWithEmail(input: {
       name: input.name,
       email: input.email,
       role: input.role,
+      providerKind: input.providerKind,
       consent: input.consent,
     });
 
     console.log("[authService] user registered with profile", {
       uid: credential.user.uid,
       role: input.role,
+      providerKind: input.providerKind,
     });
 
     return credential.user;

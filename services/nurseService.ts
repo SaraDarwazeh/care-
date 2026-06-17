@@ -46,6 +46,13 @@ export function coerceCertificates(raw: unknown): NurseCertificate[] {
 function mapNurseProfile(user: AppUser, nurseData: Record<string, unknown>): NurseMarketplaceProfile {
   return {
     userId: user.id,
+    // Provider kind discriminator. Prefer the nurse-profile doc, fall
+    // back to the user-doc copy (set at registration), default to
+    // "nurse" for legacy records.
+    providerKind:
+      nurseData.providerKind === "physio" || nurseData.providerKind === "nurse"
+        ? (nurseData.providerKind as "nurse" | "physio")
+        : user.providerKind ?? "nurse",
     fullName: String(nurseData.fullName ?? user.name),
     profileImage: String(nurseData.profileImage ?? ""),
     bio: String(nurseData.bio ?? ""),

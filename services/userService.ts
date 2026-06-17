@@ -11,7 +11,7 @@ import {
   where,
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
-import { AppUser, UserConsent, UserRole, UserStatus } from "@/lib/types";
+import { AppUser, ProviderKind, UserConsent, UserRole, UserStatus } from "@/lib/types";
 import { notifyNurseSignup } from "@/services/notificationService";
 
 function mapDocToUser(
@@ -26,6 +26,10 @@ function mapDocToUser(
     name: String(userDoc.name ?? ""),
     email: String(userDoc.email ?? ""),
     role: userDoc.role as UserRole,
+    providerKind:
+      userDoc.providerKind === "physio" || userDoc.providerKind === "nurse"
+        ? (userDoc.providerKind as ProviderKind)
+        : undefined,
     status: (userDoc.status as UserStatus) ?? "approved",
     createdAt: String(userDoc.createdAt ?? ""),
     language: lang === "en" || lang === "ar" ? lang : undefined,
@@ -80,6 +84,11 @@ export async function createUserProfile(input: {
   name: string;
   email: string;
   role: Exclude<UserRole, "admin">;
+  // When role is "nurse", optionally specifies whether this provider
+  // is a nurse or a physiotherapist. Both go through the same nurse
+  // infrastructure (collection, routes, approval flow) — providerKind
+  // is the discriminator. Defaults to "nurse" when omitted.
+  providerKind?: ProviderKind;
   consent?: UserConsent;
   provider?: "email" | "google";
 }) {
@@ -92,6 +101,12 @@ export async function createUserProfile(input: {
     status,
     provider: input.provider ?? "email",
   });
+
+  // Stamp providerKind on nurse-role records so the post-signup setup
+  // form knows which kind to onboard. Patients and admins never carry
+  // this field.
+  const providerKind: ProviderKind | undefined =
+    input.role === "nurse" ? input.providerKind ?? "nurse" : undefined;
 
   await setDoc(doc(db, "users", input.id), {
     id: input.id,
@@ -106,6 +121,7 @@ export async function createUserProfile(input: {
     // flow always passes one. Legacy accounts created before consent
     // capture stay readable without this field.
     ...(input.consent ? { consent: input.consent } : {}),
+    ...(providerKind ? { providerKind } : {}),
   });
 
   if (input.role === "nurse") {

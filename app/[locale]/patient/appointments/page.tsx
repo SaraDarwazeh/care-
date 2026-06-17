@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { CalendarClock, MapPin, Clock, ChevronRight, X, FileText, Star } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BackLink from "@/components/common/BackLink";
 import SectionContainer from "@/components/patient/SectionContainer";
 import ReviewForm from "@/components/patient/ReviewForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -250,6 +251,7 @@ export default function PatientAppointmentsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-12">
+      <BackLink href="/patient" labelKey="common.actions.backToDashboard" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t("pageTitle")}</h1>

@@ -44,12 +44,39 @@
     "guestKicker": "Patient area",
     "guestTitle": "Browse the platform, then sign in when you are ready to book.",
     "guestSubtitle": "You can continue exploring nurses, services, packages, and store products without creating an account yet.",
-    "guestCtaServices": "Services",
+    "guestBrowseFree": "Browsing is free — you only sign in to book.",
+    "guestCtaServices": "Find Care",
     "guestCtaNurses": "Browse nurses",
     "guestCtaStore": "Browse store",
-    "welcomeKicker": "Your health dashboard",
+    "guestExplore": {
+      "packages": {
+        "title": "Care Packages",
+        "body": "Multi-day plans for elderly, post-op, and ongoing care."
+      },
+      "nurses": {
+        "title": "Browse Nurses",
+        "body": "Filter by specialty, shift, location, and availability."
+      },
+      "store": {
+        "title": "Medical Store",
+        "body": "Equipment and supplies delivered to your door."
+      },
+      "library": {
+        "title": "Library",
+        "body": "Short educational videos from our care team."
+      },
+      "community": {
+        "title": "Community",
+        "body": "Medical equipment donated by families nearby."
+      },
+      "services": {
+        "title": "Service overview",
+        "body": "Compare one-time, shift, package, and additional services."
+      }
+    },
+    "welcomeKicker": "Hello again",
     "welcomeTitle": "Welcome back, {name}.",
-    "welcomeSubtitle": "Manage your visits, review medical notes from your care team, and find the right nurse when you need one.",
+    "welcomeSubtitle": "We hope you and your family are doing well. Here's what's happening with your care.",
     "findNurseCta": "Find a Nurse",
     "profileIncomplete": "Booking is locked until your profile is complete.",
     "completeProfile": "Complete Profile",
@@ -126,6 +153,36 @@
       "noConditions": "No conditions on file yet.",
       "moreCount": "+{n} more",
       "customSectionLabel": "Other"
+    },
+    "warmth": {
+      "postVisit": {
+        "heading": "How did your recent visit go?",
+        "howWas": "Recent visit",
+        "cta": "Leave a review"
+      },
+      "library": {
+        "kicker": "From the Library",
+        "heading": "A short read for you",
+        "browseAll": "Open Library"
+      },
+      "rewards": {
+        "kicker": "Rewards",
+        "pointsUnit": "pts",
+        "subtitle": "Use your points at checkout.",
+        "viewLedger": "View activity",
+        "sources": {
+          "booking_completed": "Booking completed",
+          "order_delivered": "Order delivered",
+          "review_submitted": "Review submitted",
+          "redemption": "Redeemed at checkout",
+          "admin_adjust": "Care+ adjustment"
+        }
+      },
+      "community": {
+        "kicker": "Community",
+        "heading": "Recent donations from families nearby",
+        "browseAll": "Open Community"
+      }
     }
   },
   "nurses": {

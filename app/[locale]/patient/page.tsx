@@ -20,6 +20,7 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 import PatientButton from "@/components/patient/PatientButton";
 import RecommendedForYou from "@/components/patient/RecommendedForYou";
 import YourHealthProfile from "@/components/patient/YourHealthProfile";
+import DashboardWarmthRails from "@/components/patient/DashboardWarmthRails";
 import { useAuth } from "@/hooks/useAuth";
 import type {
   BookingWithParticipants,
@@ -129,12 +130,26 @@ export default function PatientHomePage() {
       .slice(0, 2);
   }, [bookings, packages]);
 
+  // Completed bookings the patient hasn't reviewed yet. Drives the
+  // "How was your visit?" rail in DashboardWarmthRails. We don't query
+  // reviews here — the rail's CTA leads to /patient/appointments where
+  // the existing review form handles the canPatientReview check.
+  const pendingReviewBookings = useMemo(
+    () => bookings.filter((b) => b.status === "completed").slice(0, 4),
+    [bookings],
+  );
+
 
   if (loading) {
     return <LoadingScreen text={tLoading("dashboard")} />;
   }
 
   if (!appUser) {
+    // Per the 2026-06-17 gap audit, the guest fallback used to surface
+    // three generic CTAs that did not advertise Library / Community /
+    // Packages. The expanded layout below names every guest-browseable
+    // surface and reassures visitors that browsing is free — the only
+    // gated action is the booking itself.
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-12">
         <section id="home" className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-sm">
@@ -142,11 +157,52 @@ export default function PatientHomePage() {
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-sky-600">{t("guestKicker")}</p>
             <h1 className="mt-3 text-xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{t("guestTitle")}</h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">{t("guestSubtitle")}</p>
+            <p className="mt-2 text-xs text-slate-500">{t("guestBrowseFree")}</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/services" className="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700">{t("guestCtaServices")}</Link>
-              <Link href="/patient/nurses" className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700">{t("guestCtaNurses")}</Link>
-              <Link href="/patient/store" className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700">{t("guestCtaStore")}</Link>
+              <Link
+                href="/find-care"
+                className="rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-700"
+              >
+                {t("guestCtaServices")}
+              </Link>
+              <Link
+                href="/patient/nurses"
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-sky-200 hover:text-sky-700"
+              >
+                {t("guestCtaNurses")}
+              </Link>
             </div>
+          </div>
+
+          {/* Six tiles naming every guest-browseable surface. Keeps the
+              guest dashboard the de-facto sitemap of public-facing
+              content — the audit found that visitors couldn't tell
+              Library / Community existed otherwise. */}
+          <div className="grid gap-2 border-t border-sky-100 bg-white p-4 sm:grid-cols-2 sm:gap-3 sm:p-6 lg:grid-cols-3">
+            {[
+              { href: "/services/packages", labelKey: "guestExplore.packages", color: "text-emerald-600 bg-emerald-50 border-emerald-100", hover: "hover:border-emerald-300" },
+              { href: "/patient/nurses", labelKey: "guestExplore.nurses", color: "text-sky-600 bg-sky-50 border-sky-100", hover: "hover:border-sky-300" },
+              { href: "/patient/store", labelKey: "guestExplore.store", color: "text-violet-600 bg-violet-50 border-violet-100", hover: "hover:border-violet-300" },
+              { href: "/patient/education", labelKey: "guestExplore.library", color: "text-rose-600 bg-rose-50 border-rose-100", hover: "hover:border-rose-300" },
+              { href: "/community", labelKey: "guestExplore.community", color: "text-amber-600 bg-amber-50 border-amber-100", hover: "hover:border-amber-300" },
+              { href: "/services", labelKey: "guestExplore.services", color: "text-slate-600 bg-slate-50 border-slate-100", hover: "hover:border-slate-300" },
+            ].map((tile) => (
+              <Link
+                key={tile.href}
+                href={tile.href}
+                className={`group flex items-start gap-3 rounded-2xl border bg-white p-4 transition ${tile.hover} ${tile.color.split(" ").filter(c => c.startsWith("border-")).join(" ")}`}
+              >
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-800 group-hover:text-slate-900">
+                    {t(`${tile.labelKey}.title`)}
+                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+                    {t(`${tile.labelKey}.body`)}
+                  </p>
+                </div>
+                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 group-hover:text-slate-500" />
+              </Link>
+            ))}
           </div>
         </section>
       </div>
@@ -213,6 +269,12 @@ export default function PatientHomePage() {
       {/* 2c. Recommended for you — deterministic matches off the patient's
            conditions against the in-memory nurses + packages lists. */}
       <RecommendedForYou profile={patientProfile} nurses={nurses} packages={packages} />
+
+      {/* 2d. Warmth rails. Post-visit review prompts, Library teaser,
+           Rewards balance, and Community preview. Each rail hides
+           silently when its backing data is missing so the dashboard
+           collapses gracefully. */}
+      <DashboardWarmthRails pendingReviewBookings={pendingReviewBookings} />
 
       {/* 3. Quick actions */}
       <section>

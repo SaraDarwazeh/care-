@@ -10,16 +10,23 @@ import {
   ArrowRight,
   BadgeCheck,
   CalendarCheck,
+  HandHeart,
   Heart,
   HeartHandshake,
   Home as HomeIcon,
   MessageCircle,
+  PlayCircle,
   Search,
   ShieldCheck,
 } from "lucide-react";
 import { getPublicStats, type PublicStats } from "@/services/publicStats";
+import { listPublishedVideos } from "@/services/educationLibraryService";
+import { getDonationPosts } from "@/services/communityService";
+import { useEducationLibraryEnabled } from "@/hooks/useSiteSettings";
 import type { Locale } from "@/i18n/config";
+import type { DonationPost, EducationVideo } from "@/lib/types";
 import { fmtNumber } from "@/lib/format";
+import { tLocalized } from "@/lib/i18nContent";
 
 /* ═══════════════════════════════════════════════════════════
    PAGE — public marketing surface for /.
@@ -34,9 +41,14 @@ import { fmtNumber } from "@/lib/format";
    ═══════════════════════════════════════════════════════════ */
 export default function Home() {
   const t = useTranslations("home");
+  const tLib = useTranslations("home.library");
+  const tCommunity = useTranslations("home.communityPreview");
   const locale = useLocale() as Locale;
+  const educationEnabled = useEducationLibraryEnabled();
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [libraryVideos, setLibraryVideos] = useState<EducationVideo[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<DonationPost[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -52,6 +64,28 @@ export default function Home() {
       alive = false;
     };
   }, []);
+
+  // Library + community previews load in parallel after the hero. Both
+  // are conditional — if there's no content the section collapses
+  // silently, so we never ship a broken rail.
+  useEffect(() => {
+    let alive = true;
+    if (educationEnabled) {
+      listPublishedVideos()
+        .then((vs) => {
+          if (alive) setLibraryVideos(vs.slice(0, 3));
+        })
+        .catch((err) => console.warn("[home] library preview failed", err));
+    }
+    getDonationPosts(3)
+      .then((ps) => {
+        if (alive) setCommunityPosts(ps);
+      })
+      .catch((err) => console.warn("[home] community preview failed", err));
+    return () => {
+      alive = false;
+    };
+  }, [educationEnabled]);
 
   const trustItems = stats
     ? [
@@ -253,6 +287,110 @@ export default function Home() {
             </Link>
           </div>
         </section>
+
+        {/* ══ LIBRARY PREVIEW ══
+            Per the 2026-06-17 gap audit, the homepage was missing
+            visibility for the Library + Community surfaces. These
+            two compact previews restore breadth without bringing back
+            the old 4-card pillars grid. Both hide silently when the
+            backing data is empty so we never ship a broken rail. */}
+        {educationEnabled && libraryVideos.length > 0 && (
+          <section id="library-preview" className="scroll-mt-20">
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-violet-600">
+                  {tLib("kicker")}
+                </p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                  {tLib("title")}
+                </h2>
+              </div>
+              <Link
+                href="/patient/education"
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-violet-700 hover:text-violet-800"
+              >
+                {tLib("browseAll")} <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {libraryVideos.map((v) => (
+                <Link
+                  key={v.id}
+                  href={`/patient/education/${v.id}`}
+                  className="group overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
+                    {v.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={v.thumbnailUrl}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet-100 to-sky-100 text-violet-600">
+                        <PlayCircle className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <p className="font-bold text-slate-800 group-hover:text-violet-700 line-clamp-2">
+                      {tLocalized(v.title, locale)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                      {tLocalized(v.description, locale)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ══ COMMUNITY PREVIEW ══ */}
+        {communityPosts.length > 0 && (
+          <section id="community-preview" className="scroll-mt-20">
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-amber-600">
+                  {tCommunity("kicker")}
+                </p>
+                <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                  {tCommunity("title")}
+                </h2>
+                <p className="mt-1 max-w-xl text-sm text-slate-500">{tCommunity("subtitle")}</p>
+              </div>
+              <Link
+                href="/community"
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-amber-700 hover:text-amber-800"
+              >
+                {tCommunity("browseAll")} <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {communityPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/community/${post.id}`}
+                  className="group rounded-3xl border border-amber-100 bg-amber-50/40 p-5 transition hover:-translate-y-0.5 hover:bg-amber-50 hover:shadow-md"
+                >
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                    <HandHeart className="h-5 w-5" />
+                  </div>
+                  <p className="font-bold text-slate-800 group-hover:text-amber-800 line-clamp-2">
+                    {post.title}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                    {post.description}
+                  </p>
+                  {post.location && (
+                    <p className="mt-2 text-[11px] font-semibold text-amber-700">{post.location}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       <PlatformFooter />

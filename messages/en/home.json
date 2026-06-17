@@ -91,5 +91,16 @@
     "kicker": "Medical Store",
     "title": "Supplies, delivered",
     "browseAll": "Browse store →"
+  },
+  "library": {
+    "kicker": "Learn from Care+",
+    "title": "Short videos from our care team",
+    "browseAll": "Open the Library"
+  },
+  "communityPreview": {
+    "kicker": "Community",
+    "title": "Medical equipment, shared by families",
+    "subtitle": "Families donating wheelchairs, walkers, and supplies they no longer need.",
+    "browseAll": "Open Community"
   }
 }

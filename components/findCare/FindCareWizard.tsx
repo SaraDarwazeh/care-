@@ -65,6 +65,44 @@ export default function FindCareWizard() {
 
   return (
     <div className="space-y-6">
+      {/* Escape chips — for users who don't want the diagnostic. Per the
+          2026-06-17 gap audit, the wizard had become a one-way street;
+          this gives anyone who already knows what they want a direct
+          path to the four service surfaces. The chips link to the
+          /services/{slug} pages which retain the full billing-mode
+          context for browse-style discovery. */}
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
+          {t("alreadyKnow.label")}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          <Link
+            href="/services/one-time"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+          >
+            {t("alreadyKnow.options.one-time")}
+          </Link>
+          <Link
+            href="/services/shifts"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+          >
+            {t("alreadyKnow.options.shifts")}
+          </Link>
+          <Link
+            href="/services/packages"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+          >
+            {t("alreadyKnow.options.packages")}
+          </Link>
+          <Link
+            href="/services/additional"
+            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+          >
+            {t("alreadyKnow.options.additional")}
+          </Link>
+        </div>
+      </div>
+
       {/* Question 1 — recipient */}
       <QuestionCard
         index={1}

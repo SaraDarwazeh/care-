@@ -16,6 +16,7 @@ import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import type { StoreOrder, StoreItem } from "@/lib/types";
 import { getOrdersForPatient, getProducts } from "@/services/storeService";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BackLink from "@/components/common/BackLink";
 import PatientButton from "@/components/patient/PatientButton";
 import { fmtCurrency, fmtDate } from "@/lib/format";
 import type { Locale } from "@/i18n/config";
@@ -217,6 +218,7 @@ export default function PatientOrdersPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+      <BackLink href="/patient" labelKey="common.actions.backToDashboard" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{t("pageTitle")}</h1>

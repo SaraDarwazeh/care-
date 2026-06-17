@@ -92,7 +92,13 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${fontVars} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground font-sans">
+      {/* suppressHydrationWarning silences benign mismatches on <body>
+          caused by browser extensions (ColorZilla's cz-shortcut-listen,
+          Grammarly's data-* attributes, dark-mode extensions). Without
+          this, every user running such an extension sees a console
+          hydration error on every page. The flag is scoped to <body>
+          only — real hydration mismatches deeper in the tree still log. */}
+      <body suppressHydrationWarning className="min-h-full bg-background text-foreground font-sans">
         <NextIntlClientProvider>
           <LocaleMismatchBanner />
           <AppProviders>{children}</AppProviders>

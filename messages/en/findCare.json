@@ -50,6 +50,15 @@
     "talkToCoordinator": "Not sure? Talk to a Care+ coordinator",
     "browseAllNurses": "Or skip this — browse all nurses"
   },
+  "alreadyKnow": {
+    "label": "Already know what you need? Browse directly",
+    "options": {
+      "one-time": "One-time visit",
+      "shifts": "Shift care",
+      "packages": "Care packages",
+      "additional": "Additional services"
+    }
+  },
   "result": {
     "title": "Here's who can help",
     "summaryGeneric": "Based on your answers, here are the right caregivers and packages for you.",

@@ -24,6 +24,7 @@ import {
 } from "@/services/medicalService";
 import { canPatientReview } from "@/services/reviewService";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BackLink from "@/components/common/BackLink";
 import ObservationForm from "@/components/medical/ObservationForm";
 import ReviewForm from "@/components/patient/ReviewForm";
 import type { MedicalRecord, MedicalRecordStatus, Observation, Vitals } from "@/lib/types";
@@ -138,6 +139,7 @@ export default function RecordDetail({ params }: { params: Promise<{ id: string 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="space-y-6">
+        <BackLink href="/patient/records" labelKey="common.actions.backToList" />
         <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>

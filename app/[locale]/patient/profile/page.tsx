@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BackLink from "@/components/common/BackLink";
 import PatientProfileEditor from "@/components/patient/PatientProfileEditor";
 import RewardsSection from "@/components/patient/RewardsSection";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,6 +46,8 @@ function PatientProfilePageInner() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+      <BackLink href="/patient" labelKey="common.actions.backToDashboard" />
+
       {isOnboarding && missingLabels && missingLabels.length > 0 && (
         <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 p-5">
           <div className="flex items-start gap-3">

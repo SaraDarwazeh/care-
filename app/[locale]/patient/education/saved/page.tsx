@@ -6,6 +6,7 @@ import { Bookmark, PlaySquare } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import EmptyState from "@/components/common/EmptyState";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import BackLink from "@/components/common/BackLink";
 import VideoCard from "@/components/educationLibrary/VideoCard";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { useEducationLibraryEnabled, useSiteSettings } from "@/hooks/useSiteSettings";
@@ -62,6 +63,7 @@ export default function PatientEducationSavedPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+      <BackLink href="/patient/education" labelKey="common.actions.backToList" />
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-800">
           {t("heading")}

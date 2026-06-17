@@ -479,9 +479,18 @@ function getNurseProfile(index: number, nurseName: string): NurseSeedProfile {
   const village = villages[index % villages.length];
   const secondaryVillage = villages[(index + 3) % villages.length];
 
+  // Seeded nurses get a clean colored-initial avatar via ui-avatars.com
+  // rather than a random face from pravatar.cc. Real consented nurse
+  // photos replace these after admin re-approval — see
+  // docs/MEDIA_CHECKLIST.md. The accent colour rotates by index so the
+  // marketplace looks visually varied even without real photos.
+  const avatarPalette = ["0ea5e9", "10b981", "8b5cf6", "f59e0b", "ec4899", "06b6d4"];
+  const accent = avatarPalette[index % avatarPalette.length];
+  const initialsAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(nurseName)}&size=400&background=${accent}&color=ffffff&bold=true&format=png&font-size=0.45`;
+
   return {
     fullName: nurseName,
-    profileImage: `https://i.pravatar.cc/300?img=${persona.pravatar}`,
+    profileImage: initialsAvatar,
     bio: `${nurseName.split(" ")[0]} provides attentive home nursing support focused on safety, comfort, and clear communication with patients and families.`,
     specialization: SPECIALIZATION_BY_INDEX[index % SPECIALIZATION_BY_INDEX.length],
     services,

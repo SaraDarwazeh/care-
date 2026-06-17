@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "i.pravatar.cc" },
+      { protocol: "https", hostname: "ui-avatars.com" },
+      { protocol: "https", hostname: "commondatastorage.googleapis.com" },
       ...(s3Host ? [{ protocol: "https" as const, hostname: s3Host }] : []),
     ],
   },

@@ -130,6 +130,76 @@ const SEEDS: SeedVideo[] = [
     durationSeconds: 95,
     tags: ["falls", "home-safety"],
   },
+  {
+    id: "seed-when-to-call",
+    titleEn: "When to call your nurse vs. the hospital",
+    titleAr: "متى تتصل بممرضك ومتى بالمستشفى",
+    descEn:
+      "Decision-making framework for families: which symptoms warrant a Care+ nurse visit, and which mean a trip to emergency.",
+    descAr:
+      "إطار اتخاذ القرار للعائلات: أيّ الأعراض يستدعي زيارة ممرّض Care+، وأيّها يستوجب التوجه إلى الطوارئ.",
+    videoFile: "Sintel.mp4",
+    thumbFile: "images/Sintel.jpg",
+    category: "general",
+    durationSeconds: 70,
+    tags: ["emergency", "decision-making"],
+  },
+  {
+    id: "seed-newborn-feeding",
+    titleEn: "Newborn feeding basics for new parents",
+    titleAr: "أساسيات تغذية المولود للوالدين الجدد",
+    descEn:
+      "First-week feeding tips from our maternal-care team: positions, frequency, and what's normal vs. what to flag.",
+    descAr:
+      "نصائح الأسبوع الأول من فريق رعاية الأمومة: الوضعيات، عدد المرات، وما هو طبيعي مقابل ما يستوجب الانتباه.",
+    videoFile: "TearsOfSteel.mp4",
+    thumbFile: "images/TearsOfSteel.jpg",
+    category: "pediatric",
+    durationSeconds: 105,
+    tags: ["newborn", "feeding"],
+  },
+  {
+    id: "seed-stress-anxiety",
+    titleEn: "Caring for someone with anxiety",
+    titleAr: "رعاية شخص يعاني من القلق",
+    descEn:
+      "Practical, non-clinical strategies family caregivers can use to support a loved one through anxious moments.",
+    descAr:
+      "استراتيجيات عملية وغير سريرية يمكن لمقدّمي الرعاية في العائلة استخدامها لدعم أحبّائهم في لحظات القلق.",
+    videoFile: "VolkswagenGTIReview.mp4",
+    thumbFile: "images/VolkswagenGTIReview.jpg",
+    category: "mental-health",
+    durationSeconds: 90,
+    tags: ["anxiety", "caregiving"],
+  },
+  {
+    id: "seed-hydration-elderly",
+    titleEn: "Hydration for elderly family members",
+    titleAr: "ترطيب كبار السن في العائلة",
+    descEn:
+      "Why elderly patients drink less than they need, and simple routines that keep them hydrated through the day.",
+    descAr:
+      "لماذا يشرب كبار السن أقلّ مما يحتاجون، وأنشطة بسيطة تُبقيهم رطبين طوال اليوم.",
+    videoFile: "SubaruOutbackOnStreetAndDirt.mp4",
+    thumbFile: "images/SubaruOutbackOnStreetAndDirt.jpg",
+    category: "elderly",
+    durationSeconds: 65,
+    tags: ["hydration", "elderly"],
+  },
+  {
+    id: "seed-back-pain",
+    titleEn: "Quick relief for everyday back pain",
+    titleAr: "تخفيف سريع لآلام الظهر اليومية",
+    descEn:
+      "Three gentle stretches the Care+ physical-therapy team recommends for non-specific lower back pain.",
+    descAr:
+      "ثلاث تمارين تمديد لطيفة يوصي بها فريق العلاج الطبيعي في Care+ لآلام أسفل الظهر غير المُحدّدة.",
+    videoFile: "WhatCarCanYouGetForAGrand.mp4",
+    thumbFile: "images/WhatCarCanYouGetForAGrand.jpg",
+    category: "wellness",
+    durationSeconds: 85,
+    tags: ["back-pain", "physical-therapy"],
+  },
 ];
 
 function loadLocalEnvFile(filename: string) {

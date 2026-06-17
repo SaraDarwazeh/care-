@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, Filter, History, SlidersHorizontal, Search } from "lucide-react";
+import { Filter, History, SlidersHorizontal, Search } from "lucide-react";
+import BackLink from "@/components/common/BackLink";
 import { getLastPreferences } from "@/lib/bookingPreferences";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseMarketplaceCard from "@/components/patient/NurseMarketplaceCard";
@@ -330,12 +330,9 @@ function PatientNursesPageInner() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link
-        href="/"
-        className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" /> {t("backToHome")}
-      </Link>
+      <div className="mb-3">
+        <BackLink href="/" labelKey="patient.marketplace.backToHome" />
+      </div>
       <div className="mb-8">
         <h1 className="text-2xl font-extrabold tracking-tight text-slate-800 sm:text-3xl">{t("title")}</h1>
         <p className="mt-1 text-sm text-slate-600 sm:mt-2 sm:text-base">{t("subtitle")}</p>

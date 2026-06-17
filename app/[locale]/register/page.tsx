@@ -3,9 +3,10 @@
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useState } from "react";
 import { Activity, ShieldCheck, UserCircle, Stethoscope, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
+import { dirFor, type Locale } from "@/i18n/config";
 import { registerWithEmail } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
@@ -16,6 +17,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const t = useTranslations("auth.register");
   const tRoot = useTranslations();
+  const locale = useLocale() as Locale;
+  const BackArrow = dirFor(locale) === "rtl" ? ArrowRight : ArrowLeft;
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -201,7 +204,7 @@ export default function RegisterPage() {
                 onClick={() => setStep(1)}
                 className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition mb-8"
               >
-                <ArrowLeft className="h-4 w-4" /> {t("backToRoles")}
+                <BackArrow className="h-4 w-4" /> {t("backToRoles")}
               </button>
 
               <div className="mb-10">

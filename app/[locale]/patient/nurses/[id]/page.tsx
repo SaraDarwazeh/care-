@@ -18,8 +18,8 @@ import {
   Quote,
   Camera,
   Sparkles,
-  ChevronLeft,
 } from "lucide-react";
+import BackLink from "@/components/common/BackLink";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import BookingForm from "@/components/patient/BookingForm";
 import ReviewForm from "@/components/patient/ReviewForm";
@@ -116,12 +116,9 @@ function NurseProfilePageInner() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link
-        href="/patient/nurses"
-        className="mb-4 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" /> {t("back")}
-      </Link>
+      <div className="mb-4">
+        <BackLink href="/patient/nurses" labelKey="patient.nurses.detail.back" />
+      </div>
       <div className="grid gap-8 lg:grid-cols-3 lg:items-start">
         <div className="space-y-8 lg:col-span-2">
 

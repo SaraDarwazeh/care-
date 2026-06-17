@@ -8,6 +8,7 @@ import {
   Car,
   ChefHat,
   ChevronLeft,
+  ChevronRight,
   HeartHandshake,
   ListChecks,
   ShoppingBag,
@@ -18,7 +19,7 @@ import PlatformShell from "@/components/layout/PlatformShell";
 import { serviceCategoryBySlug } from "@/lib/serviceCatalog";
 import { SUPPORT_SERVICES } from "@/lib/serviceTaxonomy";
 import { tLocalized } from "@/lib/i18nContent";
-import type { Locale } from "@/i18n/config";
+import { dirFor, type Locale } from "@/i18n/config";
 import { fmtCurrency } from "@/lib/format";
 
 // Whitelisted icon mapping keeps the lucide tree-shaker happy and lets us
@@ -41,13 +42,14 @@ export default function AdditionalServicesPage() {
 
   const category = serviceCategoryBySlug["additional"];
   const highlights = tCat.raw("highlights") as string[];
+  const BackChevron = dirFor(locale) === "rtl" ? ChevronRight : ChevronLeft;
 
   return (
     <PlatformShell mode="service">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-3 text-sm font-semibold text-slate-500">
           <Link href="/services" className="inline-flex items-center gap-1.5 transition hover:text-sky-700">
-            <ChevronLeft className="h-4 w-4" /> {tBook("breadcrumb")}
+            <BackChevron className="h-4 w-4" /> {tBook("breadcrumb")}
           </Link>
           <span>/</span>
           <span className="text-slate-700">{tCat("title")}</span>

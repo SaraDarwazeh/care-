@@ -1,17 +1,14 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { ChevronLeft } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import PlatformShell from "@/components/layout/PlatformShell";
 import PackageDetail from "@/components/packages/PackageDetail";
+import BackLink from "@/components/common/BackLink";
 import { getPackageBySlug } from "@/services/packageService";
 import type { CarePackage } from "@/lib/types";
 
 export default function PackagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const t = useTranslations("services.packages");
   const [pkg, setPkg] = useState<CarePackage | null | undefined>(undefined);
 
   useEffect(() => {
@@ -54,12 +51,9 @@ export default function PackagePage({ params }: { params: Promise<{ id: string }
   return (
     <PlatformShell mode="service">
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link
-          href="/services/packages"
-          className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-sky-700"
-        >
-          <ChevronLeft className="h-3.5 w-3.5" /> {t("backToList")}
-        </Link>
+        <div className="mb-3">
+          <BackLink href="/services/packages" labelKey="services.packages.backToList" />
+        </div>
         <PackageDetail pkg={pkg} />
       </main>
     </PlatformShell>

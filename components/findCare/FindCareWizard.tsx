@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import { ArrowRight, ChevronLeft, Sparkles } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
+import { dirFor, type Locale } from "@/i18n/config";
+import BackLink from "@/components/common/BackLink";
 import {
   PHYSIO_ONLY_SITUATIONS,
   RECIPIENT_OPTIONS,
@@ -29,7 +31,11 @@ export default function FindCareWizard() {
   const t = useTranslations("findCare");
   const tProvider = useTranslations("provider.findCare");
   const router = useRouter();
+  const locale = useLocale() as Locale;
   const physiotherapyEnabled = usePhysiotherapyEnabled();
+  const isRtl = dirFor(locale) === "rtl";
+  const BackChevron = isRtl ? ChevronRight : ChevronLeft;
+  const ForwardArrow = isRtl ? ArrowLeft : ArrowRight;
 
   const [step, setStep] = useState<Step>(1);
   const [recipient, setRecipient] = useState<Recipient | null>(null);
@@ -79,6 +85,11 @@ export default function FindCareWizard() {
 
   return (
     <div className="space-y-6">
+      {/* Top exit — a wizard mid-flow is easy to feel trapped in. The
+          BackLink lets anyone bail to the homepage without finishing the
+          diagnostic. Matches the leaf-page pattern used everywhere else. */}
+      <BackLink href="/" labelKey="findCare.actions.exitToHome" />
+
       {/* Escape chips — for users who don't want the diagnostic. Per the
           2026-06-17 gap audit, the wizard had become a one-way street;
           this gives anyone who already knows what they want a direct
@@ -211,7 +222,7 @@ export default function FindCareWizard() {
             onClick={findMatches}
             className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-700"
           >
-            {t("result.continueCta")} <ArrowRight className="h-4 w-4" />
+            {t("result.continueCta")} <ForwardArrow className="h-4 w-4" />
           </button>
         </div>
       )}
@@ -224,7 +235,7 @@ export default function FindCareWizard() {
             onClick={goBack}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-700"
           >
-            <ChevronLeft className="h-4 w-4" /> {t("actions.back")}
+            <BackChevron className="h-4 w-4" /> {t("actions.back")}
           </button>
         ) : (
           <span />

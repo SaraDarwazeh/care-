@@ -228,6 +228,11 @@
     "savingButton": "جارٍ الحفظ…",
     "savedButton": "تم الحفظ",
     "saveButton": "حفظ الملف",
+    "nextStep": "التالي",
+    "submitForReviewButton": "أرسل الملف للمراجعة",
+    "submittingButton": "جارٍ الإرسال…",
+    "completeSectionFirst": "أكمل الحقول المطلوبة في هذا القسم قبل المتابعة.",
+    "completeAllSectionsFirst": "أكمل جميع الأقسام قبل إرسال ملفك للمراجعة.",
     "sections": {
       "identity": "الهوية والنبذة",
       "services": "الخدمات والأسعار",

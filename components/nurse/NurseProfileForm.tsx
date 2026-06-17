@@ -24,7 +24,12 @@ import type {
   NurseServiceItem,
   ProviderKind,
 } from "@/lib/types";
-import { getNurseProfileByUserId, saveNurseProfile } from "@/services/nurseService";
+import {
+  getNurseProfileByUserId,
+  saveNurseProfile,
+  saveNurseProfileDraft,
+  submitNurseProfileForReview,
+} from "@/services/nurseService";
 import { updateUserDisplayName } from "@/services/userService";
 import { useAuth } from "@/hooks/useAuth";
 import { uploadFile } from "@/services/storageService";
@@ -131,10 +136,17 @@ export default function NurseProfileForm({
   userId,
   fullName,
   onSaved,
+  onSubmittedForReview,
 }: {
   userId: string;
   fullName: string;
+  // Fired after a non-onboarding save (already-approved nurse edits
+  // their profile, or partial draft save during wizard advance).
   onSaved?: () => void;
+  // Fired the first time the nurse hits the final "Submit profile for
+  // review" CTA — the setup page uses this to route to
+  // /pending-approval so the admin queue gets the notification.
+  onSubmittedForReview?: () => void;
 }) {
   const t = useTranslations("nurse.profileForm");
   const tSection = useTranslations("nurse.profileForm.sections");
@@ -406,16 +418,19 @@ export default function NurseProfileForm({
   const allComplete = Object.values(sectionComplete).every(Boolean);
   const incompleteCount = Object.values(sectionComplete).filter((v) => !v).length;
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setSavedFlash(false);
+  // Wizard mode flags. A fresh nurse (status "incomplete") sees per-
+  // section Next buttons and only the credentials section exposes the
+  // final "Submit profile for review" CTA. An already-approved nurse
+  // editing their profile sees a regular Save button on every section
+  // (save triggers the re-review flow inside saveNurseProfile).
+  const isFinalSection = activeSection === "credentials";
+  const isFreshOnboarding =
+    appUser?.role === "nurse" &&
+    (appUser.status === "incomplete" || appUser.status === "pending" || appUser.status === "pending_review");
 
+  function buildPayload(): Omit<NurseProfile, "rating" | "reviewCount"> {
     const trimmedFullName = fullNameDraft.trim() || fullName;
-    // Carry the provider kind from the user doc through to the
-    // profile doc so the marketplace + admin lists can discriminate
-    // nurses from physiotherapists at read time.
-    const payload: Omit<NurseProfile, "rating" | "reviewCount"> = {
+    return {
       userId,
       providerKind,
       fullName: trimmedFullName,
@@ -448,6 +463,58 @@ export default function NurseProfileForm({
       carePhilosophy: carePhilosophy.trim() || undefined,
       gallery,
     };
+  }
+
+  // Advance to the next section. Only requires the CURRENT section to
+  // be valid — earlier sections may still be empty (the nurse can go
+  // back). Saves a draft in the background so reloading mid-wizard
+  // doesn't lose work. Out-of-range prices block the advance with a
+  // row-level error so the nurse fixes the offending input before
+  // leaving the section.
+  const [sectionWarning, setSectionWarning] = useState(false);
+
+  async function onNext(): Promise<void> {
+    if (!nextSection) return;
+    if (!sectionComplete[activeSection]) {
+      setSectionWarning(true);
+      return;
+    }
+    setSectionWarning(false);
+    setSaving(true);
+    const payload = buildPayload();
+    const localCheck = validateProfilePricing(payload, pricingConfig);
+    if (!localCheck.valid) {
+      const map = new Map<string, PricingValidationError>();
+      localCheck.errors.forEach((e) => map.set(e.key, e));
+      setPricingErrors(map);
+      setSaving(false);
+      return;
+    }
+    setPricingErrors(new Map());
+    try {
+      await saveNurseProfileDraft(payload);
+    } catch (err) {
+      if (err instanceof PricingValidationException) {
+        const map = new Map<string, PricingValidationError>();
+        err.errors.forEach((e) => map.set(e.key, e));
+        setPricingErrors(map);
+      } else {
+        console.error("[NurseProfileForm] draft save failed", err);
+      }
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    setActiveSection(nextSection.id);
+  }
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setSavedFlash(false);
+
+    const payload = buildPayload();
+    const trimmedFullName = payload.fullName;
 
     // Client-side gate: validate the prices against the admin-configured
     // ranges (fetched on mount). The same check runs server-side in
@@ -471,7 +538,16 @@ export default function NurseProfileForm({
     setPricingErrors(new Map());
 
     try {
-      await saveNurseProfile(payload);
+      if (isFreshOnboarding) {
+        // Final submit for review. Flips users/{uid}.status from
+        // incomplete to pending_review and notifies admin.
+        await submitNurseProfileForReview(payload);
+      } else {
+        // Already-approved nurse editing — saveNurseProfile runs the
+        // re-approval check internally and flips status back to
+        // pending_review when significant fields changed.
+        await saveNurseProfile(payload);
+      }
     } catch (err) {
       // Server-side validation rejection: re-paint the row errors using
       // the structured payload the service threw.
@@ -505,7 +581,14 @@ export default function NurseProfileForm({
     setSaving(false);
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 2500);
-    onSaved?.();
+    if (isFreshOnboarding) {
+      // Refresh appUser so the next render sees pending_review and
+      // the setup-page redirect kicks in.
+      await refreshProfile();
+      onSubmittedForReview?.();
+    } else {
+      onSaved?.();
+    }
   }
 
   if (loading) {
@@ -1270,30 +1353,65 @@ export default function NurseProfileForm({
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            {nextSection && (
-              <button
-                type="button"
-                onClick={() => setActiveSection(nextSection.id)}
-                className="flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
-              >
-                {t("continueTo", { section: tSection(nextSection.id) })}
-                <ChevronRight className="h-4 w-4" />
-              </button>
+          <div className="flex flex-col items-end gap-1">
+            {sectionWarning && !sectionComplete[activeSection] && (
+              <p className="text-xs font-semibold text-amber-700">
+                {t("completeSectionFirst")}
+              </p>
             )}
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
-            >
-              {saving ? t("savingButton") : savedFlash ? (
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" /> {t("savedButton")}
-                </span>
+            <div className="flex items-center gap-3">
+              {/* Wizard mechanic: non-final sections show "Next →", the
+                  final (credentials) section shows the primary CTA.
+                  Already-approved nurses editing their profile see the
+                  Save button on every section since they're not going
+                  through the onboarding wizard. */}
+              {isFreshOnboarding && !isFinalSection ? (
+                <button
+                  type="button"
+                  onClick={onNext}
+                  disabled={saving}
+                  className="flex items-center gap-1 rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-deep disabled:opacity-50"
+                >
+                  {saving ? t("savingButton") : t("nextStep")}
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              ) : isFreshOnboarding && isFinalSection ? (
+                <button
+                  type="submit"
+                  disabled={saving || !allComplete}
+                  title={!allComplete ? t("completeAllSectionsFirst") : undefined}
+                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
+                >
+                  {saving ? t("submittingButton") : t("submitForReviewButton")}
+                </button>
               ) : (
-                t("saveButton")
+                <>
+                  {nextSection && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection(nextSection.id)}
+                      className="flex items-center gap-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                    >
+                      {t("continueTo", { section: tSection(nextSection.id) })}
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
+                  >
+                    {saving ? t("savingButton") : savedFlash ? (
+                      <span className="flex items-center gap-1.5">
+                        <CheckCircle2 className="h-4 w-4" /> {t("savedButton")}
+                      </span>
+                    ) : (
+                      t("saveButton")
+                    )}
+                  </button>
+                </>
               )}
-            </button>
+            </div>
           </div>
         </div>
       </form>

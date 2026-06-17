@@ -12,7 +12,6 @@ import {
 } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { AppUser, ProviderKind, UserConsent, UserRole, UserStatus } from "@/lib/types";
-import { notifyNurseSignup } from "@/services/notificationService";
 
 function mapDocToUser(
   userDoc: Record<string, unknown> & {
@@ -95,7 +94,12 @@ export async function createUserProfile(input: {
   provider?: "email" | "google";
 }) {
   const { db } = ensureClientFirebase();
-  const status: UserStatus = input.role === "nurse" ? "pending" : "approved";
+  // Fresh nurses start at "incomplete" — they haven't filled the
+  // profile yet, so they go straight to /nurse/setup. Submitting the
+  // profile (NurseProfileForm final step) flips status to
+  // "pending_review" via submitNurseProfileForReview, which is what
+  // the admin queue actually reviews.
+  const status: UserStatus = input.role === "nurse" ? "incomplete" : "approved";
 
   console.log("[userService] createUserProfile", {
     id: input.id,
@@ -128,9 +132,10 @@ export async function createUserProfile(input: {
     ...(input.phoneCountry ? { phoneCountry: input.phoneCountry } : {}),
   });
 
-  if (input.role === "nurse") {
-    await notifyNurseSignup({ nurseUserId: input.id, nurseName: input.name });
-  }
+  // No admin notification on registration anymore — nurses now start
+  // at "incomplete" and admin is only paged once the nurse hits the
+  // explicit "Submit profile for review" CTA at the end of the
+  // wizard (see submitNurseProfileForReview in nurseService.ts).
 }
 
 export async function getUserProfile(id: string): Promise<AppUser | null> {

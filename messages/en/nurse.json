@@ -228,6 +228,11 @@
     "savingButton": "Saving…",
     "savedButton": "Saved",
     "saveButton": "Save profile",
+    "nextStep": "Next",
+    "submitForReviewButton": "Submit profile for review",
+    "submittingButton": "Submitting…",
+    "completeSectionFirst": "Finish the required fields in this section before continuing.",
+    "completeAllSectionsFirst": "Complete every section before submitting your profile for review.",
     "sections": {
       "identity": "Identity & Bio",
       "services": "Services & Pricing",

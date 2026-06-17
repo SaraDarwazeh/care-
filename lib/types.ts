@@ -2,7 +2,23 @@ import type { LocalizedString } from "@/lib/i18nContent";
 
 export type UserRole = "admin" | "nurse" | "patient";
 
-export type UserStatus = "pending" | "approved" | "rejected";
+// Nurse onboarding lifecycle. Patients always sit at "approved" because
+// they don't need admin review. For nurses:
+//   incomplete       — registered, profile not yet submitted
+//   pending_review   — profile submitted, awaiting admin review
+//   approved         — admin approved
+//   rejected         — admin rejected
+// Legacy "pending" records exist on nurses created before the
+// incomplete / pending_review split shipped; the migration script
+// converts them based on profile completeness. Login + admin routing
+// treat legacy "pending" the same as "pending_review" until migration
+// has run everywhere.
+export type UserStatus =
+  | "incomplete"
+  | "pending"
+  | "pending_review"
+  | "approved"
+  | "rejected";
 
 export type BookingStatus = "pending" | "accepted" | "rejected" | "completed" | "cancelled";
 

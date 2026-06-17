@@ -19,9 +19,14 @@ function setupHeadingKey(gender?: string): "setupHeadingFemale" | "setupHeadingM
 
 export default function NurseSetupPage() {
   const router = useRouter();
+  // Setup page is the wizard nurses fill before admin review. They must
+  // be allowed in at any status — incomplete (fresh registration),
+  // pending_review (already submitted, can re-edit), and approved (post-
+  // approval edits trigger the re-review flow in saveNurseProfile).
+  // Dropping requireApprovedNurse is what fixes the historical bug
+  // where fresh nurses bounced straight to /pending-approval.
   const { appUser, loading } = useProtectedRoute({
     allowedRoles: ["nurse"],
-    requireApprovedNurse: true,
   });
   const t = useTranslations("nurse.setup");
   const tLoading = useTranslations("nurse.loading");
@@ -68,6 +73,13 @@ export default function NurseSetupPage() {
         onSaved={() => {
           if (onboarding) router.replace("/nurse");
           else setHasProfile(true);
+        }}
+        onSubmittedForReview={() => {
+          // Profile went from incomplete → pending_review. Route to
+          // /pending-approval so the nurse sees the "under review"
+          // copy. useAuth.refreshProfile inside the form has already
+          // updated appUser, so the protected-route guard agrees.
+          router.replace("/pending-approval");
         }}
       />
     </div>

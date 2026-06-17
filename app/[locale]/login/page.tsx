@@ -30,7 +30,15 @@ export default function LoginPage() {
     } else if (profile.role === "admin") {
       router.replace(redirect || "/admin");
     } else if (profile.role === "nurse") {
-      router.replace(profile.status === "approved" ? (redirect || "/nurse") : "/pending-approval");
+      // incomplete → finish the profile; pending_review (or legacy
+      // pending) → admin-review screen; approved → workspace.
+      if (profile.status === "approved") {
+        router.replace(redirect || "/nurse");
+      } else if (profile.status === "incomplete") {
+        router.replace("/nurse/setup");
+      } else {
+        router.replace("/pending-approval");
+      }
     } else {
       router.replace(redirect || "/patient");
     }

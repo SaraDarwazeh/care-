@@ -15,7 +15,7 @@ import {
   NurseMarketplaceProfile,
   NurseProfile,
 } from "@/lib/types";
-import { notifyNurseProfileResubmit } from "@/services/notificationService";
+import { notifyNurseProfileResubmit, notifyNurseSignup } from "@/services/notificationService";
 import { significantProfileSnapshot, sha256Hex } from "@/lib/nurseApprovalSnapshot";
 import { getPricingConfig } from "@/services/pricingConfigService";
 import {
@@ -119,6 +119,62 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
 // field changed vs. the last-approved snapshot, flips users/{uid}.status
 // back to "pending" and notifies admin. First-time setup (no approval
 // yet) doesn't trigger this branch.
+// Save the profile draft without changing approval status. Used by the
+// per-section Next button so partial progress survives a page reload
+// while the nurse is still mid-wizard. Server-side pricing validation
+// still applies — saving a price out of range fails fast.
+export async function saveNurseProfileDraft(
+  input: Omit<NurseProfile, "rating" | "reviewCount">,
+) {
+  const { db } = ensureClientFirebase();
+  const pricingConfig = await getPricingConfig();
+  const check = validateProfilePricing(input, pricingConfig);
+  if (!check.valid) {
+    throw new PricingValidationException(check.errors);
+  }
+  const cleaned = stripUndefined(input as unknown as Record<string, unknown>);
+  await setDoc(doc(db, "nurseProfiles", input.userId), cleaned, { merge: true });
+}
+
+// Submit the completed profile for admin review. Flips status from
+// incomplete → pending_review and notifies admins via the same channel
+// used for fresh signups (the admin queue treats both as "needs
+// review"). Idempotent: a nurse who's already pending_review or
+// approved still goes through saveNurseProfile's re-approval logic.
+export async function submitNurseProfileForReview(
+  input: Omit<NurseProfile, "rating" | "reviewCount">,
+) {
+  const { db } = ensureClientFirebase();
+  const pricingConfig = await getPricingConfig();
+  const check = validateProfilePricing(input, pricingConfig);
+  if (!check.valid) {
+    throw new PricingValidationException(check.errors);
+  }
+  const cleaned = stripUndefined(input as unknown as Record<string, unknown>);
+  await setDoc(doc(db, "nurseProfiles", input.userId), cleaned, { merge: true });
+
+  // Flip status. The re-review branch in saveNurseProfile (for already-
+  // approved nurses editing significant fields) is unrelated to this
+  // function — that branch fires on every save, this one only fires
+  // at the explicit "Submit profile for review" CTA.
+  const userRef = doc(db, "users", input.userId);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    const userData = userSnap.data() as Record<string, unknown>;
+    const currentStatus = userData.status as string;
+    if (currentStatus === "incomplete" || currentStatus === "pending") {
+      await updateDoc(userRef, {
+        status: "pending_review",
+        profileSubmittedAt: new Date().toISOString(),
+      });
+      await notifyNurseSignup({
+        nurseUserId: input.userId,
+        nurseName: input.fullName,
+      });
+    }
+  }
+}
+
 export async function saveNurseProfile(input: Omit<NurseProfile, "rating" | "reviewCount">) {
   const { db } = ensureClientFirebase();
 

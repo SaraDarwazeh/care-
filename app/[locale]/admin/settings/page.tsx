@@ -63,7 +63,7 @@ export default function AdminSettingsPage() {
           <div>
             <p className="text-lg font-bold">{appUser.name}</p>
             <p className="text-slate-400">{appUser.email}</p>
-            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-soft/300/20 px-3 py-1 text-xs font-bold text-brand-soft border border-brand/30">
+            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-soft/30 px-3 py-1 text-xs font-bold text-brand-deep border border-brand/30">
               <Shield className="h-3 w-3" /> {t("superAdmin")}
             </span>
           </div>

@@ -203,7 +203,7 @@ export default function PackageDetail({ pkg }: { pkg: CarePackage }) {
                   const label = tLocalized(r, locale);
                   return (
                     <li key={`${label}-${i}`} className="flex items-start gap-2 text-sm text-slate-700">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-soft/300" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                       <span>{label}</span>
                     </li>
                   );

@@ -154,7 +154,7 @@ export default function NurseMarketplaceCard({
                 <span className="text-sm font-medium text-slate-500">{t(unitKey)}</span>
               </p>
             </div>
-            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-soft/30 text-brand transition-colors group-hover:bg-brand-soft/300 group-hover:text-white">
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-brand-soft/30 text-brand transition-colors group-hover:bg-brand group-hover:text-white">
               <ChevronRight className="h-5 w-5 ms-0.5" />
             </div>
           </div>

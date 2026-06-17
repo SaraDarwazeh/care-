@@ -435,7 +435,7 @@ export default function AdminOrdersPage() {
             onClick={() => setStatusFilter(s)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all capitalize ${
               statusFilter === s
-                ? "bg-brand-soft/300 text-white shadow-sm"
+                ? "bg-brand text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-100"
             }`}
           >

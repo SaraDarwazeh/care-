@@ -306,7 +306,7 @@ export default function AdminDashboardPage() {
             <div className="pt-5">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-brand-soft/300 inline-block" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand inline-block" />
                   <span className="text-sm font-semibold text-slate-600">{tRev("thisMonth")}</span>
                 </div>
                 <span className="text-sm font-extrabold text-slate-800">

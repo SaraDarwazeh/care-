@@ -135,7 +135,7 @@ function FlagCard({
   const switchBg = displayed
     ? accent === "emerald"
       ? "bg-emerald-500"
-      : "bg-brand-soft/300"
+      : "bg-brand"
     : "bg-slate-300";
 
   return (

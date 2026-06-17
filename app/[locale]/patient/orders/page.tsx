@@ -55,7 +55,7 @@ function StatusTimeline({ current }: { current: StoreOrder["status"] }) {
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
                   isCurrent
-                    ? "bg-brand-soft/300 border-brand text-white shadow-sm"
+                    ? "bg-brand border-brand text-white shadow-sm"
                     : reached
                     ? "bg-brand-soft/50 border-brand-soft text-brand-deep"
                     : "bg-white border-slate-200 text-slate-300"

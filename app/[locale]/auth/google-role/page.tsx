@@ -108,7 +108,7 @@ function GoogleRolePageInner() {
               role === "patient" ? "border-brand bg-brand-soft/30" : "border-slate-100 bg-white hover:border-brand-soft"
             }`}
           >
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${role === "patient" ? "bg-brand-soft/300 text-white" : "bg-slate-100 text-slate-400"}`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${role === "patient" ? "bg-brand text-white" : "bg-slate-100 text-slate-400"}`}>
               <UserCircle className="h-5 w-5" />
             </div>
             <div>

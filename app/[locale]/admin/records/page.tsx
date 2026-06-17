@@ -172,7 +172,7 @@ function AdminRecordsPageInner() {
                 active
                   ? opt.id === "disputed"
                     ? "bg-rose-500 text-white shadow-sm"
-                    : "bg-brand-soft/300 text-white shadow-sm"
+                    : "bg-brand text-white shadow-sm"
                   : "text-slate-500 hover:bg-slate-100"
               }`}
             >

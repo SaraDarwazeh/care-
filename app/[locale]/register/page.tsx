@@ -135,7 +135,7 @@ export default function RegisterPage() {
                     pickedRole === "patient" ? "border-brand bg-brand-soft/30 shadow-[0_8px_20px_-8px_rgba(14,165,233,0.3)]" : "border-slate-100 bg-white hover:border-brand-soft"
                   }`}
                 >
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${pickedRole === "patient" ? "bg-brand-soft/300 text-white" : "bg-slate-100 text-slate-400"}`}>
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${pickedRole === "patient" ? "bg-brand text-white" : "bg-slate-100 text-slate-400"}`}>
                     <UserCircle className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
                   <div>
@@ -188,7 +188,7 @@ export default function RegisterPage() {
                 <button
                   onClick={() => setStep(2)}
                   className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 ${
-                    pickedRole === "patient" ? "bg-gradient-to-r from-brand-soft/300 to-brand shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
+                    pickedRole === "patient" ? "bg-gradient-to-r from-brand-deep to-brand shadow-[0_8px_20px_-8px_rgba(31,106,114,0.6)]" : "bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
                   }`}
                 >
                   {t("continue")} <ArrowRight className="h-5 w-5" />
@@ -321,7 +321,7 @@ export default function RegisterPage() {
                   type="submit"
                   disabled={loading || !consentAccepted}
                   className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:-translate-y-0 disabled:cursor-not-allowed mt-8 ${
-                    pickedRole === "patient" ? "bg-gradient-to-r from-brand-soft/300 to-brand shadow-[0_8px_20px_-8px_rgba(14,165,233,0.6)]" : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
+                    pickedRole === "patient" ? "bg-gradient-to-r from-brand-deep to-brand shadow-[0_8px_20px_-8px_rgba(31,106,114,0.6)]" : "bg-gradient-to-r from-emerald-600 to-emerald-700 shadow-[0_8px_20px_-8px_rgba(16,185,129,0.6)]"
                   }`}
                 >
                   {loading ? (

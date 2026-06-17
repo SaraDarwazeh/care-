@@ -608,7 +608,7 @@ export default function BookingForm({
                   const label = tLocalized(svc, locale);
                   return (
                     <li key={`${label}-${i}`} className="flex items-start gap-1.5">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-soft/300" />
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand" />
                       <span>{label}</span>
                     </li>
                   );
@@ -635,7 +635,7 @@ export default function BookingForm({
           </div>
           <div className="h-1.5 w-full rounded-full bg-slate-100">
             <div
-              className="h-1.5 rounded-full bg-brand-soft/300 transition-all duration-500"
+              className="h-1.5 rounded-full bg-brand transition-all duration-500"
               style={{ width: `${(step / totalSteps) * 100}%` }}
             />
           </div>

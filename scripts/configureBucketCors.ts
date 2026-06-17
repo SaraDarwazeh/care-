@@ -76,8 +76,21 @@ async function main() {
 
   const s3 = new S3Client({ region, credentials: { accessKeyId, secretAccessKey } });
 
-  console.log(`[configure] Setting CORS on ${bucket}…`);
+  console.log(`[configure] Bucket: ${bucket} (region ${region})`);
   console.log(`[configure] AllowedOrigins: ${originList.join(", ")}`);
+
+  // If the resolved origin list looks suspiciously short the next person
+  // is probably running on a preview / staging URL that isn't in the
+  // baked-in defaults — surface the escape hatch up-front so they don't
+  // run, see no errors, then wonder why their preview is still failing.
+  if (originList.length <= 2) {
+    console.log(
+      "[configure] heads-up: only the baked-in defaults will be allowed. " +
+        "If you're hitting S3 from a Vercel preview or other origin, " +
+        "re-run with CORS_EXTRA_ORIGINS=\"https://your-preview.vercel.app\" " +
+        "or set NEXT_PUBLIC_SITE_URL in .env.local.",
+    );
+  }
 
   await s3.send(
     new PutBucketCorsCommand({
@@ -98,7 +111,9 @@ async function main() {
 
   const verify = await s3.send(new GetBucketCorsCommand({ Bucket: bucket }));
   console.log("[configure] CORSRules now:", JSON.stringify(verify.CORSRules, null, 2));
-  console.log("[configure] Done. Browser PUTs from the listed origins should now succeed.");
+  console.log(
+    `[configure] Done — ${bucket} will now accept browser PUTs from the listed origins.`,
+  );
 }
 
 main().catch((err) => {

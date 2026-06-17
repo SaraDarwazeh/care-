@@ -69,13 +69,35 @@ export async function uploadFile(
 
   const { uploadUrl, publicUrl, key } = (await presignRes.json()) as PresignResponse;
 
-  const putRes = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream",
-    },
-    body: file,
-  });
+  // The PUT to S3 is cross-origin, so the browser fires a CORS
+  // preflight first. If the bucket doesn't have a CORS rule allowing
+  // PUT + Content-Type from this origin, the OPTIONS response carries
+  // no Access-Control-Allow-Origin header and `fetch` rejects with a
+  // generic `TypeError: Failed to fetch` — no HTTP status, no useful
+  // info. Catch that one specific shape and throw an actionable error
+  // pointing at the script that fixes it. Every other failure mode
+  // (real HTTP error from S3 — 4xx/5xx) still surfaces as before.
+  let putRes: Response;
+  try {
+    putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error(
+        "Upload was blocked at the network layer before S3 could respond. " +
+          "This almost always means the bucket's CORS rule doesn't allow PUT " +
+          "from this origin. Run `npx tsx scripts/configureBucketCors.ts` " +
+          "against your bucket (with CORS_EXTRA_ORIGINS set if you're on a " +
+          "preview deploy), then retry.",
+      );
+    }
+    throw err;
+  }
 
   if (!putRes.ok) {
     throw new Error(`Upload failed (HTTP ${putRes.status})`);

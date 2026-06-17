@@ -383,6 +383,17 @@
     "nextStep": "Next Step",
     "submitting": "Submitting…",
     "confirmBooking": "Confirm Booking",
+    "validation": {
+      "selectService": "Please pick a service before continuing.",
+      "selectPackage": "Please pick a care package before continuing.",
+      "selectShift": "Please pick a shift (A, B, or C) before continuing.",
+      "selectDate": "Please pick a date for the visit.",
+      "selectTime": "Please pick a start time.",
+      "selectLocation": "Please enter the visit address.",
+      "acceptTerms": "Please accept the booking terms before confirming.",
+      "submitFailed": "Couldn't create the booking — {reason}. Try again, or contact support if this keeps happening.",
+      "submitFailedGeneric": "Couldn't create the booking. Please try again."
+    },
     "packageBanner": {
       "kicker": "Care package",
       "fullDetails": "Full details →",

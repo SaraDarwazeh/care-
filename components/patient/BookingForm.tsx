@@ -122,6 +122,12 @@ export default function BookingForm({
   const [missingFields, setMissingFields] = useState<RequiredProfileField[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  // Step-validation error key (e.g. "selectDate") shown inline above
+  // the Next button. Cleared when the user picks a valid value or
+  // moves to the next step. Different from submitError below — that
+  // one holds free-form server errors from createBooking.
+  const [stepError, setStepError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [tncAccepted, setTncAccepted] = useState(false);
   // Shape returned by /api/bookings/pricing. `tax` is kept optional only
   // so legacy server builds that still emit the field don't break the
@@ -302,6 +308,13 @@ export default function BookingForm({
   useEffect(() => {
     if (step !== 5) return;
     let active = true;
+    // Pricing fetch is bounded by a 5s abort so a slow / hung
+    // /api/bookings/pricing call never deadlocks the Confirm button.
+    // The client-side `pricing` computation is the fallback when the
+    // server fetch fails or times out — the booking still completes
+    // and we surface a warning rather than refusing to submit.
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 5000);
     const payload = {
       nurseId: nurse.userId,
       service,
@@ -332,11 +345,25 @@ export default function BookingForm({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
+          signal: abortController.signal,
         });
+        if (!res.ok) {
+          throw new Error(`Pricing API responded ${res.status}`);
+        }
         const json = await res.json();
-        if (active && json?.success) setServerPricing(json.pricing);
+        if (active && json?.success && json.pricing) {
+          setServerPricing(json.pricing);
+        } else if (active) {
+          console.warn("[BookingForm] pricing endpoint returned non-success payload", json);
+        }
       } catch (e) {
-        console.error("Pricing fetch failed", e);
+        if (e instanceof Error && e.name === "AbortError") {
+          console.warn("[BookingForm] pricing fetch timed out — falling back to client estimate");
+        } else {
+          console.warn("[BookingForm] pricing fetch failed — falling back to client estimate", e);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
@@ -344,6 +371,8 @@ export default function BookingForm({
 
     return () => {
       active = false;
+      abortController.abort();
+      clearTimeout(timeoutId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
@@ -351,9 +380,29 @@ export default function BookingForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (step < totalSteps) {
-      setStep(step + 1);
+      // Mobile wizard chrome can hit form submit when the user presses
+      // Enter on a field — route through the same validating Next
+      // handler instead of silently jumping to the next step.
+      handleNext();
       return;
     }
+
+    const validation = validateSubmit();
+    if (validation) {
+      setStepError(validation);
+      setSubmitError(null);
+      // Jump back to the first incomplete step so the patient sees the
+      // missing input directly rather than guessing.
+      for (let s = 1; s < totalSteps; s++) {
+        if (validateStep(s)) {
+          setStep(s);
+          break;
+        }
+      }
+      return;
+    }
+    setStepError(null);
+    setSubmitError(null);
 
     setLoading(true);
     setSuccess(false);
@@ -410,14 +459,69 @@ export default function BookingForm({
         router.push("/patient/appointments");
       }, 3000);
     } catch (e) {
-      console.error(e);
+      console.error("[BookingForm] createBooking failed", e);
+      // Surface a user-visible reason instead of silently swallowing —
+      // patients were reporting "I clicked Confirm and nothing happened".
+      const reason = e instanceof Error ? e.message : "";
+      setSubmitError(
+        reason
+          ? t("validation.submitFailed", { reason })
+          : t("validation.submitFailedGeneric"),
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  const handleNext = () => setStep((prev) => Math.min(prev + 1, totalSteps));
-  const handleBack = () => setStep((prev) => Math.max(prev - 1, 1));
+  // Validation per wizard step. Returns the i18n key under
+  // `patient.booking.validation` that should be shown, or null when
+  // the step is OK to advance. Single source of truth for both the
+  // Next button and the final Confirm button so the desktop one-page
+  // layout and the mobile wizard chrome can't drift.
+  function validateStep(n: number): string | null {
+    if (n === 1) {
+      if (bookingType === "package" && !packageId) return "selectPackage";
+      if (!service?.trim()) return "selectService";
+      return null;
+    }
+    if (n === 2) {
+      if (bookingType === "shift" && !shift) return "selectShift";
+      return null;
+    }
+    if (n === 3) {
+      if (!date) return "selectDate";
+      if (bookingType === "one-time" && !time) return "selectTime";
+      return null;
+    }
+    if (n === 4) {
+      if (!location.trim()) return "selectLocation";
+      return null;
+    }
+    return null;
+  }
+
+  function validateSubmit(): string | null {
+    for (let s = 1; s < totalSteps; s++) {
+      const err = validateStep(s);
+      if (err) return err;
+    }
+    if (!tncAccepted) return "acceptTerms";
+    return null;
+  }
+
+  function handleNext() {
+    const err = validateStep(step);
+    if (err) {
+      setStepError(err);
+      return;
+    }
+    setStepError(null);
+    setStep((prev) => Math.min(prev + 1, totalSteps));
+  }
+  function handleBack() {
+    setStepError(null);
+    setStep((prev) => Math.max(prev - 1, 1));
+  }
 
   // Section visibility per the responsive layout strategy: mobile shows
   // the active step only (wizard); desktop (lg+) shows every section
@@ -426,17 +530,14 @@ export default function BookingForm({
   const sectionVis = (n: number) =>
     `${step === n ? "" : "hidden"} lg:block ${n > 1 ? "lg:mt-10 lg:border-t lg:border-slate-100 lg:pt-10" : ""}`;
 
-  // Whether the booking is submittable. Identical to the previous
-  // "step 5" submit-disabled clause; computed once so the desktop and
-  // mobile Submit buttons share the rule.
-  const submitDisabled =
-    loading ||
-    !date ||
-    !location ||
-    !tncAccepted ||
-    (bookingType === "shift" && !shift) ||
-    (bookingType === "one-time" && !time) ||
-    (bookingType === "package" && !packageId);
+  // Whether the booking can be submitted right now. We intentionally
+  // do NOT disable the Confirm button when fields are missing —
+  // disabled buttons confuse patients ("Why isn't it doing anything?").
+  // Instead the onSubmit handler runs validateSubmit() and surfaces a
+  // specific `stepError` message pointing at the missing field. The
+  // only thing that disables the button is the in-flight submit so
+  // patients can't double-click.
+  const submitDisabled = loading;
 
   if (success) {
     return (
@@ -1037,7 +1138,23 @@ export default function BookingForm({
         {/* Mobile wizard chrome — Back/Next/Submit. Hidden on desktop
             (lg+) where the form shows all sections vertically and only
             the desktop submit button below is used. */}
-        <div className="lg:hidden mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+        {/* Inline error banner — shown when the user clicks Next /
+            Confirm but is missing a required field, or when the server
+            rejects the booking. Replaces the old disabled-button
+            silent-fail UX where patients had no idea why the button
+            "wasn't working". Auto-hides once the underlying issue is
+            fixed (validateStep no longer returns the same key) so it
+            doesn't persist after the user corrects their input. */}
+        {(submitError || (stepError && stepError === validateStep(step))) && (
+          <div
+            role="alert"
+            className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+          >
+            {submitError ?? t(`validation.${stepError}`)}
+          </div>
+        )}
+
+        <div className="lg:hidden mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
           <button
             type="button"
             onClick={handleBack}
@@ -1051,12 +1168,6 @@ export default function BookingForm({
             <button
               type="button"
               onClick={handleNext}
-              disabled={
-                (step === 1 && bookingType === "package" && !packageId) ||
-                (step === 2 && bookingType === "shift" && !shift) ||
-                (step === 3 && !date) ||
-                (step === 3 && bookingType === "one-time" && !time)
-              }
               className="flex items-center gap-1 rounded-xl bg-brand px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-hover active:scale-95 disabled:opacity-50"
             >
               {t("nextStep")} <ChevronRight className="h-4 w-4" />

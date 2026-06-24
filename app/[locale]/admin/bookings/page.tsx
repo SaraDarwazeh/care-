@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { CalendarClock, Download, Search } from "lucide-react";
@@ -54,6 +56,7 @@ export default function AdminBookingsPage() {
   const { appUser, loading: authLoading } = useProtectedRoute({ allowedRoles: ["admin"] });
   const t = useTranslations("admin.bookings");
   const tOrders = useTranslations("admin.orders");
+  const locale = useLocale() as Locale;
   const [bookings, setBookings] = useState<BookingWithParticipants[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("");
@@ -220,7 +223,7 @@ export default function AdminBookingsPage() {
                       <p className="font-medium text-slate-600">{b.date}</p>
                       <p className="text-xs text-slate-400">{b.time}</p>
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-800">${b.price}</td>
+                    <td className="px-6 py-4 font-bold text-slate-800">{fmtCurrency(b.price, locale)}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider ${STATUS_COLORS[b.status]}`}>
                         {b.status}

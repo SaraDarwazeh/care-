@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { DollarSign, TrendingUp, CheckCircle, Calendar } from "lucide-react";
+import { Coins, TrendingUp, CheckCircle, Calendar } from "lucide-react";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import type { BookingWithParticipants } from "@/lib/types";
 import { getBookingsForNurseWithParticipants } from "@/services/bookingService";
@@ -50,7 +50,7 @@ export default function NurseEarningsPage() {
         <div className="rounded-3xl bg-gradient-to-br from-brand to-brand-deep p-6 text-white shadow-lg shadow-brand/30">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
-              <DollarSign className="h-6 w-6" />
+              <Coins className="h-6 w-6" />
             </div>
             <p className="text-sm font-bold text-brand-soft uppercase tracking-wider">{t("totalEarned")}</p>
           </div>
@@ -90,7 +90,7 @@ export default function NurseEarningsPage() {
 
         {completed.length === 0 ? (
           <div className="flex flex-col items-center py-14">
-            <DollarSign className="h-12 w-12 text-slate-300 mb-4" />
+            <Coins className="h-12 w-12 text-slate-300 mb-4" />
             <p className="text-lg font-bold text-slate-600">{t("emptyTitle")}</p>
             <p className="text-slate-400 text-sm">{t("emptyBody")}</p>
           </div>

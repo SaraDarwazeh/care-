@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
 import {
   ShoppingBag,
   Package,
@@ -98,6 +100,7 @@ function OrderCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const locale = useLocale() as Locale;
 
   function getProductName(id: string) {
     const p = products.find((p) => p.id === id);
@@ -153,7 +156,7 @@ function OrderCard({
           >
             {order.status}
           </span>
-          <p className="text-xl font-extrabold text-slate-800">${order.total.toFixed(2)}</p>
+          <p className="text-xl font-extrabold text-slate-800">{fmtCurrency(order.total, locale)}</p>
           {expanded ? (
             <ChevronUp className="h-4 w-4 text-slate-400" />
           ) : (
@@ -228,7 +231,7 @@ function OrderCard({
                   <div className="flex items-center gap-4 text-slate-500">
                     <span>Qty: {item.quantity}</span>
                     <span className="font-bold text-slate-800">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      {fmtCurrency(item.price * item.quantity, locale)}
                     </span>
                   </div>
                 </div>
@@ -311,6 +314,7 @@ async function enrichOrders(orders: StoreOrder[]): Promise<EnrichedOrder[]> {
 export default function AdminOrdersPage() {
   const { appUser, loading: authLoading } = useProtectedRoute({ allowedRoles: ["admin"] });
   const t = useTranslations("admin.orders");
+  const locale = useLocale() as Locale;
   const [orders, setOrders] = useState<EnrichedOrder[]>([]);
   const [products, setProducts] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -364,7 +368,7 @@ export default function AdminOrdersPage() {
             .map((it) => {
               const prod = products.find((p) => p.id === it.productId);
               const name = prod ? tLocalized(prod.name, "en") : it.productId;
-              return `${name} × ${it.quantity} @ $${it.price}`;
+              return `${name} × ${it.quantity} @ ${fmtCurrency(it.price, locale)}`;
             })
             .join(" | "),
       },

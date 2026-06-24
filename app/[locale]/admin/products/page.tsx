@@ -2,7 +2,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Store, Plus, Pencil, Trash2, X, Check } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import type { StoreItem } from "@/lib/types";
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/services/storeService";
@@ -38,6 +40,7 @@ const EMPTY_FORM: EditorForm = {
 export default function AdminProductsPage() {
   const { appUser, loading: authLoading } = useProtectedRoute({ allowedRoles: ["admin"] });
   const t = useTranslations("admin.products");
+  const locale = useLocale() as Locale;
   const [products, setProducts] = useState<StoreItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -245,7 +248,7 @@ export default function AdminProductsPage() {
                     {p.name.ar && <p className="mt-0.5 text-xs text-slate-500" dir="rtl">{p.name.ar}</p>}
                     {!p.name.ar && <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">{t("arabicMissing")}</p>}
                   </div>
-                  <span className="text-lg font-extrabold text-brand-deep shrink-0">${p.price.toFixed(2)}</span>
+                  <span className="text-lg font-extrabold text-brand-deep shrink-0">{fmtCurrency(p.price, locale)}</span>
                 </div>
                 <p className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">{p.category}</p>
                 <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{tLocalized(p.description, "en")}</p>

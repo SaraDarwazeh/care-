@@ -24,11 +24,17 @@ import { CURRENCY } from "@/lib/config";
 const log = createLogger("notificationService");
 
 // Notification bodies are written at create-time as plain strings (see
-// design comment above createNotification). For currency amounts in
-// those strings, format as "<CODE> <amount>" instead of any specific
-// symbol so the body matches the platform's chosen currency.
+// design comment above createNotification). Currency amounts are formatted
+// from the platform's chosen CURRENCY via Intl so the body shows the proper
+// symbol (e.g. ₪) and tracks any future currency change in one place. A
+// fixed "en"/latn locale keeps the persisted string stable regardless of
+// who triggers the write.
 function fmtAmount(value: number): string {
-  return `${CURRENCY} ${value.toFixed(2)}`;
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: CURRENCY,
+    numberingSystem: "latn",
+  }).format(value);
 }
 
 const COLLECTION = "notifications";

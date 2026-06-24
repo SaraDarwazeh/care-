@@ -850,7 +850,7 @@ function buildNotificationSeeds(input: {
     userId: input.adminUid,
     type: "order_created",
     title: "New store order",
-    body: "A new order totaling $67.00 is awaiting review.",
+    body: "A new order totaling ₪67.00 is awaiting review.",
     link: "/admin/orders",
     read: false,
     createdAt: minutesAgo(30),

@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   Activity,
   TrendingUp,
-  DollarSign,
+  Coins,
   UserCheck,
   Clock,
   ArrowRight,
@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
     { key: "totalPatients", value: fmtNumber(stats.totalPatients, locale), icon: UserCheck, color: "text-brand-deep", bg: "bg-brand-soft/40" },
     { key: "totalBookings", value: fmtNumber(stats.totalBookings, locale), icon: CalendarClock, color: "text-brand-deep", bg: "bg-brand-soft/40" },
     { key: "pendingApprovals", value: fmtNumber(stats.pendingApprovals, locale), icon: ShieldAlert, color: "text-brand-sand-strong", bg: "bg-brand-sand/30" },
-    { key: "totalRevenue", value: fmtCurrency(stats.totalRevenue, locale, { maximumFractionDigits: 0 }), icon: DollarSign, color: "text-brand-deep", bg: "bg-brand-soft/40" },
+    { key: "totalRevenue", value: fmtCurrency(stats.totalRevenue, locale, { maximumFractionDigits: 0 }), icon: Coins, color: "text-brand-deep", bg: "bg-brand-soft/40" },
   ] as const;
 
   const maxCount = Math.max(...stats.bookingTrendCounts, 1);

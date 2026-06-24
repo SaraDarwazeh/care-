@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { CalendarClock, CheckCircle, Clock, DollarSign, Star, TrendingUp, ChevronRight, AlertCircle } from "lucide-react";
+import { CalendarClock, CheckCircle, Clock, Coins, Star, TrendingUp, ChevronRight, AlertCircle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import NurseIncomingBookingCard from "@/components/nurse/NurseIncomingBookingCard";
@@ -75,7 +75,7 @@ export default function NurseDashboardPage() {
     { label: t("stats.totalBookings"), value: fmtNumber(bookings.length, locale), icon: CalendarClock, color: "text-brand", bg: "bg-brand-soft/30", border: "border-brand-mist" },
     { label: t("stats.pendingRequests"), value: fmtNumber(pending.length, locale), icon: Clock, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
     { label: t("stats.upcomingShifts"), value: fmtNumber(upcoming.length, locale), icon: CheckCircle, color: "text-brand-deep", bg: "bg-brand-soft/40", border: "border-brand-mist" },
-    { label: t("stats.totalEarned"), value: fmtCurrency(totalEarned, locale), icon: DollarSign, color: "text-brand-sand-strong", bg: "bg-brand-sand/25", border: "border-brand-sand/50" },
+    { label: t("stats.totalEarned"), value: fmtCurrency(totalEarned, locale), icon: Coins, color: "text-brand-sand-strong", bg: "bg-brand-sand/25", border: "border-brand-sand/50" },
   ];
 
   const firstName = appUser.name.split(" ")[0];

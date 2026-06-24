@@ -1092,6 +1092,7 @@ export default function BookingForm({
                           id={a.id}
                           name={displayName}
                           price={a.price}
+                          locale={locale}
                           checked={addOns.includes(a.id)}
                           onChange={(checked) => {
                             setAddOns((prev) => (checked ? [...prev, a.id] : prev.filter((p) => p !== a.id)));

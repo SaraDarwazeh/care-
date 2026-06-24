@@ -1,6 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { fmtCurrency } from "@/lib/format";
+import type { Locale } from "@/i18n/config";
 import {
   HeartHandshake,
   Plus,
@@ -309,6 +312,7 @@ function BiPair({
 
 export default function AdminPackagesPage() {
   const { appUser, loading: authLoading } = useProtectedRoute({ allowedRoles: ["admin"] });
+  const locale = useLocale() as Locale;
   const [packages, setPackages] = useState<CarePackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -623,7 +627,7 @@ export default function AdminPackagesPage() {
                         })} />
                         <span className="font-bold">{addon.name}</span>
                       </span>
-                      <span className="text-xs font-bold">${addon.price}</span>
+                      <span className="text-xs font-bold">{fmtCurrency(addon.price, locale)}</span>
                     </label>
                   );
                 })}

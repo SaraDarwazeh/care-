@@ -3,7 +3,7 @@
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, CalendarClock, Clock, User, DollarSign, Store, Menu, X, CalendarDays, Bell, FileText } from "lucide-react";
+import { LayoutDashboard, CalendarClock, Clock, User, Coins, Store, Menu, X, CalendarDays, Bell, FileText } from "lucide-react";
 import { useState } from "react";
 import { CartProvider } from "@/components/patient/CartContext";
 import Logo from "@/components/common/Logo";
@@ -24,7 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "records",       href: "/nurse/records",       icon: FileText },
   { key: "schedule",      href: "/nurse/schedule",      icon: Clock },
   { key: "availability",  href: "/nurse/availability",  icon: CalendarDays },
-  { key: "earnings",      href: "/nurse/earnings",      icon: DollarSign },
+  { key: "earnings",      href: "/nurse/earnings",      icon: Coins },
   { key: "store",         href: "/nurse/store",         icon: Store },
   { key: "notifications", href: "/nurse/notifications", icon: Bell },
   { key: "profile",       href: "/nurse/setup",         icon: User },

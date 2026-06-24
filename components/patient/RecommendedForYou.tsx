@@ -151,6 +151,7 @@ function ServicesRail({ items }: { items: ScoredService[] }) {
 
 function NursesRail({ items }: { items: ScoredNurse[] }) {
   const t = useTranslations("patient.dashboard.recommendedForYou");
+  const locale = useLocale() as Locale;
   return (
     <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between gap-2">

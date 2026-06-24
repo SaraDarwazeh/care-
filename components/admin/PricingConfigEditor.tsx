@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  DollarSign,
+  Coins,
   Plus,
   Trash2,
   Save,
@@ -253,7 +253,7 @@ export default function PricingConfigEditor() {
       <div className="border-b border-slate-100 p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-soft/40 text-brand-deep">
-            <DollarSign className="h-5 w-5" />
+            <Coins className="h-5 w-5" />
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-800">Pricing Configuration</h2>

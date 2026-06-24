@@ -11,6 +11,7 @@ import { ShieldCheck, UserCircle, Stethoscope, Loader2 } from "lucide-react";
 import { ensureClientFirebase } from "@/lib/firebase/config";
 import { completeGoogleSignup, logoutUser } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
+import { stripLocalePrefix } from "@/i18n/localePath";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
 import PhoneInput from "@/components/common/PhoneInput";
 import { validatePhone } from "@/lib/phone";
@@ -85,7 +86,10 @@ function GoogleRolePageInner() {
       // refresh in the email-register flow.
       await refreshProfile();
       document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      const redirect = params.get("redirect");
+      const rawRedirect = params.get("redirect");
+      // Strip any locale already on the stored path; the locale-aware router
+      // re-adds the active one (avoids /en/en/... double-prefix → 404).
+      const redirect = rawRedirect ? stripLocalePrefix(rawRedirect) : null;
       if (role === "nurse") {
         router.replace("/nurse/setup");
       } else {

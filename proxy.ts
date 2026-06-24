@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { DEFAULT_LOCALE, LOCALES } from "@/i18n/config";
+import { stripLocalePrefix } from "@/i18n/localePath";
 
 // Locale routing is handled by next-intl. localePrefix: "always" means
 // every URL carries an explicit /en or /ar prefix — the bare path /
@@ -17,14 +18,6 @@ const intlMiddleware = createIntlMiddleware({
 // pathname AFTER the locale prefix has been stripped.
 const PUBLIC_ROUTES = ["/", "/login", "/register", "/services", "/community"];
 const PUBLIC_PREFIXES = ["/_next/", "/favicon"];
-
-function stripLocale(pathname: string): string {
-  for (const locale of LOCALES) {
-    if (pathname === `/${locale}`) return "/";
-    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(`/${locale}`.length);
-  }
-  return pathname;
-}
 
 function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) return true;
@@ -45,7 +38,7 @@ export function proxy(request: NextRequest): NextResponse {
     return intlResponse;
   }
 
-  const localeStripped = stripLocale(request.nextUrl.pathname);
+  const localeStripped = stripLocalePrefix(request.nextUrl.pathname);
   if (isPublicRoute(localeStripped)) {
     return intlResponse;
   }
@@ -59,7 +52,7 @@ export function proxy(request: NextRequest): NextResponse {
     );
     const locale = localeMatch ?? DEFAULT_LOCALE;
     loginUrl.pathname = `/${locale}/login`;
-    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    loginUrl.searchParams.set("redirect", stripLocalePrefix(request.nextUrl.pathname));
     return NextResponse.redirect(loginUrl);
   }
 

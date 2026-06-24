@@ -14,6 +14,7 @@ import { validatePhone } from "@/lib/phone";
 import { registerWithEmail } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
+import { stripLocalePrefix } from "@/i18n/localePath";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/consentVersions";
 import { useAuth } from "@/hooks/useAuth";
 import { usePhysiotherapyEnabled } from "@/hooks/useSiteSettings";
@@ -108,7 +109,10 @@ function RegisterPageInner() {
       document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get("redirect");
+      const rawRedirect = params.get("redirect");
+      // Strip any locale already on the stored path; the locale-aware router
+      // re-adds the active one (avoids /en/en/... double-prefix → 404).
+      const redirect = rawRedirect ? stripLocalePrefix(rawRedirect) : null;
 
       if (profile.role === "nurse" && profile.status !== "approved") {
         router.replace("/nurse/setup");

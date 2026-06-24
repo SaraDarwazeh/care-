@@ -10,6 +10,7 @@ import Logo from "@/components/common/Logo";
 import { loginWithEmail, signInWithGoogle } from "@/services/authService";
 import { getLocalizedErrorMessage } from "@/services/errorService";
 import { getUserProfile } from "@/services/userService";
+import { stripLocalePrefix } from "@/i18n/localePath";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,7 +24,10 @@ export default function LoginPage() {
 
   function routeAfterSignIn(profile: Awaited<ReturnType<typeof getUserProfile>>) {
     const params = new URLSearchParams(window.location.search);
-    const redirect = params.get("redirect");
+    const rawRedirect = params.get("redirect");
+    // Strip any locale the stored path already carries — the locale-aware
+    // router re-adds the active one, so passing /en/foo would yield /en/en/foo.
+    const redirect = rawRedirect ? stripLocalePrefix(rawRedirect) : null;
     document.cookie = `careplus_session=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
     if (!profile) {
       router.replace(redirect || "/");
